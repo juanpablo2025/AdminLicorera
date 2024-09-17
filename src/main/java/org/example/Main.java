@@ -1,152 +1,121 @@
 package org.example;
 
+import org.example.manager.CompraManager;
+import org.example.manager.ExcelManager;
+import org.example.manager.ProductoManager;
+import org.example.model.Producto;
+import org.example.ui.UIHelpers;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.List;
 
+import static org.example.ui.UIHelpers.*;
+
 public class Main {
-    private static ExcelManager excelManager = new ExcelManager();
+    private static ProductoManager productoManager = new ProductoManager();
+
+
+    private static JDialog compraDialog;
+
+
+
 
     public static void main(String[] args) {
-        // Crear ventana principal
         JFrame frame = new JFrame("Administrador de Licorera");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 400);
-        frame.setLayout(new GridLayout(4, 1));
+        frame.setLayout(new GridLayout(3, 1));
 
-        // Botones
-        JButton mesasButton = new JButton("Mesas");
-        JButton compraButton = new JButton("Compra");
-        JButton adminProductosButton = new JButton("Administrar Productos");
-        JButton salirButton = new JButton("Salir/Facturar");
+        // Botones principales
+        //JButton mesasButton = UIHelpers.createButton("Mesas", e -> showMesas());
+        JButton compraButton = UIHelpers.createButton("Compra", e -> showCompraDialog());
+        JButton adminProductosButton = UIHelpers.createButton("Administrar Productos", e -> showAdminProductosDialog());
+        JButton salirButton = UIHelpers.createButton("Salir/Facturar", e -> {
+            // Mostrar un cuadro de diálogo solicitando que el usuario escriba "Facturar"
+            String input = JOptionPane.showInputDialog(null, "Por favor, escribe 'Facturar' para proceder:", "Confirmar Facturación", JOptionPane.QUESTION_MESSAGE);
 
-        // Añadir botones a la ventana
-        frame.add(mesasButton);
+            // Verificar si el usuario ingresó correctamente la palabra "Facturar"
+            if ("Facturar".equals(input)) {
+                // Si la palabra es correcta, se procede a facturar y salir
+                ExcelManager excelManager = new ExcelManager();
+                excelManager.facturarYLimpiar();
+                System.exit(0); // Salir del programa después de la facturación
+            } else {
+                // Si la palabra es incorrecta o el usuario cancela, mostrar un mensaje y regresar al menú principal
+                JOptionPane.showMessageDialog(null, "Palabra incorrecta. Regresando al menú principal.", "Error", JOptionPane.ERROR_MESSAGE);
+                // Aquí puedes volver al main o simplemente detener la ejecución del botón sin hacer nada
+            }
+        });
+        //frame.add(mesasButton);
         frame.add(compraButton);
         frame.add(adminProductosButton);
         frame.add(salirButton);
 
-        // Acción para "Administrar Productos"
-        adminProductosButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showAdminProductosDialog();
-            }
-        });
-
-        // Acción para "Compra"
-        compraButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showCompraDialog();
-            }
-        });
-
-        // Acción para "Salir/Facturar"
-        salirButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);  // Cierra la aplicación
-            }
-        });
-
-        // Mostrar la ventana
         frame.setVisible(true);
     }
 
-    // Método para mostrar el submenú "Administrar Productos"
-    private static void showAdminProductosDialog() {
-        JDialog adminProductosDialog = new JDialog();
-        adminProductosDialog.setTitle("Administrar Productos");
-        adminProductosDialog.setSize(300, 200);
-        adminProductosDialog.setLayout(new GridLayout(2, 1));
 
-        JButton addProductButton = new JButton("Agregar Producto");
-        JButton listProductsButton = new JButton("Mostrar Lista");
+
+    private static void showAdminProductosDialog() {
+        JDialog adminDialog = UIHelpers.createDialog("Administrar Productos", 300, 200, new GridLayout(2, 1));
+
+        // Botones
+        JButton addButton = UIHelpers.createButton("Agregar Producto", e -> showAddProductDialog());
+        JButton listButton = UIHelpers.createButton("Listar Productos", e -> showListProductsDialog());
 
         // Añadir botones al diálogo
-        adminProductosDialog.add(addProductButton);
-        adminProductosDialog.add(listProductsButton);
+        adminDialog.add(addButton);
+        adminDialog.add(listButton);
 
-        // Acción para "Agregar Producto"
-        addProductButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showAddProductDialog();
-            }
-        });
-
-        // Acción para "Mostrar Lista"
-        listProductsButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showListProductsDialog();
-            }
-        });
-
-        adminProductosDialog.setVisible(true);
+        adminDialog.setVisible(true);
     }
 
-    // Método para agregar un producto (sin cambios)
     private static void showAddProductDialog() {
-        JDialog addProductDialog = new JDialog();
-        addProductDialog.setTitle("Agregar Producto");
-        addProductDialog.setSize(300, 200);
-        addProductDialog.setLayout(new GridLayout(4, 2));
+        JDialog addProductDialog = UIHelpers.createDialog("Agregar Producto", 300, 200, new GridLayout(4, 2));
 
-        // Campos de entrada
+        // Campos de entrada para los productos
         addProductDialog.add(new JLabel("ID:"));
-        JTextField idField = new JTextField();
+        JTextField idField = UIHelpers.createTextField();
         addProductDialog.add(idField);
 
         addProductDialog.add(new JLabel("Nombre:"));
-        JTextField nameField = new JTextField();
+        JTextField nameField = UIHelpers.createTextField();
         addProductDialog.add(nameField);
 
         addProductDialog.add(new JLabel("Cantidad:"));
-        JTextField quantityField = new JTextField();
+        JTextField quantityField = UIHelpers.createTextField();
         addProductDialog.add(quantityField);
 
+
         addProductDialog.add(new JLabel("Precio:"));
-        JTextField priceField = new JTextField();
+        JTextField priceField = UIHelpers.createTextField();
         addProductDialog.add(priceField);
 
-        JButton addButton = new JButton("Agregar");
-        addProductDialog.add(addButton);
+        JButton addButton = UIHelpers.createButton("Agregar", e -> {
+            int id = Integer.parseInt(idField.getText());
+            String name = nameField.getText();
+            int quantity = Integer.parseInt(quantityField.getText());
+            double price = Double.parseDouble(priceField.getText());
 
-        // Acción para agregar producto
-        addButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int id = Integer.parseInt(idField.getText());
-                String name = nameField.getText();
-                int quantity = Integer.parseInt(quantityField.getText());
-                double price = Double.parseDouble(priceField.getText());
+            Producto product = new Producto(id, name, quantity, price);
+            productoManager.addProduct(product);
 
-                Producto product = new Producto(id, name, quantity, price);
-                excelManager.addProduct(product);
-
-                JOptionPane.showMessageDialog(addProductDialog, "Producto agregado.");
-                addProductDialog.dispose();
-            }
+            JOptionPane.showMessageDialog(addProductDialog, "Producto agregado con éxito.");
+            addProductDialog.dispose();
         });
 
+        addProductDialog.add(addButton);
         addProductDialog.setVisible(true);
     }
 
-    // Método para mostrar la lista de productos (sin cambios)
     private static void showListProductsDialog() {
-        JDialog listProductsDialog = new JDialog();
-        listProductsDialog.setTitle("Listar Productos");
-        listProductsDialog.setSize(400, 300);
-        listProductsDialog.setLayout(new BorderLayout());
+        JDialog listProductsDialog = UIHelpers.createDialog("Listar Productos", 400, 300, new BorderLayout());
 
         JTextArea textArea = new JTextArea();
         textArea.setEditable(false);
 
-        List<Producto> products = excelManager.getProducts();
+        List<Producto> products = productoManager.getProducts();
         StringBuilder productList = new StringBuilder("ID\tNombre\tCantidad\tPrecio\n");
         for (Producto p : products) {
             productList.append(p.getId()).append("\t")
@@ -158,75 +127,36 @@ public class Main {
         textArea.setText(productList.toString());
         listProductsDialog.add(new JScrollPane(textArea), BorderLayout.CENTER);
 
-        JButton closeButton = new JButton("Cerrar");
+        JButton closeButton = UIHelpers.createButton("Cerrar", e -> listProductsDialog.dispose());
         listProductsDialog.add(closeButton, BorderLayout.SOUTH);
-
-        closeButton.addActionListener(e -> listProductsDialog.dispose());
 
         listProductsDialog.setVisible(true);
     }
 
-    // Método para la pantalla de compra
-    private static void showCompraDialog() {
-        JDialog compraDialog = new JDialog();
-        compraDialog.setTitle("Compra de Productos");
-        compraDialog.setSize(400, 300);
-        compraDialog.setLayout(new GridLayout(5, 2));
 
-        // Campos para seleccionar producto y cantidad
-        JComboBox<String> productComboBox = new JComboBox<>();
-        List<Producto> products = excelManager.getProducts();
-        for (Producto p : products) {
-            productComboBox.addItem(p.getName());
-        }
 
-        JTextField quantityField = new JTextField();
-        JTextField totalField = new JTextField();
-        totalField.setEditable(false);
+    public static void showCompraDialog() {
+        compraDialog = UIHelpers.createDialog("Realizar Compra", 500, 400, new BorderLayout());
 
-        compraDialog.add(new JLabel("Producto:"));
-        compraDialog.add(productComboBox);
-        compraDialog.add(new JLabel("Cantidad:"));
-        compraDialog.add(quantityField);
-        compraDialog.add(new JLabel("Total:"));
-        compraDialog.add(totalField);
+        JPanel inputPanel = createInputPanel();
+        compraDialog.add(inputPanel, BorderLayout.NORTH);
 
-        JButton calculateButton = new JButton("Calcular Total");
-        JButton checkoutButton = new JButton("Finalizar Compra");
+        JTable table = createProductTable();
+        JScrollPane tableScrollPane = new JScrollPane(table);
+        compraDialog.add(tableScrollPane, BorderLayout.CENTER);
 
-        // Acción para calcular el total
-        calculateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int quantity = Integer.parseInt(quantityField.getText());
-                String selectedProduct = (String) productComboBox.getSelectedItem();
-                Producto product = excelManager.getProductByName(selectedProduct);
-                double total = quantity * product.getPrice();
-                totalField.setText(String.valueOf(total));
-            }
-        });
+        JPanel totalPanel = createTotalPanel();
+        compraDialog.add(totalPanel, BorderLayout.SOUTH);
 
-        // Acción para finalizar la compra
-        checkoutButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                double total = Double.parseDouble(totalField.getText());
-                String receivedAmountStr = JOptionPane.showInputDialog(compraDialog, "Dinero recibido:");
-                double receivedAmount = Double.parseDouble(receivedAmountStr);
-                double change = receivedAmount - total;
+        CompraManager compraManager = new CompraManager();
 
-                // Guardar la compra en Excel
-                excelManager.savePurchase(productComboBox.getSelectedItem().toString(), quantityField.getText(), total);
-
-                // Mostrar cambio
-                JOptionPane.showMessageDialog(compraDialog, "Total: " + total + "\nCambio: " + change);
-                compraDialog.dispose();
-            }
-        });
-
-        compraDialog.add(calculateButton);
-        compraDialog.add(checkoutButton);
+        JPanel buttonPanel = createButtonPanel(table, compraManager, compraDialog);
+        compraDialog.add(buttonPanel, BorderLayout.SOUTH);
 
         compraDialog.setVisible(true);
     }
+
+/*private static void showMesas() {
+        // Lógica para el manejo de mesas
+    }*/
 }

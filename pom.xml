@@ -33,5 +33,32 @@
             <artifactId>commons-compress</artifactId>
             <version>1.21</version>
         </dependency>
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itext7-core</artifactId>
+            <version>7.2.3</version> <!-- Asegúrate de usar la última versión disponible -->
+        </dependency>
+
+        <!-- iText 7 Kernel (manejo de archivos PDF) -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>kernel</artifactId>
+            <version>7.2.3</version>
+        </dependency>
+
+        <!-- iText 7 Layout (para manejar elementos visuales) -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>layout</artifactId>
+            <version>7.2.3</version>
+        </dependency>
+
+        <!-- iText 7 Fonts (para el manejo de fuentes) -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>font-asian</artifactId>
+            <version>7.2.3</version>
+        </dependency>
     </dependencies>
+
 </project>
