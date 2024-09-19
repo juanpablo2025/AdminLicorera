@@ -12,6 +12,7 @@ import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import org.example.model.Producto;
+import org.example.utils.Constants;
 
 
 import javax.swing.*;
@@ -21,6 +22,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.example.utils.Constants.*;
 
 public class VentaManager {
     private List<Producto> cartProducts = new ArrayList<>();  // Lista para almacenar los productos en el carrito
@@ -32,7 +35,7 @@ public class VentaManager {
     public void addProductToCart(Producto producto, int cantidad) {
         // Buscar si el producto ya está en el carrito
         int index = cartProducts.indexOf(producto);
-        if (index != -1) {
+        if (index != MINUS_ONE) {
             // Si el producto ya está en el carrito, actualizar la cantidad
             cartQuantities.set(index, cartQuantities.get(index) + cantidad);
         } else {
@@ -45,19 +48,19 @@ public class VentaManager {
     // Método para obtener la lista de productos formateada para guardar en Excel
     public List<String> getProductListForExcel() {
         List<String> productList = new ArrayList<>();
-        for (int i = 0; i < cartProducts.size(); i++) {
+        for (int i = ZERO; i < cartProducts.size(); i++) {
             Producto producto = cartProducts.get(i);
             int cantidad = cartQuantities.get(i);
             double totalProducto = producto.getPrice() * cantidad;
-            productList.add(producto.getName() + " | Cantidad: " + cantidad + " | Total: $" + totalProducto);
+            productList.add( cantidad + producto.getName() + " | Total Producto: $" + totalProducto);
         }
         return productList;
     }
 
     // Método para obtener el monto total de la compra
     public double getTotalCartAmount() {
-        double total = 0;
-        for (int i = 0; i < cartProducts.size(); i++) {
+        double total = ZERO;
+        for (int i = ZERO; i < cartProducts.size(); i++) {
             Producto producto = cartProducts.get(i);
             int cantidad = cartQuantities.get(i);
             total += producto.getPrice() * cantidad;
@@ -78,15 +81,15 @@ public class VentaManager {
     public static void calcularDineroDevuelto(JTextField dineroRecibidoField, JLabel devueltoLabel, DefaultTableModel tableModel, JDialog compraDialog) {
         try {
             // Calcular el total general de los productos en la tabla
-            double total = 0.0;
-            for (int i = 0; i < tableModel.getRowCount(); i++) {
-                total += (double) tableModel.getValueAt(i, 3); // Columna 3 es el total por producto
+            double total = ZERO_DOUBLE;
+            for (int i = ZERO; i < tableModel.getRowCount(); i++) {
+                total += (double) tableModel.getValueAt(i, THREE); // Columna 3 es el total por producto
             }
 
             // Verificar si el campo de "dinero recibido" está vacío
             String dineroRecibidoTexto = dineroRecibidoField.getText();
             if (dineroRecibidoTexto.isEmpty()) {
-                JOptionPane.showMessageDialog(compraDialog, "Por favor, ingresa el dinero recibido.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(compraDialog, Constants.ENTER_MONEY_RECEIVED, Constants.ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -97,33 +100,33 @@ public class VentaManager {
             double dineroDevuelto = dineroRecibido - total;
 
             // Mostrar el resultado con un diálogo
-            if (dineroDevuelto < 0) {
-                JOptionPane.showMessageDialog(compraDialog, "El cliente necesita pagar más: $" + Math.abs(dineroDevuelto), "Error", JOptionPane.ERROR_MESSAGE);
+            if (dineroDevuelto < ZERO) {
+                JOptionPane.showMessageDialog(compraDialog, "El cliente necesita pagar más: $" + Math.abs(dineroDevuelto), Constants.ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             } else {
                 devueltoLabel.setText("Devuelto: $" + dineroDevuelto);
-                JOptionPane.showMessageDialog(compraDialog, "El dinero devuelto es: $" + dineroDevuelto, "Información", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(compraDialog, Constants.MONEY_CHANGED + dineroDevuelto, Constants.INFORMATION_TITLE, JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(compraDialog, "Dinero recibido debe ser un número válido.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(compraDialog, Constants.INVALID_NUMBER, Constants.ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private static void addTableRow(Table table, String key, String value) {
-        table.addCell(new Paragraph(key).setFontSize(8));
-        table.addCell(new Paragraph(value).setFontSize(8));
+        table.addCell(new Paragraph(key).setFontSize(EIGHT));
+        table.addCell(new Paragraph(value).setFontSize(EIGHT));
     }
 
     public static void generarFactura(String ventaID, List<String> productos, double totalCompra, double dineroRecibido, double dineroDevuelto, LocalDateTime fechaHora) {
         try {
             // Dimensiones del papel térmico
-            float anchoMm = 80;  // ancho en mm
-            float altoMm = 150;  // alto en mm (ajustable)
-            float anchoPuntos = anchoMm * 2.83465f;
-            float altoPuntos = altoMm * 2.83465f;
+            float anchoMm = Constants.EIGHTY_F;  // ancho en mm
+            float altoMm = Constants.ONE_HUNDRED_FIFTY_F;  // alto en mm (ajustable)
+            float anchoPuntos = anchoMm * Constants.WIDE_DOTS;
+            float altoPuntos = altoMm * Constants.HEIGHT_DOTS;
 
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
 
-            String nombreArchivo = "factura_" + ventaID + ".pdf";
+            String nombreArchivo = Constants.BILL_FILE + ventaID + PDF_FORMAT;
             File pdfFile = new File(nombreArchivo);
             PdfWriter writer = new PdfWriter(nombreArchivo);
             PdfDocument pdfDoc = new PdfDocument(writer);
@@ -133,84 +136,84 @@ public class VentaManager {
             PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
             // Márgenes ajustados
-            document.setMargins(5, 5, 5, 5);
+            document.setMargins(FIVE, FIVE, FIVE, FIVE);
 
             // Encabezado de la factura
-            document.add(new Paragraph("Factura de Compra")
+            document.add(new Paragraph(Constants.BILL_TITLE)
                     .setFont(fontBold)
-                    .setFontSize(12)
+                    .setFontSize(TWELVE)
                     .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(5));
+                    .setMarginBottom(FIVE));
 
-            document.add(new Paragraph("Licorera CR La 70")
+            document.add(new Paragraph(Constants.LICORERA_NAME)
                     .setFont(fontNormal)
-                    .setFontSize(8)
+                    .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph("NIT: 21468330-1")
+            document.add(new Paragraph(Constants.NIT)
                     .setFont(fontNormal)
-                    .setFontSize(8)
+                    .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph("Dirección: CR 70 # 46 - 80")
+            document.add(new Paragraph(Constants.DIRECCION)
                     .setFont(fontNormal)
-                    .setFontSize(8)
+                    .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph("Teléfono: 411 19 00")
+            document.add(new Paragraph(Constants.TELEFONO)
                     .setFont(fontNormal)
-                    .setFontSize(8)
+                    .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(new String(new char[46]).replace("\0", "="))
+            document.add(new Paragraph(new String(new char[FOURTY_SIX]).replace(SLASH_ZERO, Constants.EQUALS))
                     .setFont(fontNormal)
-                    .setFontSize(8)
-                    .setMarginBottom(5));
+                    .setFontSize(EIGHT)
+                    .setMarginBottom(FIVE));
 
             // Detalles de la compra
-            document.add(new Paragraph("ID de la compra: " + ventaID)
+            document.add(new Paragraph(Constants.BILL_ID + ventaID)
                     .setFont(fontNormal)
-                    .setFontSize(8));
+                    .setFontSize(EIGHT));
 
-            document.add(new Paragraph("Fecha y Hora: " + fechaHora)
+            document.add(new Paragraph(Constants.BILL_FECHA_HORA + fechaHora)
                     .setFont(fontNormal)
-                    .setFontSize(8)
-                    .setMarginBottom(5));
+                    .setFontSize(EIGHT)
+                    .setMarginBottom(FIVE));
 
-            document.add(new Paragraph("Productos:")
+            document.add(new Paragraph(Constants.BILL_PRODUCTS)
                     .setFont(fontBold)
-                    .setFontSize(10));
+                    .setFontSize(TEN));
 
             // Productos
             for (String producto : productos) {
                 document.add(new Paragraph(producto)
                         .setFont(fontNormal)
-                        .setFontSize(8));
+                        .setFontSize(EIGHT));
             }
 
-            document.add(new Paragraph(new String(new char[46]).replace("\0", "="))
+            document.add(new Paragraph(new String(new char[FOURTY_SIX]).replace(SLASH_ZERO, Constants.EQUALS))
                     .setFont(fontNormal)
-                    .setFontSize(8)
-                    .setMarginBottom(5));
+                    .setFontSize(EIGHT)
+                    .setMarginBottom(FIVE));
 
             // Totales
-            Table table = new Table(new float[]{3, 2});
-            table.setWidth(UnitValue.createPercentValue(100));
+            Table table = new Table(new float[]{THREE, TWO});
+            table.setWidth(UnitValue.createPercentValue(ONE_HUNDRED));
 
-            addTableRow(table, "Total Compra", "$" + totalCompra);
-            addTableRow(table, "Dinero Recibido", "$" + dineroRecibido);
-            addTableRow(table, "Dinero Devuelto", "$" + dineroDevuelto);
+            addTableRow(table, Constants.TOTAL_BILL, Constants.PESO_SIGN + totalCompra + Constants.PESOS);
+            /*addTableRow(table, "Dinero Recibido", "$" + dineroRecibido);
+            addTableRow(table, "Dinero Devuelto", "$" + dineroDevuelto);*/
 
             document.add(table);
 
-            document.add(new Paragraph(new String(new char[46]).replace("\0", "="))
+            document.add(new Paragraph(new String(new char[FOURTY_SIX]).replace(SLASH_ZERO, Constants.EQUALS))
                     .setFont(fontNormal)
-                    .setFontSize(8)
-                    .setMarginBottom(5));
+                    .setFontSize(EIGHT)
+                    .setMarginBottom(FIVE));
 
-            document.add(new Paragraph("Gracias por su compra.")
+            document.add(new Paragraph(Constants.THANKS_BILL)
                     .setFont(fontNormal)
-                    .setFontSize(8)
+                    .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
 
             document.close();
@@ -224,8 +227,6 @@ public class VentaManager {
             File pdfFile = new File(pdfFilePath);
             if (pdfFile.exists()) {
                 Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + pdfFilePath);
-            } else {
-                System.out.println("No se pudo abrir el archivo PDF: " + pdfFilePath);
             }
         } catch (IOException e) {
             e.printStackTrace();
