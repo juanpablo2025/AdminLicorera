@@ -19,8 +19,6 @@ public class Main {
     private static JDialog compraDialog;
 
 
-
-
     public static void main(String[] args) {
         JFrame frame = new JFrame("Administrador de Licorera");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -110,26 +108,28 @@ public class Main {
     }
 
     private static void showListProductsDialog() {
+        // Crear el diálogo
         JDialog listProductsDialog = UIHelpers.createDialog("Listar Productos", 400, 300, new BorderLayout());
 
+        // Crear el área de texto
         JTextArea textArea = new JTextArea();
         textArea.setEditable(false);
 
+        // Obtener la lista de productos y formatearla
         List<Producto> products = productoManager.getProducts();
-        StringBuilder productList = new StringBuilder("ID\tNombre\tCantidad\tPrecio\n");
-        for (Producto p : products) {
-            productList.append(p.getId()).append("\t")
-                    .append(p.getName()).append("\t")
-                    .append(p.getQuantity()).append("\t")
-                    .append(p.getPrice()).append("\n");
-        }
+        String formattedProductList = productoManager.formatProductList(products);
 
-        textArea.setText(productList.toString());
+        // Asignar la lista formateada al área de texto
+        textArea.setText(formattedProductList);
+
+        // Añadir el área de texto dentro de un JScrollPane
         listProductsDialog.add(new JScrollPane(textArea), BorderLayout.CENTER);
 
+        // Botón de cerrar
         JButton closeButton = UIHelpers.createButton("Cerrar", e -> listProductsDialog.dispose());
         listProductsDialog.add(closeButton, BorderLayout.SOUTH);
 
+        // Mostrar el diálogo
         listProductsDialog.setVisible(true);
     }
 

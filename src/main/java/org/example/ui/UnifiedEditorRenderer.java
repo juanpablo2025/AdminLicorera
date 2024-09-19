@@ -33,11 +33,8 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
 
     @Override
     public Object getCellEditorValue() {
-        // Retorna el valor adecuado dependiendo de la columna que se está editando
-        if (editingColumn == 4) {  // Suponiendo que la columna del botón es la 4
-            return button.getText();
-        } else if (editingColumn == 1) {  // Suponiendo que la columna del spinner es la 1
-            return spinner.getValue();
+        if (editingColumn == 1) {
+            return spinner.getValue(); // Retorna el valor actualizado del spinner
         }
         return null;
     }
@@ -60,23 +57,39 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        // Devolver el componente adecuado dependiendo de la columna
-        if (column == 4) {  // Columna del botón
-            return button;
-        } else if (column == 1) {  // Columna del spinner
-            spinner.setValue(value);  // Establece el valor actual del spinner
+        if (column == 4) {  // Botón
+            JButton renderButton = new JButton("X");
+            return renderButton;
+        } else if (column == 1) {  // Spinner
+            spinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));  // Valores enteros
             return spinner;
         }
         return null;
     }
 
+
     @Override
     public void actionPerformed(ActionEvent e) {
+        // Detener la edición de la celda actual para evitar problemas de edición
+        stopCellEditing();
+
         // Acción del botón: Eliminar el producto del carrito y la tabla
         if (editingColumn == 4) {  // Verifica si la acción corresponde a la columna del botón
-            compraManager.removeProductFromCart(editingRow);  // Eliminar el producto del carrito
-            tableModel.removeRow(editingRow);  // Eliminar la fila de la tabla
-            fireEditingStopped();  // Detener la edición
+            int selectedRow = editingRow;  // Guardar la fila actual
+
+            // Verificar si el índice de la fila es válido antes de intentar eliminar
+            if (selectedRow >= 0 && selectedRow < tableModel.getRowCount()) {
+                compraManager.removeProductFromCart(selectedRow);  // Eliminar el producto del carrito
+                tableModel.removeRow(selectedRow);  // Eliminar la fila de la tabla
+
+                // Notificar a la tabla que una fila ha sido eliminada
+                fireEditingStopped();  // Detener la edición
+            }
+
+            // Redibuja la tabla para reflejar los cambios
+            tableModel.fireTableDataChanged();
         }
     }
+
 }
+
