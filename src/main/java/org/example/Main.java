@@ -1,6 +1,6 @@
 package org.example;
 
-import org.example.manager.CompraManager;
+import org.example.manager.VentaManager;
 import org.example.manager.ExcelManager;
 import org.example.manager.ProductoManager;
 import org.example.model.Producto;
@@ -16,18 +16,18 @@ public class Main {
     private static ProductoManager productoManager = new ProductoManager();
 
 
-    private static JDialog compraDialog;
+    private static JDialog ventaDialog;
 
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Administrador de Licorera");
+        JFrame frame = new JFrame("Calculadora del Administrador");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 400);
         frame.setLayout(new GridLayout(3, 1));
 
         // Botones principales
         //JButton mesasButton = UIHelpers.createButton("Mesas", e -> showMesas());
-        JButton compraButton = UIHelpers.createButton("Compra", e -> showCompraDialog());
+        JButton ventaButton = UIHelpers.createButton("Venta", e -> showVentaDialog());
         JButton adminProductosButton = UIHelpers.createButton("Administrar Productos", e -> showAdminProductosDialog());
         JButton salirButton = UIHelpers.createButton("Salir/Facturar", e -> {
             // Mostrar un cuadro de diálogo solicitando que el usuario escriba "Facturar"
@@ -46,7 +46,7 @@ public class Main {
             }
         });
         //frame.add(mesasButton);
-        frame.add(compraButton);
+        frame.add(ventaButton);
         frame.add(adminProductosButton);
         frame.add(salirButton);
 
@@ -135,25 +135,25 @@ public class Main {
 
 
 
-    public static void showCompraDialog() {
-        compraDialog = UIHelpers.createDialog("Realizar Compra", 500, 400, new BorderLayout());
+    public static void showVentaDialog() {
+        ventaDialog = UIHelpers.createDialog("Realizar Venta", 500, 400, new BorderLayout());
 
         JPanel inputPanel = createInputPanel();
-        compraDialog.add(inputPanel, BorderLayout.NORTH);
+        ventaDialog.add(inputPanel, BorderLayout.NORTH);
 
         JTable table = createProductTable();
         JScrollPane tableScrollPane = new JScrollPane(table);
-        compraDialog.add(tableScrollPane, BorderLayout.CENTER);
+        ventaDialog.add(tableScrollPane, BorderLayout.CENTER);
 
         JPanel totalPanel = createTotalPanel();
-        compraDialog.add(totalPanel, BorderLayout.SOUTH);
+        ventaDialog.add(totalPanel, BorderLayout.SOUTH);
 
-        CompraManager compraManager = new CompraManager();
+        VentaManager ventaManager = new VentaManager();
 
-        JPanel buttonPanel = createButtonPanel(table, compraManager, compraDialog);
-        compraDialog.add(buttonPanel, BorderLayout.SOUTH);
+        JPanel buttonPanel = createButtonPanel(table, ventaManager, ventaDialog);
+        ventaDialog.add(buttonPanel, BorderLayout.SOUTH);
 
-        compraDialog.setVisible(true);
+        ventaDialog.setVisible(true);
     }
 
 /*private static void showMesas() {

@@ -9,11 +9,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExcelManager {
+import static org.example.utils.Constants.*;
 
-    private static final String FILE_NAME = "productos.xlsx";
-    private static final String PRODUCTS_SHEET_NAME = "Productos";
-    private static final String PURCHASES_SHEET_NAME = "Compras";
+
+public class ExcelManager {
 
     public ExcelManager() {
         File file = new File(FILE_NAME);
@@ -29,22 +28,21 @@ public class ExcelManager {
         // Crear hoja de productos
         Sheet productsSheet = workbook.createSheet(PRODUCTS_SHEET_NAME);
         Row header = productsSheet.createRow(0);
-        header.createCell(0).setCellValue("ID");
-        header.createCell(1).setCellValue("Nombre");
-        header.createCell(2).setCellValue("Cantidad");
-        header.createCell(3).setCellValue("Precio");
+        header.createCell(0).setCellValue(ID);
+        header.createCell(1).setCellValue(NOMBRE);
+        header.createCell(2).setCellValue(CANTIDAD);
+        header.createCell(3).setCellValue(PRECIO);
 
         // Crear hoja de compras
         Sheet purchasesSheet = workbook.createSheet(PURCHASES_SHEET_NAME);
         Row purchasesHeader = purchasesSheet.createRow(0);
-        purchasesHeader.createCell(0).setCellValue("ID Compra");
-        purchasesHeader.createCell(1).setCellValue("Lista de Productos");
-        purchasesHeader.createCell(2).setCellValue("Total");
-        purchasesHeader.createCell(3).setCellValue("Fecha y Hora");
+        purchasesHeader.createCell(0).setCellValue(ID);
+        purchasesHeader.createCell(1).setCellValue(PRODUCTOS);
+        purchasesHeader.createCell(2).setCellValue(TOTAL);
+        purchasesHeader.createCell(3).setCellValue(FECHA_HORA);
 
         try (FileOutputStream fileOut = new FileOutputStream(FILE_NAME)) {
             workbook.write(fileOut);
-            System.out.println("Archivo Excel creado: " + FILE_NAME);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -66,7 +64,6 @@ public class ExcelManager {
 
             try (FileOutputStream fileOut = new FileOutputStream(FILE_NAME)) {
                 workbook.write(fileOut);
-                System.out.println("Producto agregado al archivo Excel.");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -117,10 +114,10 @@ public class ExcelManager {
             if (sheet == null) {
                 sheet = workbook.createSheet(PURCHASES_SHEET_NAME);
                 Row header = sheet.createRow(0);
-                header.createCell(0).setCellValue("ID Compra");
-                header.createCell(1).setCellValue("Lista de Productos");
-                header.createCell(2).setCellValue("Total");
-                header.createCell(3).setCellValue("Fecha y Hora");
+                header.createCell(0).setCellValue(ID);
+                header.createCell(1).setCellValue(PRODUCTOS);
+                header.createCell(2).setCellValue(TOTAL);
+                header.createCell(3).setCellValue(FECHA_HORA);
             }
             int lastRow = sheet.getLastRowNum() + 1;
             Row row = sheet.createRow(lastRow);
@@ -132,7 +129,6 @@ public class ExcelManager {
 
             try (FileOutputStream fileOut = new FileOutputStream(FILE_NAME)) {
                 workbook.write(fileOut);
-                System.out.println("Compra guardada en el archivo Excel.");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -168,7 +164,7 @@ public class ExcelManager {
     // Método para crear una copia de la hoja "Compras" y renombrarla
     private void copiarHojaCompras(Workbook workbook, Sheet purchasesSheet, double totalCompra) {
         // Crear una nueva hoja con el nombre "Facturacion_<fecha>"
-        String nuevaHojaNombre = "Facturacion_" + LocalDateTime.now().toString().replace(":", "-");
+        String nuevaHojaNombre = FACTURACION + LocalDateTime.now().toString().replace(DOS_PUNTOS ,GUION);
         Sheet nuevaHoja = workbook.createSheet(nuevaHojaNombre);
 
         // Copiar el contenido de la hoja "Compras" a la nueva hoja
@@ -207,7 +203,7 @@ public class ExcelManager {
         int lastRow = purchasesSheet.getLastRowNum() + 1; // La siguiente fila vacía
         Row totalRow = nuevaHoja.createRow(lastRow);
         Cell totalLabelCell = totalRow.createCell(1); // Columna 1 para la etiqueta
-        totalLabelCell.setCellValue("Total:");
+        totalLabelCell.setCellValue(REALIZO);
 
         Cell totalValueCell = totalRow.createCell(2); // Columna 2 para el valor total
         totalValueCell.setCellValue(totalCompra);
@@ -236,7 +232,6 @@ public class ExcelManager {
             if (purchasesSheet != null) {
                 // Sumar los totales
                 double totalCompra = sumarTotalesCompras(purchasesSheet);
-                System.out.println("Total de la compra: $" + totalCompra);
 
                 // Copiar la hoja "Compras" y renombrarla, pasando el total de la compra
                 copiarHojaCompras(workbook, purchasesSheet, totalCompra);
@@ -247,10 +242,7 @@ public class ExcelManager {
                 // Guardar el archivo actualizado
                 try (FileOutputStream fos = new FileOutputStream(FILE_NAME)) {
                     workbook.write(fos);
-                    System.out.println("Archivo Excel actualizado y hoja 'Compras' limpiada.");
                 }
-            } else {
-                System.out.println("La hoja 'Compras' no existe.");
             }
         } catch (IOException e) {
             e.printStackTrace();

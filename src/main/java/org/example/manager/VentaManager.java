@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CompraManager {
+public class VentaManager {
     private List<Producto> cartProducts = new ArrayList<>();  // Lista para almacenar los productos en el carrito
     private List<Integer> cartQuantities = new ArrayList<>(); // Lista para almacenar las cantidades correspondientes
 
@@ -113,7 +113,7 @@ public class CompraManager {
         table.addCell(new Paragraph(value).setFontSize(8));
     }
 
-    public static void generarFactura(String compraID, List<String> productos, double totalCompra, double dineroRecibido, double dineroDevuelto, LocalDateTime fechaHora) {
+    public static void generarFactura(String ventaID, List<String> productos, double totalCompra, double dineroRecibido, double dineroDevuelto, LocalDateTime fechaHora) {
         try {
             // Dimensiones del papel térmico
             float anchoMm = 80;  // ancho en mm
@@ -123,7 +123,7 @@ public class CompraManager {
 
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
 
-            String nombreArchivo = "factura_" + compraID + ".pdf";
+            String nombreArchivo = "factura_" + ventaID + ".pdf";
             File pdfFile = new File(nombreArchivo);
             PdfWriter writer = new PdfWriter(nombreArchivo);
             PdfDocument pdfDoc = new PdfDocument(writer);
@@ -168,7 +168,7 @@ public class CompraManager {
                     .setMarginBottom(5));
 
             // Detalles de la compra
-            document.add(new Paragraph("ID de la compra: " + compraID)
+            document.add(new Paragraph("ID de la compra: " + ventaID)
                     .setFont(fontNormal)
                     .setFontSize(8));
 

@@ -1,9 +1,10 @@
 package org.example.ui;
 
-import org.example.manager.CompraManager;
+import org.example.manager.VentaManager;
 import org.example.manager.ExcelManager;
 import org.example.manager.ProductoManager;
 import org.example.model.Producto;
+import org.example.utils.Constants;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -12,12 +13,14 @@ import java.awt.event.ActionListener;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.example.utils.Constants.CANTIDAD;
+import static org.example.utils.Constants.PRODUCTO;
 
 
 public class UIHelpers {
 
     private static ProductoManager productoManager = new ProductoManager();
-    private static CompraManager compraManager = new CompraManager();
+    private static VentaManager ventaManager = new VentaManager();
 
     private static JComboBox<String> productComboBox;
     private static JSpinner cantidadSpinner;
@@ -74,10 +77,10 @@ public class UIHelpers {
     }
 
     public static JTable createProductTable() {
-        String[] columnNames = {"Producto", "Cantidad", "Precio Unitario", "Total", ""}; // Sin título en la columna de eliminar
+        String[] columnNames = {PRODUCTO, CANTIDAD, "Precio Unitario", "Total", ""}; // Sin título en la columna de eliminar
         tableModel = new DefaultTableModel(columnNames, 0);
         JTable table = new JTable(tableModel);
-        UnifiedEditorRenderer editorRenderer = new UnifiedEditorRenderer(tableModel, compraManager);
+        UnifiedEditorRenderer editorRenderer = new UnifiedEditorRenderer(tableModel, ventaManager);
 
         table.getColumnModel().getColumn(1); // Spinner en la columna de cantidad
 
@@ -99,12 +102,12 @@ public class UIHelpers {
         return totalPanel;
     }
 
-    public static JPanel createButtonPanel(JTable table, CompraManager compraManager, JDialog compraDialog) {
+    public static JPanel createButtonPanel(JTable table, VentaManager ventaManager, JDialog compraDialog) {
         JPanel buttonPanel = new JPanel(new GridLayout(1, 3));
 
-        JButton agregarProductoButton = createAddProductButton(table, compraManager);
-        JButton calcularDevueltoButton = createCalculateDevueltoButton(compraManager, compraDialog);
-        JButton confirmarCompraButton = createConfirmPurchaseButton(compraManager, compraDialog);
+        JButton agregarProductoButton = createAddProductButton(table, ventaManager);
+        JButton calcularDevueltoButton = createCalculateDevueltoButton(ventaManager, compraDialog);
+        JButton confirmarCompraButton = createConfirmPurchaseButton(ventaManager, compraDialog);
 
         buttonPanel.add(agregarProductoButton);
         buttonPanel.add(calcularDevueltoButton);
@@ -113,7 +116,7 @@ public class UIHelpers {
         return buttonPanel;
     }
 
-    private static JButton createAddProductButton(JTable table, CompraManager compraManager) {
+    private static JButton createAddProductButton(JTable table, VentaManager ventaManager) {
         JButton agregarProductoButton = new JButton("Agregar Producto");
         agregarProductoButton.addActionListener(e -> {
             try {
@@ -136,7 +139,7 @@ public class UIHelpers {
 
                 totalCompraLabel.setText("Total Compra: $" + total);
 
-                compraManager.addProductToCart(producto, cantidad);
+                ventaManager.addProductToCart(producto, cantidad);
                 dineroTotalField.setText(String.valueOf(total));
 
             } catch (NumberFormatException ex) {
@@ -147,17 +150,17 @@ public class UIHelpers {
         return agregarProductoButton;
     }
 
-    private static JButton createCalculateDevueltoButton(CompraManager compraManager, JDialog compraDialog) {
+    private static JButton createCalculateDevueltoButton(VentaManager ventaManager, JDialog compraDialog) {
         JButton calcularDevueltoButton = new JButton("Calcular Devuelto");
-        calcularDevueltoButton.addActionListener(e -> compraManager.calcularDineroDevuelto(dineroRecibidoField, devueltoLabel, tableModel, compraDialog));
+        calcularDevueltoButton.addActionListener(e -> ventaManager.calcularDineroDevuelto(dineroRecibidoField, devueltoLabel, tableModel, compraDialog));
         return calcularDevueltoButton;
     }
 
-    private static JButton createConfirmPurchaseButton(CompraManager compraManager, JDialog compraDialog) {
+    private static JButton createConfirmPurchaseButton(VentaManager ventaManager, JDialog ventaDialog) {
         JButton confirmarCompraButton = new JButton("Confirmar Compra");
         confirmarCompraButton.addActionListener(e -> {
             try {
-                double total = compraManager.getTotalCartAmount();
+                double total = ventaManager.getTotalCartAmount();
                 double dineroRecibido = 0;
                 double devuelto = 0;
 
@@ -169,21 +172,23 @@ public class UIHelpers {
                     devueltoLabel.setText("Devuelto: -");
                 }
 
-                String compraID = "Compra" + System.currentTimeMillis();
+                String ventaID = "Venta" + System.currentTimeMillis();
                 LocalDateTime dateTime = LocalDateTime.now();
 
-                List<String> listaDeProductos = compraManager.getProductListForExcel();
+                List<String> listaDeProductos = ventaManager.getProductListForExcel();
                 String listaProductosEnLinea = String.join("\n", listaDeProductos);
 
                 ExcelManager excelManager = new ExcelManager();
-                excelManager.savePurchase(compraID, listaProductosEnLinea, compraManager.getTotalCartAmount(), dateTime);
+                excelManager.savePurchase(ventaID, listaProductosEnLinea, ventaManager.getTotalCartAmount(), dateTime);
 
-                compraManager.generarFactura(compraID, listaDeProductos, compraManager.getTotalCartAmount(), dineroRecibido, devuelto, dateTime);
-
-                JOptionPane.showMessageDialog(compraDialog, "Compra realizada con éxito. Total: $" + compraManager.getTotalCartAmount());
-                compraDialog.dispose();
+                ventaManager.generarFactura(ventaID, listaDeProductos, ventaManager.getTotalCartAmount(), dineroRecibido, devuelto, dateTime);
+                if (devuelto > 0) {
+                    JOptionPane.showMessageDialog(ventaDialog, "devuelto $" + devuelto);
+                }
+                JOptionPane.showMessageDialog(ventaDialog, "Venta realizada con éxito. Total: $" + ventaManager.getTotalCartAmount());
+                ventaDialog.dispose();
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(compraDialog, "Dinero recibido debe ser un número válido.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(ventaDialog, "Dinero recibido debe ser un número válido.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
         return confirmarCompraButton;
