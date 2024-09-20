@@ -17,6 +17,7 @@ import java.io.*;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -332,8 +333,9 @@ public class ExcelManager {
                 return; // Salir del método si no se puede crear la carpeta
             }
         }
-
-        String nombreArchivo = carpetaPath + "\\REALIZO_" + fechaActual.format(formatter) + ".pdf";
+        LocalTime horaActual = LocalTime.now();
+        DateTimeFormatter horaFormatter = DateTimeFormatter.ofPattern("HH-mm-ss");
+        String nombreArchivo = carpetaPath + "\\REALIZO_" + fechaActual.format(formatter) +EMPTY+ horaActual.format(horaFormatter)+".pdf";
 
         try {
             // Dimensiones del papel
@@ -415,7 +417,7 @@ public class ExcelManager {
                     .setTextAlignment(TextAlignment.CENTER));
 
             document.close();
-            abrirPDF(nombreArchivo);
+            //abrirPDF(nombreArchivo);
             imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
         } catch (IOException e) {
             e.printStackTrace();

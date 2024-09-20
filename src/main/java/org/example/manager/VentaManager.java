@@ -193,9 +193,9 @@ public class VentaManager {
                     .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(BILL_FECHA_HORA + fechaFormateada)
+            document.add(new Paragraph(fechaFormateada)
                     .setFont(fontNormal)
-                    .setFontSize(EIGHT)
+                    .setFontSize(SIX)
                     .setMarginBottom(FIVE)
                     .setTextAlignment(TextAlignment.CENTER));
 
@@ -244,7 +244,7 @@ public class VentaManager {
             document.close();
 
             // Método para abrir el PDF después de generarlo
-            abrirPDF(nombreArchivo);
+           // abrirPDF(nombreArchivo);
             imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
         } catch (IOException e) {
             e.printStackTrace();
