@@ -29,19 +29,19 @@ public class ExcelManager {
 
         // Crear hoja de productos
         Sheet productsSheet = workbook.createSheet(PRODUCTS_SHEET_NAME);
-        Row header = productsSheet.createRow(0);
-        header.createCell(0).setCellValue(ID);
-        header.createCell(1).setCellValue(NOMBRE);
-        header.createCell(2).setCellValue(CANTIDAD);
-        header.createCell(3).setCellValue(PRECIO);
+        Row header = productsSheet.createRow(ZERO);
+        header.createCell(ZERO).setCellValue(ID);
+        header.createCell(ONE).setCellValue(NOMBRE);
+        header.createCell(TWO).setCellValue(CANTIDAD);
+        header.createCell(THREE).setCellValue(PRECIO);
 
         // Crear hoja de compras
         Sheet purchasesSheet = workbook.createSheet(PURCHASES_SHEET_NAME);
-        Row purchasesHeader = purchasesSheet.createRow(0);
-        purchasesHeader.createCell(0).setCellValue(ID);
-        purchasesHeader.createCell(1).setCellValue(PRODUCTOS);
-        purchasesHeader.createCell(2).setCellValue(TOTAL);
-        purchasesHeader.createCell(3).setCellValue(FECHA_HORA);
+        Row purchasesHeader = purchasesSheet.createRow(ZERO);
+        purchasesHeader.createCell(ZERO).setCellValue(ID);
+        purchasesHeader.createCell(ONE).setCellValue(PRODUCTOS);
+        purchasesHeader.createCell(TWO).setCellValue(TOTAL);
+        purchasesHeader.createCell(THREE).setCellValue(FECHA_HORA);
 
         try (FileOutputStream fileOut = new FileOutputStream(FILE_NAME)) {
             workbook.write(fileOut);
@@ -56,13 +56,13 @@ public class ExcelManager {
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
-            int lastRow = sheet.getLastRowNum() + 1;
+            int lastRow = sheet.getLastRowNum() + ONE;
 
             Row row = sheet.createRow(lastRow);
-            row.createCell(0).setCellValue(product.getId());
-            row.createCell(1).setCellValue(product.getName());
-            row.createCell(2).setCellValue(product.getQuantity());
-            row.createCell(3).setCellValue(product.getPrice());
+            row.createCell(ZERO).setCellValue(product.getId());
+            row.createCell(ONE).setCellValue(product.getName());
+            row.createCell(TWO).setCellValue(product.getQuantity());
+            row.createCell(THREE).setCellValue(product.getPrice());
 
             try (FileOutputStream fileOut = new FileOutputStream(FILE_NAME)) {
                 workbook.write(fileOut);
@@ -79,13 +79,13 @@ public class ExcelManager {
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            for (int i = ONE; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row != null) {
-                    int id = (int) row.getCell(0).getNumericCellValue();
-                    String name = row.getCell(1).getStringCellValue();
-                    int quantity = (int) row.getCell(2).getNumericCellValue();
-                    double price = row.getCell(3).getNumericCellValue();
+                    int id = (int) row.getCell(ZERO).getNumericCellValue();
+                    String name = row.getCell(ONE).getStringCellValue();
+                    int quantity = (int) row.getCell(TWO).getNumericCellValue();
+                    double price = row.getCell(THREE).getNumericCellValue();
 
                     products.add(new Producto(id, name, quantity, price));
                 }
@@ -109,25 +109,27 @@ public class ExcelManager {
 
     // Método para guardar una compra en el archivo Excel
     public void savePurchase(String compraID, String productos, double total, LocalDateTime now) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        String fechaFormateada = now.format(formatter);
         try (FileInputStream fis = new FileInputStream(FILE_NAME);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet sheet = workbook.getSheet(PURCHASES_SHEET_NAME);
             if (sheet == null) {
                 sheet = workbook.createSheet(PURCHASES_SHEET_NAME);
-                Row header = sheet.createRow(0);
-                header.createCell(0).setCellValue(ID);
-                header.createCell(1).setCellValue(PRODUCTOS);
-                header.createCell(2).setCellValue(TOTAL);
-                header.createCell(3).setCellValue(FECHA_HORA);
+                Row header = sheet.createRow(ZERO);
+                header.createCell(ZERO).setCellValue(ID);
+                header.createCell(ONE).setCellValue(PRODUCTOS);
+                header.createCell(TWO).setCellValue(TOTAL);
+                header.createCell(THREE).setCellValue(FECHA_HORA);
             }
-            int lastRow = sheet.getLastRowNum() + 1;
+            int lastRow = sheet.getLastRowNum() + ONE;
             Row row = sheet.createRow(lastRow);
 
-            row.createCell(0).setCellValue(compraID);
-            row.createCell(1).setCellValue(productos);  // Los productos se listan en líneas nuevas dentro de la misma celda
-            row.createCell(2).setCellValue(total);
-            row.createCell(3).setCellValue(now.toString());
+            row.createCell(ZERO).setCellValue(compraID);
+            row.createCell(ONE).setCellValue(productos);  // Los productos se listan en líneas nuevas dentro de la misma celda
+            row.createCell(TWO).setCellValue(total);
+            row.createCell(THREE).setCellValue(fechaFormateada);
 
             try (FileOutputStream fileOut = new FileOutputStream(FILE_NAME)) {
                 workbook.write(fileOut);
@@ -149,15 +151,15 @@ public class ExcelManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return 0;
+        return ZERO;
     }
     // Método para sumar los totales de la hoja "Compras"
     private double sumarTotalesCompras(Sheet purchasesSheet) {
-        double totalSum = 0.0;
-        for (int i = 1; i <= purchasesSheet.getLastRowNum(); i++) {
+        double totalSum = ZERO_DOUBLE;
+        for (int i = ONE; i <= purchasesSheet.getLastRowNum(); i++) {
             Row row = purchasesSheet.getRow(i);
-            if (row != null && row.getCell(2) != null) {
-                totalSum += row.getCell(2).getNumericCellValue();
+            if (row != null && row.getCell(TWO) != null) {
+                totalSum += row.getCell(TWO).getNumericCellValue();
             }
         }
         return totalSum;
@@ -170,11 +172,11 @@ public class ExcelManager {
         Sheet nuevaHoja = workbook.createSheet(nuevaHojaNombre);
 
         // Copiar el contenido de la hoja "Compras" a la nueva hoja
-        for (int i = 0; i <= purchasesSheet.getLastRowNum(); i++) {
+        for (int i = ZERO; i <= purchasesSheet.getLastRowNum(); i++) {
             Row oldRow = purchasesSheet.getRow(i);
             Row newRow = nuevaHoja.createRow(i);
             if (oldRow != null) {
-                for (int j = 0; j < oldRow.getLastCellNum(); j++) {
+                for (int j = ZERO; j < oldRow.getLastCellNum(); j++) {
                     Cell oldCell = oldRow.getCell(j);
                     Cell newCell = newRow.createCell(j);
 
@@ -202,12 +204,12 @@ public class ExcelManager {
         redStyle.setFont(font);
 
         // Agregar una fila extra con el total al final de la nueva hoja
-        int lastRow = purchasesSheet.getLastRowNum() + 1; // La siguiente fila vacía
+        int lastRow = purchasesSheet.getLastRowNum() + ONE; // La siguiente fila vacía
         Row totalRow = nuevaHoja.createRow(lastRow);
-        Cell totalLabelCell = totalRow.createCell(1); // Columna 1 para la etiqueta
+        Cell totalLabelCell = totalRow.createCell(ONE); // Columna 1 para la etiqueta
         totalLabelCell.setCellValue(REALIZO);
 
-        Cell totalValueCell = totalRow.createCell(2); // Columna 2 para el valor total
+        Cell totalValueCell = totalRow.createCell(TWO); // Columna 2 para el valor total
         totalValueCell.setCellValue(totalCompra);
 
         // Aplicar el estilo de color rojo a la celda del total
@@ -216,7 +218,7 @@ public class ExcelManager {
 
     // Método para limpiar la hoja "Compras"
     private void limpiarHojaCompras(Sheet purchasesSheet) {
-        for (int i = purchasesSheet.getLastRowNum(); i >= 1; i--) {
+        for (int i = purchasesSheet.getLastRowNum(); i >= ONE; i--) {
             Row row = purchasesSheet.getRow(i);
             if (row != null) {
                 purchasesSheet.removeRow(row);
@@ -251,6 +253,9 @@ public class ExcelManager {
             e.printStackTrace();
         }
     }
+
+
+    //CAMBIAR a PDF
     public void guardarTotalFacturadoEnArchivo(double totalFacturado) {
         LocalDate fechaActual = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");

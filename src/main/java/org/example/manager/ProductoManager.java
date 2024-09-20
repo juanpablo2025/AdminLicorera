@@ -7,6 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
+import static org.example.utils.Constants.*;
+
 public class ProductoManager {
     private ExcelManager excelManager = new ExcelManager();
 
@@ -49,10 +51,10 @@ public class ProductoManager {
             // Añadir el producto a la lista/gestión de productos
             addProduct(product);
 
-            JOptionPane.showMessageDialog(dialog, "Producto agregado con éxito.");
+            JOptionPane.showMessageDialog(dialog, PRODUCT_ADDED);
             dialog.dispose();
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(dialog, "Por favor, ingresa valores válidos.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(dialog, INVALID_DATA, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -61,18 +63,18 @@ public class ProductoManager {
 
     // Nuevo método: Formatea la lista de productos para mostrarla
     public String formatProductList(List<Producto> products) {
-        StringBuilder productList = new StringBuilder("ID\tNombre\tCantidad\tPrecio\n");
+        StringBuilder productList = new StringBuilder(STRINGBUILDER);
         for (Producto p : products) {
-            productList.append(p.getId()).append("\t")
-                    .append(p.getName()).append("\t")
-                    .append(p.getQuantity()).append("\t")
-                    .append(p.getPrice()).append("\n");
+            productList.append(p.getId()).append(T)
+                    .append(p.getName()).append(T)
+                    .append(p.getQuantity()).append(T)
+                    .append(p.getPrice()).append(N);
         }
         return productList.toString();
     }
     private static void showListProductsDialog(ProductoManager productoManager) {
         // Crear el diálogo
-        JDialog listProductsDialog = UIHelpers.createDialog("Listar Productos", 400, 300, new BorderLayout());
+        JDialog listProductsDialog = UIHelpers.createDialog(LISTAR_PRODUCTO, FOUR_HUNDRED, THREE_HUNDRED, new BorderLayout());
 
         // Crear el área de texto
         JTextArea textArea = new JTextArea();
@@ -89,7 +91,7 @@ public class ProductoManager {
         listProductsDialog.add(new JScrollPane(textArea), BorderLayout.CENTER);
 
         // Botón de cerrar
-        JButton closeButton = UIHelpers.createButton("Cerrar", e -> listProductsDialog.dispose());
+        JButton closeButton = UIHelpers.createButton(CLOSE_BUTTON, e -> listProductsDialog.dispose());
         listProductsDialog.add(closeButton, BorderLayout.SOUTH);
 
         // Mostrar el diálogo

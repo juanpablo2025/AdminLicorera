@@ -1,9 +1,8 @@
 package org.example.manager;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+
+
+import static org.example.utils.Constants.*;
 
 public class FacturacionManager {
 
@@ -29,7 +28,7 @@ public class FacturacionManager {
      */
     public void facturarYSalir() {
         excelManager.facturarYLimpiar();
-        System.exit(0);
+        System.exit(ZERO);
         // Salir del programa después de la facturación
     }
 
@@ -37,22 +36,9 @@ public class FacturacionManager {
      * Muestra un mensaje de error si la palabra ingresada es incorrecta.
      */
     public void mostrarErrorFacturacion() {
-        javax.swing.JOptionPane.showMessageDialog(null, "Palabra incorrecta. Regresando al menú principal.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+        javax.swing.JOptionPane.showMessageDialog(null, ERROR_MENU, ERROR_TITLE, javax.swing.JOptionPane.ERROR_MESSAGE);
     }
 
 
-     //cambiar a pdf
 
-    public void guardarTotalFacturadoEnArchivo(double totalFacturado) {
-        LocalDate fechaActual = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        String nombreArchivo = "Total_Facturado_" + fechaActual.format(formatter) + ".txt";
-
-        try (FileWriter writer = new FileWriter(nombreArchivo)) {
-            writer.write("Total facturado en el día: " + totalFacturado);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }

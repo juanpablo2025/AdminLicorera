@@ -23,7 +23,7 @@ public class Main {
     public static void main(String[] args) {
         JFrame frame = new JFrame(CALCULADORA_ADMINISTRADOR);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 400);
+        frame.setSize(FOUR_HUNDRED, FOUR_HUNDRED);
         frame.setLayout(new GridLayout(THREE, ONE));
 
         FacturacionManager facturacionManager = new FacturacionManager(); // Instancia de FacturacionManager
@@ -59,7 +59,7 @@ public class Main {
 
     private static void showListProductsDialog() {
         // Crear el diálogo
-        JDialog listProductsDialog = UIHelpers.createDialog(LISTAR_PRODUCTO, 400, 300, new BorderLayout());
+        JDialog listProductsDialog = UIHelpers.createDialog(LISTAR_PRODUCTO, FOUR_HUNDRED, THREE_HUNDRED, new BorderLayout());
 
         // Crear el área de texto
         JTextArea textArea = new JTextArea();
@@ -76,7 +76,7 @@ public class Main {
         listProductsDialog.add(new JScrollPane(textArea), BorderLayout.CENTER);
 
         // Botón de cerrar
-        JButton closeButton = UIHelpers.createButton(CERRAR_BUTTON, e -> listProductsDialog.dispose());
+        JButton closeButton = UIHelpers.createButton(CLOSE_BUTTON, e -> listProductsDialog.dispose());
         listProductsDialog.add(closeButton, BorderLayout.SOUTH);
 
         // Mostrar el diálogo
@@ -86,7 +86,7 @@ public class Main {
     }
 
     private static void showAdminProductosDialog() {
-        JDialog adminDialog = UIHelpers.createDialog( ADMINISTRAR_PRODUCTOS , 300, 200, new GridLayout(2, 1));
+        JDialog adminDialog = UIHelpers.createDialog( ADMINISTRAR_PRODUCTOS , THREE_HUNDRED, TWO_HUNDRED, new GridLayout(2, 1));
 
         // Botones
         JButton addButton = UIHelpers.createButton(AGREGAR_PRODUCTO, e -> showAddProductDialog());
@@ -101,7 +101,7 @@ public class Main {
 
     private static void showAddProductDialog() {
         ProductoManager productoManager = new ProductoManager();
-        JDialog addProductDialog = UIHelpers.createDialog(AGREGAR_PRODUCTO, 300, 200, new GridLayout(5, 2));
+        JDialog addProductDialog = UIHelpers.createDialog(AGREGAR_PRODUCTO, THREE_HUNDRED, TWO_HUNDRED, new GridLayout(5, 2));
 
         // Crear los campos de entrada
         JTextField idField = productoManager.createField(addProductDialog, PRODUCTO_FIELD_ID);
@@ -121,7 +121,7 @@ public class Main {
 
 
     public static void showVentaDialog() {
-        ventaDialog = UIHelpers.createDialog(REALIZAR_VENTA, 500, 400, new BorderLayout());
+        ventaDialog = UIHelpers.createDialog(REALIZAR_VENTA, FIVE_HUNDRED, FOUR_HUNDRED, new BorderLayout());
 
         JPanel inputPanel = createInputPanel();
         ventaDialog.add(inputPanel, BorderLayout.NORTH);

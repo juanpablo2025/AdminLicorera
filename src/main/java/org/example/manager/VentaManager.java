@@ -19,6 +19,7 @@ import javax.swing.table.DefaultTableModel;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,6 +119,8 @@ public class VentaManager {
 
     public static void generarFactura(String ventaID, List<String> productos, double totalCompra, double dineroRecibido, double dineroDevuelto, LocalDateTime fechaHora) {
         try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+            String fechaFormateada = fechaHora.format(formatter);
             // Dimensiones del papel térmico
             float anchoMm = EIGHTY_F;  // ancho en mm
             float altoMm = ONE_HUNDRED_FIFTY_F;  // alto en mm (ajustable)
@@ -175,7 +178,7 @@ public class VentaManager {
                     .setFont(fontNormal)
                     .setFontSize(EIGHT));
 
-            document.add(new Paragraph(BILL_FECHA_HORA + fechaHora)
+            document.add(new Paragraph(BILL_FECHA_HORA + fechaFormateada)
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
