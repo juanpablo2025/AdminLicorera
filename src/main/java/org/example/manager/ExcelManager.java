@@ -1,5 +1,14 @@
 package org.example.manager;
 
+import com.itextpdf.io.font.constants.StandardFonts;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.properties.TextAlignment;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.model.Producto;
@@ -11,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.example.manager.VentaManager.abrirPDF;
 import static org.example.utils.Constants.*;
 
 
@@ -259,10 +269,87 @@ public class ExcelManager {
     public void guardarTotalFacturadoEnArchivo(double totalFacturado) {
         LocalDate fechaActual = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        String nombreArchivo = "Total_Facturado_" + fechaActual.format(formatter) + ".txt";
+        String nombreArchivo = "Total_Facturado_" + fechaActual.format(formatter) + ".pdf";
 
-        try (FileWriter writer = new FileWriter(nombreArchivo)) {
-            writer.write("Total facturado en el día: " + totalFacturado);
+        try {
+            // Dimensiones del papel (ajústalo si es necesario)
+            float anchoMm = 80;  // ancho en mm
+            float altoMm = 150;  // alto en mm
+            float anchoPuntos = anchoMm * 2.83465f;  // conversión de mm a puntos
+            float altoPuntos = altoMm * 2.83465f;
+
+            PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
+            PdfWriter writer = new PdfWriter(nombreArchivo);
+            PdfDocument pdfDoc = new PdfDocument(writer);
+            Document document = new Document(pdfDoc, pageSize);
+
+            PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+            PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+
+            // Márgenes ajustados
+            document.setMargins(5, 5, 5, 5);
+
+            // Encabezado del PDF
+            document.add(new Paragraph("Total Generado Durante el Día")
+                    .setFont(fontBold)
+                    .setFontSize(12)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(10));
+
+            document.add(new Paragraph("Fecha: " + fechaActual.format(formatter))
+                    .setFont(fontNormal)
+                    .setFontSize(10)
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            document.add(new Paragraph(new String(new char[45]).replace(SLASH_ZERO, "="))
+                    .setFont(fontNormal)
+                    .setFontSize(8)
+                    .setMarginBottom(10));
+
+            // Detalles del total facturado
+            document.add(new Paragraph("Realizo Sistema: $" + totalFacturado+ PESOS)
+                    .setFont(fontBold)
+                    .setFontSize(12)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setMarginBottom(10));
+
+            document.add(new Paragraph(new String(new char[45]).replace(SLASH_ZERO, "="))
+                    .setFont(fontNormal)
+                    .setFontSize(8)
+                    .setMarginBottom(10));
+
+            // Sección para el cierre de caja
+            document.add(new Paragraph("Cierre de Caja")
+                    .setFont(fontBold)
+                    .setFontSize(10)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setMarginBottom(5));
+
+            document.add(new Paragraph("Realiza el cierre de caja en el siguiente espacio:")
+                    .setFont(fontNormal)
+                    .setFontSize(10)
+                    .setMarginBottom(5));
+            // Espacio en blanco para ingresar el cierre de caja manualmente (simulación)
+            document.add(new Paragraph("=====================================")
+                    .setFont(fontNormal)
+                    .setFontSize(10)
+                    .setMarginBottom(5));
+
+            // Espacio en blanco para ingresar el cierre de caja manualmente (simulación)
+            document.add(new Paragraph("=====================================")
+                    .setFont(fontNormal)
+                    .setFontSize(10)
+                    .setMarginTop(160)
+                    .setMarginBottom(5));
+
+            // Agradecimiento o información adicional
+            document.add(new Paragraph("Sistemas Licorera CR La 70")
+                    .setFont(fontNormal)
+                    .setFontSize(10)
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            document.close();
+            abrirPDF(nombreArchivo); // Método para abrir el PDF después de generarlo
         } catch (IOException e) {
             e.printStackTrace();
         }

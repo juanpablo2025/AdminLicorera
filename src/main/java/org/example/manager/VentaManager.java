@@ -225,7 +225,7 @@ public class VentaManager {
             e.printStackTrace();
         }
     }
-    private static void abrirPDF(String pdfFilePath) {
+    static void abrirPDF(String pdfFilePath) {
         try {
             File pdfFile = new File(pdfFilePath);
             if (pdfFile.exists()) {

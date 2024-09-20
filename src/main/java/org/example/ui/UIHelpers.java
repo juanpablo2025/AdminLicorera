@@ -179,12 +179,14 @@ public class UIHelpers {
                 ExcelManager excelManager = new ExcelManager();
                 excelManager.savePurchase(ventaID, listaProductosEnLinea, ventaManager.getTotalCartAmount(), dateTime);
 
+                int respuesta = JOptionPane.showConfirmDialog(null, PRINT_BILL, COMFIRM_TITLE, JOptionPane.YES_NO_OPTION);
 
+                if (respuesta == JOptionPane.YES_OPTION) {
+                    // Si el usuario selecciona 'Sí', generar e imprimir la factura
+                    ventaManager.generarFactura(ventaID, listaDeProductos, ventaManager.getTotalCartAmount(), dineroRecibido, devuelto, dateTime);
+                    // Código para imprimir el recibo o mostrar un mensaje indicando que el recibo ha sido generado.
 
-                //preguntar antes generar factura
-                ventaManager.generarFactura(ventaID, listaDeProductos, ventaManager.getTotalCartAmount(), dineroRecibido, devuelto, dateTime);
-
-
+                }
 
 
                 if (devuelto > ZERO) {

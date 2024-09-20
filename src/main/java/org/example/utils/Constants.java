@@ -99,6 +99,9 @@ public class Constants {
     public static final CharSequence EQUALS =  "=";
     public static final String SLASH_ZERO = "\0";
     public static final String PRODUCT_NETO = " | Neto Producto: $ ";
+    public static final String COMFIRM_TITLE = "Confirmar Compra";
+    public static final String PRINT_BILL = "¿Desea imprimir el recibo?";
+
 
     //CALCULAR DEVUELTO
     public static final String ENTER_MONEY_RECEIVED = "Por favor, ingresa el dinero recibido.";
