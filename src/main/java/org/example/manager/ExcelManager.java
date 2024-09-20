@@ -23,12 +23,13 @@ import java.util.List;
 import java.util.Locale;
 
 import static org.example.manager.VentaManager.abrirPDF;
+import static org.example.manager.VentaManager.imprimirPDF;
 import static org.example.utils.Constants.*;
 
 
 public class ExcelManager {
     public static final String FILE_NAME = "productos.xlsx";
-    public static final String DIRECTORY_PATH = "C:\\Users\\DesktopPC\\Documentos\\Calculadora del Administrador";
+    public static final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
     public static final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
 
     public ExcelManager() {
@@ -289,7 +290,7 @@ public class ExcelManager {
 
     // Método para limpiar la carpeta de facturas
     public void limpiarFacturas() {
-        String rutaFacturas = "C:\\Users\\DesktopPC\\documentos\\Calculadora del Administrador\\Facturas";
+        String rutaFacturas = System.getProperty("user.home") +"\\Documents\\Calculadora del Administrador\\Facturas";
         borrarContenidoCarpeta(rutaFacturas);
     }
 
@@ -320,7 +321,7 @@ public class ExcelManager {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         // Ruta del archivo
-        String carpetaPath = "C:\\Users\\DesktopPC\\documentos\\Calculadora del Administrador\\Realizo";
+        String carpetaPath = System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador\\Realizo";
         File carpeta = new File(carpetaPath);
 
         // Crear la carpeta si no existe
@@ -414,7 +415,8 @@ public class ExcelManager {
                     .setTextAlignment(TextAlignment.CENTER));
 
             document.close();
-            abrirPDF(nombreArchivo); // Método para abrir el PDF después de generarlo
+            abrirPDF(nombreArchivo);
+            imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
         } catch (IOException e) {
             e.printStackTrace();
         }

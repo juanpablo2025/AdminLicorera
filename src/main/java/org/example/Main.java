@@ -8,6 +8,7 @@ import org.example.ui.UIHelpers;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.List;
 
 import static org.example.ui.UIHelpers.*;
@@ -21,6 +22,7 @@ public class Main {
 // eliminar botones
 
     public static void main(String[] args) {
+        crearDirectorios();
         JFrame frame = new JFrame(CALCULADORA_ADMINISTRADOR);
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // Cambiar a DO_NOTHING_ON_CLOSE
         frame.setUndecorated(true); // Quitar los decorados de la ventana
@@ -142,7 +144,28 @@ public class Main {
         ventaDialog.setLocationRelativeTo(null);
 
     }
+    public static void crearDirectorios() {
+        String documentosPath = System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
 
+        String facturasPath = documentosPath + "\\Facturas";
+        String realizadoPath = documentosPath + "\\Realizo";
+
+        crearDirectorioSiNoExiste(facturasPath);
+        crearDirectorioSiNoExiste(realizadoPath);
+    }
+
+    private static void crearDirectorioSiNoExiste(String path) {
+        File directorio = new File(path);
+        if (!directorio.exists()) {
+            if (directorio.mkdirs()) {
+                System.out.println("Directorio creado: " + path);
+            } else {
+                System.out.println("No se pudo crear el directorio: " + path);
+            }
+        } else {
+            System.out.println("El directorio ya existe: " + path);
+        }
+    }
 /*private static void showMesas() {
         // Lógica para el manejo de mesas
     }*/
