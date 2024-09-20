@@ -14,11 +14,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.model.Producto;
 
 import java.io.*;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static org.example.manager.VentaManager.abrirPDF;
 import static org.example.utils.Constants.*;
@@ -97,7 +99,7 @@ public class ExcelManager {
                     int quantity = (int) row.getCell(TWO).getNumericCellValue();
                     double price = row.getCell(THREE).getNumericCellValue();
 
-                    products.add(new Producto(id, name, quantity, price));
+                    products.add(new Producto(name,/* quantity,*/ price));
                 }
             }
         } catch (IOException e) {
@@ -307,7 +309,9 @@ public class ExcelManager {
                     .setMarginBottom(10));
 
             // Detalles del total facturado
-            document.add(new Paragraph("Realizo Sistema: $" + totalFacturado+ PESOS)
+            NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
+            String formattedPrice = formatCOP.format(totalFacturado);
+            document.add(new Paragraph("Realizo Sistema: $" + formattedPrice+ PESOS)
                     .setFont(fontBold)
                     .setFontSize(12)
                     .setTextAlignment(TextAlignment.LEFT)

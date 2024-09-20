@@ -183,7 +183,7 @@ public class UIHelpers {
 
                 if (respuesta == JOptionPane.YES_OPTION) {
                     // Si el usuario selecciona 'Sí', generar e imprimir la factura
-                    ventaManager.generarFactura(ventaID, listaDeProductos, ventaManager.getTotalCartAmount(), dineroRecibido, devuelto, dateTime);
+                    ventaManager.generarFactura(ventaID, listaDeProductos, ventaManager.getTotalCartAmount(), dateTime);
                     // Código para imprimir el recibo o mostrar un mensaje indicando que el recibo ha sido generado.
 
                 }

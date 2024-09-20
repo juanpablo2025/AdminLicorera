@@ -1,15 +1,18 @@
 package org.example.model;
 
 public class Producto {
+    private static int nextId = 1; // Contador estático para el ID auto-incremental
+
     private int id;
     private String name;
-    private int quantity;
+    private int quantity = 0;
     private double price;
 
-    public Producto(int id, String name, int quantity, double price) {
-        this.id = id;
+    public Producto(String name/*, int quantity*/, double price) {
+
+        this.id = nextId++; // Asigna el ID actual y lo incrementa
         this.name = name;
-        this.quantity = quantity;
+        /*this.quantity = quantity;*/
         this.price = price;
     }
 

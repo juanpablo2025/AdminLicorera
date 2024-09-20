@@ -18,10 +18,12 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.io.File;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static org.example.utils.Constants.*;
 
@@ -53,7 +55,9 @@ public class VentaManager {
             Producto producto = cartProducts.get(i);
             int cantidad = cartQuantities.get(i);
             double totalProducto = producto.getPrice() * cantidad;
-            productList.add( cantidad + producto.getName() + PRODUCT_NETO + totalProducto + PESOS);
+            NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
+            String formattedPrice = formatCOP.format(totalProducto);
+            productList.add( cantidad+EMPTY + producto.getName() + PRODUCT_NETO + formattedPrice + PESOS);
         }
         return productList;
     }
@@ -66,6 +70,7 @@ public class VentaManager {
             int cantidad = cartQuantities.get(i);
             total += producto.getPrice() * cantidad;
         }
+
         return total;
     }
 
@@ -117,16 +122,22 @@ public class VentaManager {
         table.addCell(new Paragraph(value).setFontSize(EIGHT));
     }
 
-    public static void generarFactura(String ventaID, List<String> productos, double totalCompra, double dineroRecibido, double dineroDevuelto, LocalDateTime fechaHora) {
+    public static void generarFactura(String ventaID, List<String> productos, double totalCompra, LocalDateTime fechaHora) {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String fechaFormateada = fechaHora.format(formatter);
-            // Dimensiones del papel térmico
-            float anchoMm = EIGHTY_F;  // ancho en mm
-            float altoMm = ONE_HUNDRED_FIFTY_F;  // alto en mm (ajustable)
-            float anchoPuntos = anchoMm * WIDE_DOTS;
-            float altoPuntos = altoMm * HEIGHT_DOTS;
 
+            // Ancho del papel térmico
+            float anchoMm = EIGHTY_F;  // Ancho en mm
+            float anchoPuntos = anchoMm * WIDE_DOTS;  // Conversión de mm a puntos
+
+            // Calcular el alto dinámico según el número de productos
+            float altoBaseMm = ONE_HUNDRED_FIFTY_F;  // Altura base en mm (puedes ajustarlo)
+            float altoPorProductoMm = 10;  // Espacio adicional por cada producto en mm (ajustable)
+            float altoTotalMm = altoBaseMm + (productos.size() * altoPorProductoMm);
+            float altoPuntos = altoTotalMm * HEIGHT_DOTS;  // Conversión de mm a puntos
+
+            // Definir el tamaño de la página con el alto dinámico
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
 
             String nombreArchivo = BILL_FILE + ventaID + PDF_FORMAT;
@@ -152,17 +163,14 @@ public class VentaManager {
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
-
             document.add(new Paragraph(NIT)
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
-
             document.add(new Paragraph(DIRECCION)
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
-
             document.add(new Paragraph(TELEFONO)
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
@@ -187,7 +195,7 @@ public class VentaManager {
                     .setFont(fontBold)
                     .setFontSize(TEN));
 
-            // Productos
+            // Agregar productos
             for (String producto : productos) {
                 document.add(new Paragraph(producto)
                         .setFont(fontNormal)
@@ -203,9 +211,10 @@ public class VentaManager {
             Table table = new Table(new float[]{THREE, TWO});
             table.setWidth(UnitValue.createPercentValue(ONE_HUNDRED));
 
-            addTableRow(table, TOTAL_BILL, PESO_SIGN + totalCompra + PESOS);
-            /*addTableRow(table, "Dinero Recibido", "$" + dineroRecibido);
-            addTableRow(table, "Dinero Devuelto", "$" + dineroDevuelto);*/
+            NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
+            String formattedPrice = formatCOP.format(totalCompra);
+            addTableRow(table, TOTAL_BILL, PESO_SIGN + formattedPrice + PESOS);
+
 
             document.add(table);
 
@@ -218,8 +227,15 @@ public class VentaManager {
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("IVA incluido.")
+                    .setFont(fontNormal)
+                    .setFontSize(5)
+                    .setTextAlignment(TextAlignment.CENTER));
 
+            // Cerrar el documento
             document.close();
+
+            // Método para abrir el PDF después de generarlo
             abrirPDF(nombreArchivo);
         } catch (IOException e) {
             e.printStackTrace();

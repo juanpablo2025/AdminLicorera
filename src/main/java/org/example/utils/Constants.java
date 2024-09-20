@@ -66,6 +66,7 @@ public class Constants {
     public static final String CHANGE_GUION = "Devuelto: -";
     public static final String PURCHASE_SUCCEDED = "Venta realizada con éxito. Total: $";
     public static final String INVALID_MONEY = "Dinero recibido debe ser un número válido.";
+    public static final String EMPTY = " ";
 
 
 // ARCHIVOS   CAMBIAR RUTAS
@@ -78,7 +79,7 @@ public class Constants {
     public static final float WIDE_DOTS = 2.83465f;
     public static final float HEIGHT_DOTS = 2.83465f;
     public static final float EIGHTY_F = 80;
-    public static final float ONE_HUNDRED_FIFTY_F = 150;
+    public static final float ONE_HUNDRED_FIFTY_F = 120;
 
     //ENCABEZADO DE LA FACTURA
     public static final String PDF_FORMAT = ".pdf";

@@ -38,15 +38,17 @@ public class ProductoManager {
     /**
      * Agrega un producto utilizando los valores de los campos de entrada.
      */
-    public void addProductFromFields(JTextField idField, JTextField nameField, JTextField quantityField, JTextField priceField, JDialog dialog) {
+    public void addProductFromFields( JTextField nameField/*, JTextField quantityField*/, JTextField priceField, JDialog dialog) {
         try {
-            int id = Integer.parseInt(idField.getText());
+
             String name = nameField.getText();
-            int quantity = Integer.parseInt(quantityField.getText());
+            /*int quantity = Integer.parseInt(quantityField.getText());*/
             double price = Double.parseDouble(priceField.getText());
 
-            // Crear un nuevo producto
-            Producto product = new Producto(id, name, quantity, price);
+            // Formateamos el precio con el formato de moneda de Colombia
+
+            // Crear un nuevo producto (guarda el precio original pero puedes mostrar el formateado)
+            Producto product = new Producto( name/*, quantity*/, price);
 
             // Añadir el producto a la lista/gestión de productos
             addProduct(product);

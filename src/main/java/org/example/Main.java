@@ -22,7 +22,8 @@ public class Main {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame(CALCULADORA_ADMINISTRADOR);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // Cambiar a DO_NOTHING_ON_CLOSE
+        frame.setUndecorated(true); // Quitar los decorados de la ventana
         frame.setSize(FOUR_HUNDRED, FOUR_HUNDRED);
         frame.setLayout(new GridLayout(THREE, ONE));
 
@@ -101,17 +102,16 @@ public class Main {
 
     private static void showAddProductDialog() {
         ProductoManager productoManager = new ProductoManager();
-        JDialog addProductDialog = UIHelpers.createDialog(AGREGAR_PRODUCTO, THREE_HUNDRED, TWO_HUNDRED, new GridLayout(5, 2));
+        JDialog addProductDialog = UIHelpers.createDialog(AGREGAR_PRODUCTO, THREE_HUNDRED, TWO_HUNDRED, new GridLayout(3, 2));
 
         // Crear los campos de entrada
-        JTextField idField = productoManager.createField(addProductDialog, PRODUCTO_FIELD_ID);
         JTextField nameField = productoManager.createField(addProductDialog, PRODUCTO_FIELD_NOMBRE);
-        JTextField quantityField = productoManager.createField(addProductDialog, PRODUCTO_FIELD_CANTIDAD);
+        /*JTextField quantityField = productoManager.createField(addProductDialog, PRODUCTO_FIELD_CANTIDAD);*/
         JTextField priceField = productoManager.createField(addProductDialog, PRODUCTO_FIELD_PRECIO);
 
         // Botón para agregar el producto
         JButton addButton = UIHelpers.createButton(AGREGAR_BTN, e -> {
-            productoManager.addProductFromFields(idField, nameField, quantityField, priceField, addProductDialog);
+            productoManager.addProductFromFields( nameField,/* quantityField,*/ priceField, addProductDialog);
         });
 
         addProductDialog.add(addButton);
