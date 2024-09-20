@@ -22,6 +22,43 @@ public class ProductoManager {
         return excelManager.getProductByName(name);
     }
 
+
+    /**
+     * Crea un campo de entrada de texto y añade una etiqueta asociada al diálogo.
+     */
+    public JTextField createField(JDialog dialog, String label) {
+        dialog.add(new JLabel(label));
+        JTextField textField = UIHelpers.createTextField();
+        dialog.add(textField);
+        return textField;
+    }
+
+    /**
+     * Agrega un producto utilizando los valores de los campos de entrada.
+     */
+    public void addProductFromFields(JTextField idField, JTextField nameField, JTextField quantityField, JTextField priceField, JDialog dialog) {
+        try {
+            int id = Integer.parseInt(idField.getText());
+            String name = nameField.getText();
+            int quantity = Integer.parseInt(quantityField.getText());
+            double price = Double.parseDouble(priceField.getText());
+
+            // Crear un nuevo producto
+            Producto product = new Producto(id, name, quantity, price);
+
+            // Añadir el producto a la lista/gestión de productos
+            addProduct(product);
+
+            JOptionPane.showMessageDialog(dialog, "Producto agregado con éxito.");
+            dialog.dispose();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(dialog, "Por favor, ingresa valores válidos.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
+
+
     // Nuevo método: Formatea la lista de productos para mostrarla
     public String formatProductList(List<Producto> products) {
         StringBuilder productList = new StringBuilder("ID\tNombre\tCantidad\tPrecio\n");

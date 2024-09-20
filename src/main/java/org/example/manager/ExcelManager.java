@@ -5,7 +5,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.model.Producto;
 
 import java.io.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -242,8 +244,20 @@ public class ExcelManager {
                 // Guardar el archivo actualizado
                 try (FileOutputStream fos = new FileOutputStream(FILE_NAME)) {
                     workbook.write(fos);
+                    guardarTotalFacturadoEnArchivo(totalCompra);
                 }
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public void guardarTotalFacturadoEnArchivo(double totalFacturado) {
+        LocalDate fechaActual = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        String nombreArchivo = "Total_Facturado_" + fechaActual.format(formatter) + ".txt";
+
+        try (FileWriter writer = new FileWriter(nombreArchivo)) {
+            writer.write("Total facturado en el día: " + totalFacturado);
         } catch (IOException e) {
             e.printStackTrace();
         }

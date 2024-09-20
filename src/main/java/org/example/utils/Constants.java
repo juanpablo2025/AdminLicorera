@@ -1,6 +1,39 @@
 package org.example.utils;
 
 public class Constants {
+
+    //Main Menu
+
+    public static final String CALCULADORA_ADMINISTRADOR = "Calculadora del Administrador";
+    public static final String VENTA = "Venta";
+    public static final String ADMINISTRAR_PRODUCTOS = "Administrar Productos";
+    public static final String SALIR_FACTURAR = "Salir/Facturar";
+
+
+    //Salir/Facturar
+    public static final String POR_FAVOR_ESCRIBE_FACTURAR = "Por favor, escribe 'Facturar' para proceder:";
+    public static final String CONFIRMAR_FACTURACION = "Confirmar Facturación";
+
+    //Lista de productos
+    public static final String PRODUCT_LIST = "Lista de Productos";
+    public static final String CERRAR_BUTTON = "Cerrar";
+
+
+
+    //Agregar Producto
+
+    public static final String AGREGAR_PRODUCTO = "Agregar Producto";
+    public static final String LISTAR_PRODUCTO = "Listar Productos";
+    public static final String AGREGAR_BTN = "Agregar";
+    public static final String PRODUCTO_FIELD_ID = "Id:";
+    public static final String PRODUCTO_FIELD_NOMBRE = "Nombre:";
+    public static final String PRODUCTO_FIELD_PRECIO = "Precio:";
+    public static final String PRODUCTO_FIELD_CANTIDAD = "Cantidad:";
+
+
+
+    //VENTA
+    public static final String REALIZAR_VENTA = "Realizar Venta";
     public static final String PRODUCTO = "Producto";
     public static final String PRECIO = "Precio";
     public static final String CANTIDAD = "Cantidad";
@@ -14,7 +47,7 @@ public class Constants {
     public static final String FACTURACION ="Facturacion_";
     public static final String ID ="Id";
 
-// ARCHIVOS
+// ARCHIVOS   CAMBIAR RUTAS
     public static final String FILE_NAME = "productos.xlsx";
     public static final String PRODUCTS_SHEET_NAME = "Productos";
     public static final String PURCHASES_SHEET_NAME = "Ventas";
@@ -39,18 +72,21 @@ public class Constants {
     public static final String BILL_FECHA_HORA = "Fecha y Hora: ";
     public static final String BILL_PRODUCTS = "Productos: ";
     public static final String TOTAL_BILL = "TOTAL COMPRA: ";
-    public static final String PESOS = "Pesos";
-    public static final String PESO_SIGN = "$";
+    public static final String PESOS = " Pesos";
+    public static final String PESO_SIGN = "$ ";
     public static final String THANKS_BILL = "Gracias por su compra!";
     public static final CharSequence EQUALS =  "=";
     public static final String SLASH_ZERO = "\0";
+    public static final String PRODUCT_NETO = " | Neto Producto: $ ";
 
     //CALCULAR DEVUELTO
     public static final String ENTER_MONEY_RECEIVED = "Por favor, ingresa el dinero recibido.";
     public static final String ERROR_TITLE = "Error";
     public static final String INFORMATION_TITLE = "Información";
     public static final String INVALID_NUMBER = "Dinero recibido debe ser un número válido.";
-    public static final String MONEY_CHANGED = "El dinero devuelto es: $";
+    public static final String MONEY_CHANGED = "El dinero devuelto es: $ ";
+    public static final String CHANGE = "Devuelto: $";
+    public static final String NEED_MORE = "El cliente necesita pagar más: $ ";
 
     //NUMEROS
     public static final int MINUS_ONE = -1;

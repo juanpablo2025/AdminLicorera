@@ -4,7 +4,6 @@ import org.example.manager.VentaManager;
 import org.example.manager.ExcelManager;
 import org.example.manager.ProductoManager;
 import org.example.model.Producto;
-import org.example.utils.Constants;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -181,7 +180,14 @@ public class UIHelpers {
                 ExcelManager excelManager = new ExcelManager();
                 excelManager.savePurchase(ventaID, listaProductosEnLinea, ventaManager.getTotalCartAmount(), dateTime);
 
+
+
+                //preguntar antes generar factura
                 ventaManager.generarFactura(ventaID, listaDeProductos, ventaManager.getTotalCartAmount(), dineroRecibido, devuelto, dateTime);
+
+
+
+
                 if (devuelto > 0) {
                     JOptionPane.showMessageDialog(ventaDialog, "devuelto $" + devuelto);
                 }

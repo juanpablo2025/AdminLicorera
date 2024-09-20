@@ -12,7 +12,6 @@ import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import org.example.model.Producto;
-import org.example.utils.Constants;
 
 
 import javax.swing.*;
@@ -24,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.example.utils.Constants.*;
+
 
 public class VentaManager {
     private List<Producto> cartProducts = new ArrayList<>();  // Lista para almacenar los productos en el carrito
@@ -52,7 +52,7 @@ public class VentaManager {
             Producto producto = cartProducts.get(i);
             int cantidad = cartQuantities.get(i);
             double totalProducto = producto.getPrice() * cantidad;
-            productList.add( cantidad + producto.getName() + " | Total Producto: $" + totalProducto);
+            productList.add( cantidad + producto.getName() + PRODUCT_NETO + totalProducto + PESOS);
         }
         return productList;
     }
@@ -89,7 +89,7 @@ public class VentaManager {
             // Verificar si el campo de "dinero recibido" está vacío
             String dineroRecibidoTexto = dineroRecibidoField.getText();
             if (dineroRecibidoTexto.isEmpty()) {
-                JOptionPane.showMessageDialog(compraDialog, Constants.ENTER_MONEY_RECEIVED, Constants.ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(compraDialog, ENTER_MONEY_RECEIVED, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
@@ -101,13 +101,13 @@ public class VentaManager {
 
             // Mostrar el resultado con un diálogo
             if (dineroDevuelto < ZERO) {
-                JOptionPane.showMessageDialog(compraDialog, "El cliente necesita pagar más: $" + Math.abs(dineroDevuelto), Constants.ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(compraDialog, NEED_MORE + Math.abs(dineroDevuelto)+PESOS, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             } else {
-                devueltoLabel.setText("Devuelto: $" + dineroDevuelto);
-                JOptionPane.showMessageDialog(compraDialog, Constants.MONEY_CHANGED + dineroDevuelto, Constants.INFORMATION_TITLE, JOptionPane.INFORMATION_MESSAGE);
+                devueltoLabel.setText(CHANGE + dineroDevuelto);
+                JOptionPane.showMessageDialog(compraDialog, MONEY_CHANGED + dineroDevuelto+PESOS, INFORMATION_TITLE, JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(compraDialog, Constants.INVALID_NUMBER, Constants.ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(compraDialog, INVALID_NUMBER, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -119,14 +119,14 @@ public class VentaManager {
     public static void generarFactura(String ventaID, List<String> productos, double totalCompra, double dineroRecibido, double dineroDevuelto, LocalDateTime fechaHora) {
         try {
             // Dimensiones del papel térmico
-            float anchoMm = Constants.EIGHTY_F;  // ancho en mm
-            float altoMm = Constants.ONE_HUNDRED_FIFTY_F;  // alto en mm (ajustable)
-            float anchoPuntos = anchoMm * Constants.WIDE_DOTS;
-            float altoPuntos = altoMm * Constants.HEIGHT_DOTS;
+            float anchoMm = EIGHTY_F;  // ancho en mm
+            float altoMm = ONE_HUNDRED_FIFTY_F;  // alto en mm (ajustable)
+            float anchoPuntos = anchoMm * WIDE_DOTS;
+            float altoPuntos = altoMm * HEIGHT_DOTS;
 
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
 
-            String nombreArchivo = Constants.BILL_FILE + ventaID + PDF_FORMAT;
+            String nombreArchivo = BILL_FILE + ventaID + PDF_FORMAT;
             File pdfFile = new File(nombreArchivo);
             PdfWriter writer = new PdfWriter(nombreArchivo);
             PdfDocument pdfDoc = new PdfDocument(writer);
@@ -139,48 +139,48 @@ public class VentaManager {
             document.setMargins(FIVE, FIVE, FIVE, FIVE);
 
             // Encabezado de la factura
-            document.add(new Paragraph(Constants.BILL_TITLE)
+            document.add(new Paragraph(BILL_TITLE)
                     .setFont(fontBold)
                     .setFontSize(TWELVE)
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(FIVE));
 
-            document.add(new Paragraph(Constants.LICORERA_NAME)
+            document.add(new Paragraph(LICORERA_NAME)
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(Constants.NIT)
+            document.add(new Paragraph(NIT)
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(Constants.DIRECCION)
+            document.add(new Paragraph(DIRECCION)
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(Constants.TELEFONO)
+            document.add(new Paragraph(TELEFONO)
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(new String(new char[FOURTY_SIX]).replace(SLASH_ZERO, Constants.EQUALS))
+            document.add(new Paragraph(new String(new char[FOURTY_SIX]).replace(SLASH_ZERO, EQUALS))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
 
             // Detalles de la compra
-            document.add(new Paragraph(Constants.BILL_ID + ventaID)
+            document.add(new Paragraph(BILL_ID + ventaID)
                     .setFont(fontNormal)
                     .setFontSize(EIGHT));
 
-            document.add(new Paragraph(Constants.BILL_FECHA_HORA + fechaHora)
+            document.add(new Paragraph(BILL_FECHA_HORA + fechaHora)
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
 
-            document.add(new Paragraph(Constants.BILL_PRODUCTS)
+            document.add(new Paragraph(BILL_PRODUCTS)
                     .setFont(fontBold)
                     .setFontSize(TEN));
 
@@ -191,7 +191,7 @@ public class VentaManager {
                         .setFontSize(EIGHT));
             }
 
-            document.add(new Paragraph(new String(new char[FOURTY_SIX]).replace(SLASH_ZERO, Constants.EQUALS))
+            document.add(new Paragraph(new String(new char[FOURTY_SIX]).replace(SLASH_ZERO, EQUALS))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
@@ -200,18 +200,18 @@ public class VentaManager {
             Table table = new Table(new float[]{THREE, TWO});
             table.setWidth(UnitValue.createPercentValue(ONE_HUNDRED));
 
-            addTableRow(table, Constants.TOTAL_BILL, Constants.PESO_SIGN + totalCompra + Constants.PESOS);
+            addTableRow(table, TOTAL_BILL, PESO_SIGN + totalCompra + PESOS);
             /*addTableRow(table, "Dinero Recibido", "$" + dineroRecibido);
             addTableRow(table, "Dinero Devuelto", "$" + dineroDevuelto);*/
 
             document.add(table);
 
-            document.add(new Paragraph(new String(new char[FOURTY_SIX]).replace(SLASH_ZERO, Constants.EQUALS))
+            document.add(new Paragraph(new String(new char[FOURTY_SIX]).replace(SLASH_ZERO, EQUALS))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
 
-            document.add(new Paragraph(Constants.THANKS_BILL)
+            document.add(new Paragraph(THANKS_BILL)
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
