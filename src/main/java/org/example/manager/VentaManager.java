@@ -140,7 +140,7 @@ public class VentaManager {
             // Definir el tamaño de la página con el alto dinámico
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
 
-            String nombreArchivo = BILL_FILE + ventaID + PDF_FORMAT;
+            String nombreArchivo = "C:\\Users\\DesktopPC\\Documentos\\Calculadora del Administrador\\Facturas\\" + BILL_FILE + ventaID + PDF_FORMAT;
             File pdfFile = new File(nombreArchivo);
             PdfWriter writer = new PdfWriter(nombreArchivo);
             PdfDocument pdfDoc = new PdfDocument(writer);
@@ -160,20 +160,20 @@ public class VentaManager {
                     .setMarginBottom(FIVE));
 
             document.add(new Paragraph(LICORERA_NAME)
-                    .setFont(fontNormal)
-                    .setFontSize(EIGHT)
+                    .setFont(fontBold)
+                    .setFontSize(TEN)
                     .setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph(NIT)
                     .setFont(fontNormal)
-                    .setFontSize(EIGHT)
+                    .setFontSize(SIX)
                     .setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph(DIRECCION)
                     .setFont(fontNormal)
-                    .setFontSize(EIGHT)
+                    .setFontSize(SIX)
                     .setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph(TELEFONO)
                     .setFont(fontNormal)
-                    .setFontSize(EIGHT)
+                    .setFontSize(SIX)
                     .setTextAlignment(TextAlignment.CENTER));
 
             document.add(new Paragraph(new String(new char[FOURTY_SIX]).replace(SLASH_ZERO, EQUALS))
@@ -184,12 +184,14 @@ public class VentaManager {
             // Detalles de la compra
             document.add(new Paragraph(BILL_ID + ventaID)
                     .setFont(fontNormal)
-                    .setFontSize(EIGHT));
+                    .setFontSize(EIGHT)
+                    .setTextAlignment(TextAlignment.CENTER));
 
             document.add(new Paragraph(BILL_FECHA_HORA + fechaFormateada)
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
-                    .setMarginBottom(FIVE));
+                    .setMarginBottom(FIVE)
+                    .setTextAlignment(TextAlignment.CENTER));
 
             document.add(new Paragraph(BILL_PRODUCTS)
                     .setFont(fontBold)

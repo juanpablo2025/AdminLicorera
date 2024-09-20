@@ -170,7 +170,7 @@ public class UIHelpers {
                     devueltoLabel.setText(CHANGE_GUION);
                 }
 
-                String ventaID = VENTA + System.currentTimeMillis();
+                String ventaID = String.valueOf(System.currentTimeMillis() % 1000);
                 LocalDateTime dateTime = LocalDateTime.now();
 
                 List<String> listaDeProductos = ventaManager.getProductListForExcel();

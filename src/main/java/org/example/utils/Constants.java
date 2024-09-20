@@ -73,7 +73,7 @@ public class Constants {
     public static final String FILE_NAME = "productos.xlsx";
     public static final String PRODUCTS_SHEET_NAME = "Productos";
     public static final String PURCHASES_SHEET_NAME = "Ventas";
-    public static final String BILL_FILE = "Factura de Compra";
+    public static final String BILL_FILE = "Factura N°";
 
 // FActura config
     public static final float WIDE_DOTS = 2.83465f;

@@ -27,9 +27,19 @@ import static org.example.utils.Constants.*;
 
 
 public class ExcelManager {
+    public static final String FILE_NAME = "productos.xlsx";
+    public static final String DIRECTORY_PATH = "C:\\Users\\DesktopPC\\Documentos\\Calculadora del Administrador";
+    public static final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
 
     public ExcelManager() {
-        File file = new File(FILE_NAME);
+        // Verificar si la carpeta existe, si no, crearla
+        File directory = new File(DIRECTORY_PATH);
+        if (!directory.exists()) {
+            directory.mkdirs(); // Crear la carpeta y las subcarpetas necesarias
+        }
+
+        // Verificar si el archivo existe
+        File file = new File(FILE_PATH);
         if (!file.exists()) {
             createExcelFile();
         }
@@ -41,42 +51,50 @@ public class ExcelManager {
 
         // Crear hoja de productos
         Sheet productsSheet = workbook.createSheet(PRODUCTS_SHEET_NAME);
-        Row header = productsSheet.createRow(ZERO);
-        header.createCell(ZERO).setCellValue(ID);
-        header.createCell(ONE).setCellValue(NOMBRE);
-        header.createCell(TWO).setCellValue(CANTIDAD);
-        header.createCell(THREE).setCellValue(PRECIO);
+        Row header = productsSheet.createRow(0); // Utiliza constantes para los índices si las tienes
+        header.createCell(0).setCellValue(ID);
+        header.createCell(1).setCellValue(NOMBRE);
+        header.createCell(2).setCellValue(CANTIDAD);
+        header.createCell(3).setCellValue(PRECIO);
 
         // Crear hoja de compras
         Sheet purchasesSheet = workbook.createSheet(PURCHASES_SHEET_NAME);
-        Row purchasesHeader = purchasesSheet.createRow(ZERO);
-        purchasesHeader.createCell(ZERO).setCellValue(ID);
-        purchasesHeader.createCell(ONE).setCellValue(PRODUCTOS);
-        purchasesHeader.createCell(TWO).setCellValue(TOTAL);
-        purchasesHeader.createCell(THREE).setCellValue(FECHA_HORA);
+        Row purchasesHeader = purchasesSheet.createRow(0);
+        purchasesHeader.createCell(0).setCellValue(ID);
+        purchasesHeader.createCell(1).setCellValue(PRODUCTOS);
+        purchasesHeader.createCell(2).setCellValue(TOTAL);
+        purchasesHeader.createCell(3).setCellValue(FECHA_HORA);
 
-        try (FileOutputStream fileOut = new FileOutputStream(FILE_NAME)) {
+        // Guarda el archivo en la ruta especificada
+        try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH.toString())) {
             workbook.write(fileOut);
+            System.out.println("Archivo Excel creado: " + FILE_PATH.toString());
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                workbook.close(); // Cierra el workbook para liberar recursos
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     // Método para agregar un producto al archivo Excel
     public void addProduct(Producto product) {
-        try (FileInputStream fis = new FileInputStream(FILE_NAME);
+        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
-            int lastRow = sheet.getLastRowNum() + ONE;
+            int lastRow = sheet.getLastRowNum() + 1; // Usa 1 para el siguiente índice
 
             Row row = sheet.createRow(lastRow);
-            row.createCell(ZERO).setCellValue(product.getId());
-            row.createCell(ONE).setCellValue(product.getName());
-            row.createCell(TWO).setCellValue(product.getQuantity());
-            row.createCell(THREE).setCellValue(product.getPrice());
+            row.createCell(0).setCellValue(product.getId());
+            row.createCell(1).setCellValue(product.getName());
+            row.createCell(2).setCellValue(product.getQuantity());
+            row.createCell(3).setCellValue(product.getPrice());
 
-            try (FileOutputStream fileOut = new FileOutputStream(FILE_NAME)) {
+            try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH.toString())) {
                 workbook.write(fileOut);
             }
         } catch (IOException e) {
@@ -87,7 +105,7 @@ public class ExcelManager {
     // Método para leer los productos del archivo Excel
     public List<Producto> getProducts() {
         List<Producto> products = new ArrayList<>();
-        try (FileInputStream fis = new FileInputStream(FILE_NAME);
+        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
@@ -123,7 +141,7 @@ public class ExcelManager {
     public void savePurchase(String compraID, String productos, double total, LocalDateTime now) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         String fechaFormateada = now.format(formatter);
-        try (FileInputStream fis = new FileInputStream(FILE_NAME);
+        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet sheet = workbook.getSheet(PURCHASES_SHEET_NAME);
@@ -143,7 +161,7 @@ public class ExcelManager {
             row.createCell(TWO).setCellValue(total);
             row.createCell(THREE).setCellValue(fechaFormateada);
 
-            try (FileOutputStream fileOut = new FileOutputStream(FILE_NAME)) {
+            try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH.toString())) {
                 workbook.write(fileOut);
             }
         } catch (IOException e) {
@@ -240,7 +258,7 @@ public class ExcelManager {
 
     // Método para facturar y limpiar la hoja "Compras"
     public void facturarYLimpiar() {
-        try (FileInputStream fis = new FileInputStream(FILE_NAME);
+        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet purchasesSheet = workbook.getSheet(PURCHASES_SHEET_NAME);
@@ -255,8 +273,11 @@ public class ExcelManager {
                 // Limpiar la hoja "Compras"
                 limpiarHojaCompras(purchasesSheet);
 
+                // Borrar el contenido de la carpeta Facturas
+                limpiarFacturas();
+
                 // Guardar el archivo actualizado
-                try (FileOutputStream fos = new FileOutputStream(FILE_NAME)) {
+                try (FileOutputStream fos = new FileOutputStream(FILE_PATH.toString())) {
                     workbook.write(fos);
                     guardarTotalFacturadoEnArchivo(totalCompra);
                 }
@@ -266,18 +287,58 @@ public class ExcelManager {
         }
     }
 
+    // Método para limpiar la carpeta de facturas
+    public void limpiarFacturas() {
+        String rutaFacturas = "C:\\Users\\DesktopPC\\documentos\\Calculadora del Administrador\\Facturas";
+        borrarContenidoCarpeta(rutaFacturas);
+    }
 
-    //CAMBIAR a PDF
+    // Método para borrar el contenido de la carpeta
+    private void borrarContenidoCarpeta(String carpetaPath) {
+        File carpeta = new File(carpetaPath);
+        if (carpeta.exists() && carpeta.isDirectory()) {
+            File[] elementos = carpeta.listFiles();
+            if (elementos != null) {
+                for (File elemento : elementos) {
+                    if (elemento.isDirectory()) {
+                        borrarContenidoCarpeta(elemento.getPath()); // Llamada recursiva para eliminar el contenido del subdirectorio
+                    }
+                    boolean deleted = elemento.delete(); // Borrar el archivo o directorio
+                    if (!deleted) {
+                        System.out.println("No se pudo eliminar: " + elemento.getPath());
+                    }
+                }
+            }
+        } else {
+            System.out.println("La carpeta no existe o no es un directorio: " + carpetaPath);
+        }
+    }
+
+
     public void guardarTotalFacturadoEnArchivo(double totalFacturado) {
         LocalDate fechaActual = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        String nombreArchivo = "Total_Facturado_" + fechaActual.format(formatter) + ".pdf";
+
+        // Ruta del archivo
+        String carpetaPath = "C:\\Users\\DesktopPC\\documentos\\Calculadora del Administrador\\Realizo";
+        File carpeta = new File(carpetaPath);
+
+        // Crear la carpeta si no existe
+        if (!carpeta.exists()) {
+            boolean wasSuccessful = carpeta.mkdirs();
+            if (!wasSuccessful) {
+                System.err.println("No se pudo crear la carpeta 'Realizo'.");
+                return; // Salir del método si no se puede crear la carpeta
+            }
+        }
+
+        String nombreArchivo = carpetaPath + "\\REALIZO_" + fechaActual.format(formatter) + ".pdf";
 
         try {
-            // Dimensiones del papel (ajústalo si es necesario)
-            float anchoMm = 80;  // ancho en mm
-            float altoMm = 150;  // alto en mm
-            float anchoPuntos = anchoMm * 2.83465f;  // conversión de mm a puntos
+            // Dimensiones del papel
+            float anchoMm = 80;
+            float altoMm = 150;
+            float anchoPuntos = anchoMm * 2.83465f;
             float altoPuntos = altoMm * 2.83465f;
 
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
@@ -303,7 +364,7 @@ public class ExcelManager {
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(new String(new char[45]).replace(SLASH_ZERO, "="))
+            document.add(new Paragraph(new String(new char[45]).replace('\0', '='))
                     .setFont(fontNormal)
                     .setFontSize(8)
                     .setMarginBottom(10));
@@ -311,13 +372,13 @@ public class ExcelManager {
             // Detalles del total facturado
             NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
             String formattedPrice = formatCOP.format(totalFacturado);
-            document.add(new Paragraph("Realizo Sistema: $" + formattedPrice+ PESOS)
+            document.add(new Paragraph("Realizo Sistema: $" + formattedPrice + " pesos")
                     .setFont(fontBold)
                     .setFontSize(12)
                     .setTextAlignment(TextAlignment.LEFT)
                     .setMarginBottom(10));
 
-            document.add(new Paragraph(new String(new char[45]).replace(SLASH_ZERO, "="))
+            document.add(new Paragraph(new String(new char[45]).replace('\0', '='))
                     .setFont(fontNormal)
                     .setFontSize(8)
                     .setMarginBottom(10));
@@ -327,19 +388,19 @@ public class ExcelManager {
                     .setFont(fontBold)
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.LEFT)
-                    .setMarginBottom(5));
+                    .setMarginBottom(2));
 
             document.add(new Paragraph("Realiza el cierre de caja en el siguiente espacio:")
                     .setFont(fontNormal)
-                    .setFontSize(10)
+                    .setFontSize(8)
                     .setMarginBottom(5));
-            // Espacio en blanco para ingresar el cierre de caja manualmente (simulación)
+
+            // Espacios para el cierre de caja
             document.add(new Paragraph("=====================================")
                     .setFont(fontNormal)
                     .setFontSize(10)
                     .setMarginBottom(5));
 
-            // Espacio en blanco para ingresar el cierre de caja manualmente (simulación)
             document.add(new Paragraph("=====================================")
                     .setFont(fontNormal)
                     .setFontSize(10)
@@ -347,8 +408,8 @@ public class ExcelManager {
                     .setMarginBottom(5));
 
             // Agradecimiento o información adicional
-            document.add(new Paragraph("Sistemas Licorera CR La 70")
-                    .setFont(fontNormal)
+            document.add(new Paragraph("Sistema Licorera CR La 70")
+                    .setFont(fontBold)
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER));
 
