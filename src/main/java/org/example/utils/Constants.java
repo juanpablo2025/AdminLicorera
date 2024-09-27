@@ -6,7 +6,7 @@ public class Constants {
 
     public static final String CALCULADORA_ADMINISTRADOR = "Calculadora del Administrador";
     public static final String VENTA = "Venta";
-    public static final String ADMINISTRAR_PRODUCTOS = "Administrar Productos";
+    public static final String LISTAR_PRODUCTOS = "Listar Productos";
     public static final String SALIR_FACTURAR = "Salir/Facturar";
 
 

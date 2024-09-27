@@ -1,5 +1,6 @@
 package org.example.ui;
 
+import org.apache.poi.ss.usermodel.*;
 import org.example.manager.VentaManager;
 import org.example.manager.ExcelManager;
 import org.example.manager.ProductoManager;
@@ -9,8 +10,13 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.example.utils.Constants.*;
 
@@ -104,11 +110,11 @@ public class UIHelpers {
         JPanel buttonPanel = new JPanel(new GridLayout(ONE, THREE));
 
         JButton agregarProductoButton = createAddProductButton(table, ventaManager);
-        JButton calcularDevueltoButton = createCalculateDevueltoButton(ventaManager, compraDialog);
+        /*JButton calcularDevueltoButton = createCalculateDevueltoButton(ventaManager, compraDialog);*/
         JButton confirmarCompraButton = createConfirmPurchaseButton(ventaManager, compraDialog);
 
         buttonPanel.add(agregarProductoButton);
-        buttonPanel.add(calcularDevueltoButton);
+        /*buttonPanel.add(calcularDevueltoButton);*/
         buttonPanel.add(confirmarCompraButton);
 
         return buttonPanel;
@@ -148,20 +154,21 @@ public class UIHelpers {
         return agregarProductoButton;
     }
 
-    private static JButton createCalculateDevueltoButton(VentaManager ventaManager, JDialog compraDialog) {
+   /* private static JButton createCalculateDevueltoButton(VentaManager ventaManager, JDialog compraDialog) {
         JButton calcularDevueltoButton = new JButton(CALCULATED_CHANGE);
         calcularDevueltoButton.addActionListener(e -> ventaManager.calcularDineroDevuelto(dineroRecibidoField, devueltoLabel, tableModel, compraDialog));
         return calcularDevueltoButton;
-    }
+    }*/
 
     private static JButton createConfirmPurchaseButton(VentaManager ventaManager, JDialog ventaDialog) {
         JButton confirmarCompraButton = new JButton(CONFIRM_PURCHASE);
         confirmarCompraButton.addActionListener(e -> {
             try {
-                double total = ventaManager.getTotalCartAmount();
-                double dineroRecibido = ZERO;
-                double devuelto = ZERO;
+                double total = ventaManager.getTotalCartAmount(); // Obtiene el total de la compra
+                double dineroRecibido = 0;
+                double devuelto = 0;
 
+                // Procesar el dinero recibido
                 if (!dineroRecibidoField.getText().isEmpty()) {
                     dineroRecibido = Double.parseDouble(dineroRecibidoField.getText());
                     devuelto = dineroRecibido - total;
@@ -170,29 +177,93 @@ public class UIHelpers {
                     devueltoLabel.setText(CHANGE_GUION);
                 }
 
+                // Generar un ID único para la venta
                 String ventaID = String.valueOf(System.currentTimeMillis() % 1000);
                 LocalDateTime dateTime = LocalDateTime.now();
 
-                List<String> listaDeProductos = ventaManager.getProductListForExcel();
-                String listaProductosEnLinea = String.join(N, listaDeProductos);
+                // Obtener la lista de productos comprados y sus cantidades
+                Map<String, Integer> productosComprados = ventaManager.getProductListWithQuantities(); // Método que debes implementar
+                String listaProductosEnLinea = String.join(N, productosComprados.keySet());
 
+                // Guardar la compra en Excel
                 ExcelManager excelManager = new ExcelManager();
-                excelManager.savePurchase(ventaID, listaProductosEnLinea, ventaManager.getTotalCartAmount(), dateTime);
+                excelManager.savePurchase(ventaID, listaProductosEnLinea, total, dateTime);
 
+                // Descontar la cantidad de los productos del stock en el archivo Excel
+                try (FileInputStream fis = new FileInputStream(ExcelManager.FILE_PATH);
+                     Workbook workbook = WorkbookFactory.create(fis)) {
+
+                    // Actualizar la cantidad del producto en la pestaña de productos
+                    Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
+
+                    for (Map.Entry<String, Integer> entry : productosComprados.entrySet()) {
+                        String nombreProducto = entry.getKey();
+                        int cantidadComprada = entry.getValue();
+
+                        boolean productoEncontrado = false;
+
+                        for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                            Row row = sheet.getRow(i);
+                            if (row != null) {
+                                // Suponiendo que el nombre del producto está en la columna 1
+                                if (row.getCell(1).getStringCellValue().equalsIgnoreCase(nombreProducto)) {
+                                    // Asegurarse de que la celda de cantidad no sea nula y sea numérica
+                                    Cell cantidadCell = row.getCell(2);
+                                    if (cantidadCell != null && cantidadCell.getCellType() == CellType.NUMERIC) {
+                                        int cantidadActual = (int) cantidadCell.getNumericCellValue(); // Suponiendo que la cantidad está en la columna 2
+                                        int nuevaCantidad = cantidadActual - cantidadComprada;  // Restar la cantidad comprada
+
+                                        // Verificar que no se intente establecer una cantidad negativa
+                                        if (nuevaCantidad < 0) {
+                                            JOptionPane.showMessageDialog(ventaDialog, "No hay suficiente cantidad del producto '" + nombreProducto + "' en stock.", "Error", JOptionPane.ERROR_MESSAGE);
+                                            return; // Salir del método si no hay suficiente stock
+                                        } else {
+                                            cantidadCell.setCellValue(nuevaCantidad);  // Actualizar la cantidad
+                                            productoEncontrado = true;
+                                        }
+                                    } else {
+                                        JOptionPane.showMessageDialog(ventaDialog, "La cantidad actual no es válida para el producto '" + nombreProducto + "'.", "Error", JOptionPane.ERROR_MESSAGE);
+                                        return; // Salir si la cantidad no es válida
+                                    }
+                                    break; // Salir del bucle una vez que se actualiza el producto
+                                }
+                            }
+                        }
+
+                        // Verificar si el producto fue encontrado y actualizado
+                        if (!productoEncontrado) {
+                            JOptionPane.showMessageDialog(ventaDialog, "Producto '" + nombreProducto + "' no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+
+                    // Guardar la actualización de productos
+                    try (FileOutputStream fos = new FileOutputStream(ExcelManager.FILE_PATH)) {
+                        workbook.write(fos);
+                        System.out.println("Cantidad de productos actualizada exitosamente.");
+                    }
+
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+
+                // Preguntar al usuario si quiere imprimir la factura
                 int respuesta = JOptionPane.showConfirmDialog(null, PRINT_BILL, COMFIRM_TITLE, JOptionPane.YES_NO_OPTION);
 
                 if (respuesta == JOptionPane.YES_OPTION) {
                     // Si el usuario selecciona 'Sí', generar e imprimir la factura
-                    ventaManager.generarFactura(ventaID, listaDeProductos, ventaManager.getTotalCartAmount(), dateTime);
+                    ventaManager.generarFactura(ventaID, Collections.singletonList(listaProductosEnLinea), total, dateTime);
                     // Código para imprimir el recibo o mostrar un mensaje indicando que el recibo ha sido generado.
-
                 }
 
-
-                if (devuelto > ZERO) {
-                    JOptionPane.showMessageDialog(ventaDialog, CHANGE + devuelto+PESOS);
+                // Si hay cambio, mostrarlo en un diálogo
+                if (devuelto > 0) {
+                    JOptionPane.showMessageDialog(ventaDialog, CHANGE + devuelto + PESOS);
                 }
-                JOptionPane.showMessageDialog(ventaDialog, PURCHASE_SUCCEDED + ventaManager.getTotalCartAmount());
+
+                // Mostrar un mensaje de éxito de la compra
+                JOptionPane.showMessageDialog(ventaDialog, PURCHASE_SUCCEDED + total);
+
+                // Cerrar el diálogo de la venta
                 ventaDialog.dispose();
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(ventaDialog, INVALID_MONEY, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);

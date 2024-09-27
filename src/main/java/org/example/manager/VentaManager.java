@@ -27,9 +27,7 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import static org.example.utils.Constants.*;
 
@@ -38,7 +36,6 @@ public class VentaManager {
     private List<Producto> cartProducts = new ArrayList<>();  // Lista para almacenar los productos en el carrito
     private List<Integer> cartQuantities = new ArrayList<>(); // Lista para almacenar las cantidades correspondientes
 
-    ;
 
     // Método para añadir un producto al carrito
     public void addProductToCart(Producto producto, int cantidad) {
@@ -205,7 +202,7 @@ public class VentaManager {
 
             // Agregar productos
             for (String producto : productos) {
-                document.add(new Paragraph(producto)
+                document.add(new Paragraph(String.valueOf(producto))
                         .setFont(fontNormal)
                         .setFontSize(EIGHT));
             }
@@ -298,4 +295,36 @@ public class VentaManager {
         }
     }
 
+    public List<Producto> getProducts() {
+        return cartProducts;
+    }
+
+    public int getProductQuantity() {
+        return cartProducts.size();
+    }
+
+    public Map<String, Integer> getProductsAndQuantities() {
+        Map<String, Integer> productosYcantidades = new HashMap<>();
+        // Lógica para llenar el mapa con productos y sus cantidades
+        // Por ejemplo, podrías iterar sobre una lista de productos en el carrito
+        Producto[] carritoDeCompras = new Producto[0];
+        for (Producto producto : carritoDeCompras) {
+            productosYcantidades.put(producto.getName(), producto.getQuantity());
+        }
+        return productosYcantidades;
+    }
+
+    public List<Producto> getProductList() {
+        return cartProducts;
+    }
+
+    public Map<String, Integer> getProductListWithQuantities() {
+        Map<String, Integer> productsAndQuantities = new HashMap<>();
+        for (int i = 0; i < cartProducts.size(); i++) {
+            Producto producto = cartProducts.get(i);
+            int cantidad = cartQuantities.get(i);
+            productsAndQuantities.put(producto.getName(), cantidad);
+        }
+        return productsAndQuantities;
+    }
 }

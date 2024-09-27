@@ -33,6 +33,9 @@ public class ExcelManager {
     public static final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
     public static final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
 
+    public static final String DIRECTORY_PATH_FACTURACION = System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador//Facturas";
+    public static final String FACTURACION_FILENAME = "Facturacion.xlsx";
+
     public ExcelManager() {
         // Verificar si la carpeta existe, si no, crearla
         File directory = new File(DIRECTORY_PATH);
@@ -46,6 +49,11 @@ public class ExcelManager {
             createExcelFile();
         }
     }
+
+    public static void saveGasto(String nombreGasto, int cantidad, double precio) {
+    }
+
+
 
     // Método para crear el archivo Excel si no existe
     private void createExcelFile() {
@@ -119,7 +127,7 @@ public class ExcelManager {
                     int quantity = (int) row.getCell(TWO).getNumericCellValue();
                     double price = row.getCell(THREE).getNumericCellValue();
 
-                    products.add(new Producto(name,/* quantity,*/ price));
+                    products.add(new Producto(name, quantity,price));
                 }
             }
         } catch (IOException e) {
@@ -171,20 +179,8 @@ public class ExcelManager {
         }
     }
 
-    // Método para obtener el número de compras realizadas
-    public int getPurchasesCount() {
-        try (FileInputStream fis = new FileInputStream(FILE_NAME);
-             Workbook workbook = WorkbookFactory.create(fis)) {
 
-            Sheet sheet = workbook.getSheet(PURCHASES_SHEET_NAME);
-            if (sheet != null) {
-                return sheet.getLastRowNum();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return ZERO;
-    }
+
     // Método para sumar los totales de la hoja "Compras"
     private double sumarTotalesCompras(Sheet purchasesSheet) {
         double totalSum = ZERO_DOUBLE;
@@ -264,30 +260,56 @@ public class ExcelManager {
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet purchasesSheet = workbook.getSheet(PURCHASES_SHEET_NAME);
+            Sheet gastosSheet = workbook.getSheet("Gastos"); // Asegúrate de que el nombre coincida
 
             if (purchasesSheet != null) {
                 // Sumar los totales
                 double totalCompra = sumarTotalesCompras(purchasesSheet);
 
+                // Restar los totales de gastos
+                double totalGastos = restarTotalesGastos(gastosSheet);
+                double totalFinal = totalCompra - totalGastos; // Calcular el total final
+
                 // Copiar la hoja "Compras" y renombrarla, pasando el total de la compra
-                copiarHojaCompras(workbook, purchasesSheet, totalCompra);
+                //copiarHojaCompras(workbook, purchasesSheet, totalFinal); // Cambiar totalCompra a totalFinal
 
                 // Limpiar la hoja "Compras"
                 limpiarHojaCompras(purchasesSheet);
+                limpiarHojaCompras(gastosSheet);
 
                 // Borrar el contenido de la carpeta Facturas
                 limpiarFacturas();
 
+                crearArchivoFacturacionYGastos(purchasesSheet, gastosSheet, totalCompra, totalGastos);
+
                 // Guardar el archivo actualizado
                 try (FileOutputStream fos = new FileOutputStream(FILE_PATH.toString())) {
                     workbook.write(fos);
-                    guardarTotalFacturadoEnArchivo(totalCompra);
+                    guardarTotalFacturadoEnArchivo(totalFinal); // Cambiar totalCompra a totalFinal
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    // Método para restar los totales de la hoja "Gastos"
+    public double restarTotalesGastos(Sheet gastosSheet) {
+        double totalGastos = ZERO_DOUBLE; // Usar la constante como en el ejemplo
+
+        // Iterar a través de las filas de la hoja de gastos
+        for (int i = ONE; i <= gastosSheet.getLastRowNum(); i++) {
+            Row row = gastosSheet.getRow(i);
+            if (row != null) {
+                Cell cell = row.getCell(3); // La columna D es el índice 3
+                if (cell != null && cell.getCellType() == CellType.NUMERIC) {
+                    totalGastos += cell.getNumericCellValue();
+                }
+            }
+        }
+        return totalGastos;
+    }
+
 
     // Método para limpiar la carpeta de facturas
     public void limpiarFacturas() {
@@ -423,5 +445,106 @@ public class ExcelManager {
             e.printStackTrace();
         }
     }
+
+    // Método para crear el archivo Excel independiente con las hojas "Facturacion" y "Gastos"
+    public void crearArchivoFacturacionYGastos(Sheet purchasesSheet, Sheet gastosSheet, double totalCompra, double totalGastos) throws IOException {
+        // Crear un nuevo Workbook (archivo Excel)
+        Workbook workbook = new XSSFWorkbook();
+
+        // Crear la hoja "Facturacion"
+        String facturacionHojaNombre = "Facturacion_" + LocalDateTime.now().toString().replace(":", "-");
+        Sheet facturacionSheet = workbook.createSheet(facturacionHojaNombre);
+
+        // Copiar el contenido de la hoja "Compras" a la hoja "Facturacion"
+        copiarContenidoHoja(purchasesSheet, facturacionSheet);
+
+        // Crear un estilo de celda para resaltar en rojo
+        CellStyle redStyle = crearEstiloRojo(workbook);
+
+        // Agregar una fila extra con el total al final de la hoja "Facturacion"
+        agregarTotal(facturacionSheet, totalCompra, "Total Compra", redStyle);
+
+        // Crear la hoja "Gastos"
+        String gastosHojaNombre = "Gastos_" + LocalDateTime.now().toString().replace(":", "-");
+        Sheet gastosSheetNueva = workbook.createSheet(gastosHojaNombre);
+
+        // Copiar el contenido de la hoja "Gastos" a la nueva hoja "Gastos"
+        copiarContenidoHoja(gastosSheet, gastosSheetNueva);
+
+        // Agregar una fila extra con el total al final de la hoja "Gastos"
+        agregarTotal(gastosSheetNueva, totalGastos, "Total Gastos", redStyle);
+
+        // Guardar el archivo Excel en el directorio especificado
+        guardarArchivo(workbook);
+    }
+
+    // Método auxiliar para copiar el contenido de una hoja a otra
+    private void copiarContenidoHoja(Sheet oldSheet, Sheet newSheet) {
+        for (int i = 0; i <= oldSheet.getLastRowNum(); i++) {
+            Row oldRow = oldSheet.getRow(i);
+            Row newRow = newSheet.createRow(i);
+            if (oldRow != null) {
+                for (int j = 0; j < oldRow.getLastCellNum(); j++) {
+                    Cell oldCell = oldRow.getCell(j);
+                    Cell newCell = newRow.createCell(j);
+
+                    if (oldCell != null) {
+                        switch (oldCell.getCellType()) {
+                            case STRING:
+                                newCell.setCellValue(oldCell.getStringCellValue());
+                                break;
+                            case NUMERIC:
+                                newCell.setCellValue(oldCell.getNumericCellValue());
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Método auxiliar para crear un estilo de celda en rojo
+    private CellStyle crearEstiloRojo(Workbook workbook) {
+        CellStyle redStyle = workbook.createCellStyle();
+        Font font = workbook.createFont();
+        font.setColor(IndexedColors.RED.getIndex());  // Establecer el color de la fuente en rojo
+        font.setBold(true); // Poner en negrita
+        redStyle.setFont(font);
+        return redStyle;
+    }
+
+    // Método auxiliar para agregar el total al final de la hoja
+    private void agregarTotal(Sheet sheet, double total, String label, CellStyle style) {
+        int lastRow = sheet.getLastRowNum() + ONE; // La siguiente fila vacía
+        Row totalRow = sheet.createRow(lastRow);
+        Cell totalLabelCell = totalRow.createCell(ONE); // Columna 1 para la etiqueta
+        totalLabelCell.setCellValue(label);
+
+        Cell totalValueCell = totalRow.createCell(TWO); // Columna 2 para el valor total
+        totalValueCell.setCellValue(total);
+
+        // Aplicar el estilo de color rojo a la celda del total
+        totalValueCell.setCellStyle(style);
+    }
+    // Método auxiliar para guardar el archivo en el directorio
+    private void guardarArchivo(Workbook workbook) throws IOException {
+        // Crear el directorio si no existe
+        File directory = new File(DIRECTORY_PATH);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+
+        // Crear el archivo con el nombre Facturacion.xlsx
+        File file = new File(directory, FACTURACION_FILENAME);
+        try (FileOutputStream fileOut = new FileOutputStream(file)) {
+            workbook.write(fileOut);
+        }
+
+        // Cerrar el Workbook para liberar recursos
+        workbook.close();
+    }
+
 }
 
