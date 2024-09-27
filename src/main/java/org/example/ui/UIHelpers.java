@@ -15,7 +15,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import static org.example.utils.Constants.*;
@@ -183,11 +182,28 @@ public class UIHelpers {
 
                 // Obtener la lista de productos comprados y sus cantidades
                 Map<String, Integer> productosComprados = ventaManager.getProductListWithQuantities(); // Método que debes implementar
-                String listaProductosEnLinea = String.join(N, productosComprados.keySet());
+
+// Crear un StringBuilder para construir la lista de productos con nombre y cantidad
+                StringBuilder listaProductosEnLinea = new StringBuilder();
+
+// Iterar sobre el mapa de productos y cantidades
+                for (Map.Entry<String, Integer> entrada : productosComprados.entrySet()) {
+                    String nombreProducto = entrada.getKey(); // Nombre del producto
+                    int cantidad = entrada.getValue(); // Cantidad comprada
+                    Producto producto = productoManager.getProductByName(nombreProducto);
+                    double precioUnitario = producto.getPrice();
+                    double precioTotal = precioUnitario * cantidad;
+
+                    // Añadir la información del producto al StringBuilder
+                    listaProductosEnLinea.append(nombreProducto).append(" x").append(cantidad).append(" $").append(precioUnitario).append(" = ").append(precioTotal+"\n");
+                }
+
+
+                //String listaProductosEnLinea = String.join(N, productosComprados.keySet()+" x"+productosComprados.values());
 
                 // Guardar la compra en Excel
                 ExcelManager excelManager = new ExcelManager();
-                excelManager.savePurchase(ventaID, listaProductosEnLinea, total, dateTime);
+                excelManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total, dateTime);
 
                 // Descontar la cantidad de los productos del stock en el archivo Excel
                 try (FileInputStream fis = new FileInputStream(ExcelManager.FILE_PATH);
@@ -251,7 +267,7 @@ public class UIHelpers {
 
                 if (respuesta == JOptionPane.YES_OPTION) {
                     // Si el usuario selecciona 'Sí', generar e imprimir la factura
-                    ventaManager.generarFactura(ventaID, Collections.singletonList(listaProductosEnLinea), total, dateTime);
+                    ventaManager.generarFactura(ventaID, Collections.singletonList(String.valueOf(listaProductosEnLinea)), total, dateTime);
                     // Código para imprimir el recibo o mostrar un mensaje indicando que el recibo ha sido generado.
                 }
 

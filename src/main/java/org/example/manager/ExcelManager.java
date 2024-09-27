@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+
 import static org.example.manager.VentaManager.abrirPDF;
 import static org.example.manager.VentaManager.imprimirPDF;
 import static org.example.utils.Constants.*;
@@ -49,10 +50,6 @@ public class ExcelManager {
             createExcelFile();
         }
     }
-
-    public static void saveGasto(String nombreGasto, int cantidad, double precio) {
-    }
-
 
 
     // Método para crear el archivo Excel si no existe
@@ -361,8 +358,8 @@ public class ExcelManager {
 
         try {
             // Dimensiones del papel
-            float anchoMm = 80;
-            float altoMm = 150;
+            float anchoMm = 58;  // Ancho fijo de 58 mm para impresora POS-58
+            float altoMm = 220;  // Puedes ajustar el alto según la longitud del recibo
             float anchoPuntos = anchoMm * 2.83465f;
             float altoPuntos = altoMm * 2.83465f;
 
@@ -389,7 +386,7 @@ public class ExcelManager {
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(new String(new char[45]).replace('\0', '='))
+            document.add(new Paragraph(new String(new char[33]).replace('\0', '='))
                     .setFont(fontNormal)
                     .setFontSize(8)
                     .setMarginBottom(10));
@@ -403,7 +400,7 @@ public class ExcelManager {
                     .setTextAlignment(TextAlignment.LEFT)
                     .setMarginBottom(10));
 
-            document.add(new Paragraph(new String(new char[45]).replace('\0', '='))
+            document.add(new Paragraph(new String(new char[33]).replace('\0', '='))
                     .setFont(fontNormal)
                     .setFontSize(8)
                     .setMarginBottom(10));
@@ -421,12 +418,12 @@ public class ExcelManager {
                     .setMarginBottom(5));
 
             // Espacios para el cierre de caja
-            document.add(new Paragraph("=====================================")
+            document.add(new Paragraph(new String(new char[26]).replace('\0', '='))
                     .setFont(fontNormal)
                     .setFontSize(10)
                     .setMarginBottom(5));
 
-            document.add(new Paragraph("=====================================")
+            document.add(new Paragraph(new String(new char[26]).replace('\0', '='))
                     .setFont(fontNormal)
                     .setFontSize(10)
                     .setMarginTop(160)
@@ -439,8 +436,8 @@ public class ExcelManager {
                     .setTextAlignment(TextAlignment.CENTER));
 
             document.close();
-            //abrirPDF(nombreArchivo);
-            imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
+            abrirPDF(nombreArchivo);
+            //imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
         } catch (IOException e) {
             e.printStackTrace();
         }

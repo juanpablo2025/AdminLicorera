@@ -78,8 +78,8 @@ public class Constants {
 // FActura config
     public static final float WIDE_DOTS = 2.83465f;
     public static final float HEIGHT_DOTS = 2.83465f;
-    public static final float EIGHTY_F = 80;
-    public static final float ONE_HUNDRED_FIFTY_F = 120;
+    public static final float EIGHTY_F = 58;
+    public static final float ONE_HUNDRED_FIFTY_F = 220;
 
     //ENCABEZADO DE LA FACTURA
     public static final String PDF_FORMAT = ".pdf";

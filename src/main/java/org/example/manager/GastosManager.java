@@ -5,9 +5,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.example.model.Producto;
-import org.example.ui.UIHelpers;
-
-
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,7 +12,7 @@ import java.io.IOException;
 
 
 import static org.example.utils.Constants.*;
-import static org.example.utils.Constants.PESOS;
+
 
 public class GastosManager {
 

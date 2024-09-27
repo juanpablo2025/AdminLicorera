@@ -77,13 +77,6 @@ public class VentaManager {
         return total;
     }
 
-    // Método opcional para limpiar el carrito después de una compra
-    public void clearCart() {
-        cartProducts.clear();
-        cartQuantities.clear();
-    }
-
-
     public void removeProductFromCart(int row) {
     }
 
@@ -131,11 +124,11 @@ public class VentaManager {
             String fechaFormateada = fechaHora.format(formatter);
 
             // Ancho del papel térmico
-            float anchoMm = EIGHTY_F;  // Ancho en mm
+            float anchoMm = 58;  // Ancho en mm
             float anchoPuntos = anchoMm * WIDE_DOTS;  // Conversión de mm a puntos
 
             // Calcular el alto dinámico según el número de productos
-            float altoBaseMm = ONE_HUNDRED_FIFTY_F;  // Altura base en mm (puedes ajustarlo)
+            float altoBaseMm = 110;  // Altura base en mm (puedes ajustarlo)
             float altoPorProductoMm = 10;  // Espacio adicional por cada producto en mm (ajustable)
             float altoTotalMm = altoBaseMm + (productos.size() * altoPorProductoMm);
             float altoPuntos = altoTotalMm * HEIGHT_DOTS;  // Conversión de mm a puntos
@@ -179,7 +172,7 @@ public class VentaManager {
                     .setFontSize(SIX)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(new String(new char[FOURTY_SIX]).replace(SLASH_ZERO, EQUALS))
+            document.add(new Paragraph(new String(new char[33]).replace(SLASH_ZERO, EQUALS))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
@@ -207,7 +200,7 @@ public class VentaManager {
                         .setFontSize(EIGHT));
             }
 
-            document.add(new Paragraph(new String(new char[FOURTY_SIX]).replace(SLASH_ZERO, EQUALS))
+            document.add(new Paragraph(new String(new char[33]).replace(SLASH_ZERO, EQUALS))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
@@ -223,7 +216,7 @@ public class VentaManager {
 
             document.add(table);
 
-            document.add(new Paragraph(new String(new char[FOURTY_SIX]).replace(SLASH_ZERO, EQUALS))
+            document.add(new Paragraph(new String(new char[33]).replace(SLASH_ZERO, EQUALS))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
@@ -241,8 +234,8 @@ public class VentaManager {
             document.close();
 
             // Método para abrir el PDF después de generarlo
-           // abrirPDF(nombreArchivo);
-            imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
+           abrirPDF(nombreArchivo);
+            //imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -299,24 +292,6 @@ public class VentaManager {
         return cartProducts;
     }
 
-    public int getProductQuantity() {
-        return cartProducts.size();
-    }
-
-    public Map<String, Integer> getProductsAndQuantities() {
-        Map<String, Integer> productosYcantidades = new HashMap<>();
-        // Lógica para llenar el mapa con productos y sus cantidades
-        // Por ejemplo, podrías iterar sobre una lista de productos en el carrito
-        Producto[] carritoDeCompras = new Producto[0];
-        for (Producto producto : carritoDeCompras) {
-            productosYcantidades.put(producto.getName(), producto.getQuantity());
-        }
-        return productosYcantidades;
-    }
-
-    public List<Producto> getProductList() {
-        return cartProducts;
-    }
 
     public Map<String, Integer> getProductListWithQuantities() {
         Map<String, Integer> productsAndQuantities = new HashMap<>();
