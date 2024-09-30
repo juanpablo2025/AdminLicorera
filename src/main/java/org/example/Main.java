@@ -369,23 +369,30 @@ public class Main {
 
         // Cargar las mesas desde el archivo Excel
         ArrayList<Mesa> mesas = cargarMesasDesdeExcel();
-        ArrayList<JPanel> mesaPanels = new ArrayList<>();
 
         // Mostrar las mesas cargadas desde el archivo Excel
-        for (Mesa mesa : mesas) {
+        for (int i = 0; i < mesas.size(); i++) {
+            Mesa mesa = mesas.get(i);
+            mesa.setID(String.valueOf((i + 1))); // Asignar ID basado en la posición
             JPanel mesaPanel = crearMesaPanel(mesa); // Pasar el objeto Mesa
-            mesaPanels.add(mesaPanel);
             mesasPanel.add(mesaPanel);
         }
 
         // Botón para añadir más mesas
         JButton addMesaButton = new JButton("Añadir Mesa");
         addMesaButton.addActionListener(e -> {
-            Mesa nuevaMesa = new Mesa(mesas.size() + 1); // Numerar correctamente las nuevas mesas
+            int nuevoID = mesas.size() + 1; // Numerar correctamente las nuevas mesas
+            Mesa nuevaMesa = new Mesa(nuevoID); // Crear la nueva mesa con el ID basado en el tamaño actual de la lista
+            nuevaMesa.setID(String.valueOf(nuevoID)); // Asignar ID basado en la posición
+
+            // Añadir la nueva mesa a la lista de mesas
             mesas.add(nuevaMesa);
-            JPanel nuevaMesaPanel = crearMesaPanel(nuevaMesa); // Pasar el objeto Mesa
-            mesaPanels.add(nuevaMesaPanel);
+
+            // Crear el panel para la nueva mesa
+            JPanel nuevaMesaPanel = crearMesaPanel(nuevaMesa);
             mesasPanel.add(nuevaMesaPanel);
+
+            // Actualizar el panel de mesas
             mesasPanel.revalidate();
             mesasPanel.repaint();
 

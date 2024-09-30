@@ -5,16 +5,19 @@ import java.util.List;
 
 public class Mesa {
 
-    private static int nextId = 1; // Contador estático para el ID auto-incremental
+    private static String Id ; // Contador estático para el ID auto-incremental
     private boolean ocupada;
     private List<Producto> productos; // Lista de productos añadidos a la mesa
     private double totalCuenta;
 
     public Mesa(int i) {
-        this.nextId = nextId++;
+        this.Id = String.valueOf(i);
         this.ocupada = false;
         this.productos = new ArrayList<>();
         this.totalCuenta = 0.0;
+    }
+
+    public Mesa(String s, boolean b) {
     }
 
     public boolean isOcupada() {
@@ -44,7 +47,11 @@ public class Mesa {
         this.totalCuenta = 0.0;
     }
 
-    public int getId() {
-        return nextId;
+    public String getId() {
+        return Id;
+    }
+
+    public void setID(String i) {
+        this.Id = i;
     }
 }
