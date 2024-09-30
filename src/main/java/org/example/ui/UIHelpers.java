@@ -4,6 +4,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.example.manager.VentaManager;
 import org.example.manager.ExcelManager;
 import org.example.manager.ProductoManager;
+import org.example.manager.VentaMesaManager;
 import org.example.model.Producto;
 
 import javax.swing.*;
@@ -119,7 +120,41 @@ public class UIHelpers {
         return buttonPanel;
     }
 
-    private static JButton createAddProductButton(JTable table, VentaManager ventaManager) {
+    public static JButton createAddProductButton(JTable table, VentaManager ventaManager) {
+        JButton agregarProductoButton = new JButton(AGREGAR_PRODUCTO);
+        agregarProductoButton.addActionListener(e -> {
+            try {
+                String selectedProduct = (String) productComboBox.getSelectedItem();
+                int cantidad = (int) cantidadSpinner.getValue();
+
+                Producto producto = productoManager.getProductByName(selectedProduct);
+                double precioUnitario = producto.getPrice();
+                double totalProducto = precioUnitario * cantidad;
+
+                // Añadir producto a la tabla
+                tableModel.addRow(new Object[]{selectedProduct, cantidad, precioUnitario, totalProducto, "X"});
+
+                // Calcular el total general
+                double total = ZERO_DOUBLE;
+                for (int i = ZERO; i < tableModel.getRowCount(); i++) {
+                    total += (double) tableModel.getValueAt(i, THREE);
+                }
+                totalLabel.setText(TOTAL_PESO + total);
+
+                totalCompraLabel.setText(TOTAL_COMPRA_PESO + total);
+
+                ventaManager.addProductToCart(producto, cantidad);
+                dineroTotalField.setText(String.valueOf(total));
+
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(compraDialog, INVALID_AMOUNT, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        return agregarProductoButton;
+    }
+
+    public static JButton createAddProductMesaButton(JTable table, VentaMesaManager ventaManager) {
         JButton agregarProductoButton = new JButton(AGREGAR_PRODUCTO);
         agregarProductoButton.addActionListener(e -> {
             try {
@@ -159,7 +194,7 @@ public class UIHelpers {
         return calcularDevueltoButton;
     }*/
 
-    private static JButton createConfirmPurchaseButton(VentaManager ventaManager, JDialog ventaDialog) {
+    public static JButton createConfirmPurchaseButton(VentaManager ventaManager, JDialog ventaDialog) {
         JButton confirmarCompraButton = new JButton(CONFIRM_PURCHASE);
         confirmarCompraButton.addActionListener(e -> {
             try {

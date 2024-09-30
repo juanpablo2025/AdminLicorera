@@ -35,4 +35,8 @@ public class Producto {
     public int getCantidad() {
         return quantity;
     }
+
+    public void setCantidad(int cantidad) {
+
+    }
 }

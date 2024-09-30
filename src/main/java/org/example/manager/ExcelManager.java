@@ -34,8 +34,8 @@ public class ExcelManager {
     public static final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
     public static final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
 
-    public static final String DIRECTORY_PATH_FACTURACION = System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador//Facturas";
-    public static final String FACTURACION_FILENAME = "Facturacion.xlsx";
+    public static final String DIRECTORY_PATH_FACTURACION = System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
+    public static final String FACTURACION_FILENAME = "\\Facturacion\\Facturacion"+ LocalDateTime.now().toString().replace(":", "-")+".xlsx";
 
     public ExcelManager() {
         // Verificar si la carpeta existe, si no, crearla
