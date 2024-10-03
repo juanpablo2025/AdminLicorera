@@ -25,7 +25,6 @@ import java.util.Locale;
 
 
 import static org.example.manager.VentaManager.abrirPDF;
-import static org.example.manager.VentaManager.imprimirPDF;
 import static org.example.utils.Constants.*;
 
 
@@ -71,6 +70,15 @@ public class ExcelManager {
         purchasesHeader.createCell(1).setCellValue(PRODUCTOS);
         purchasesHeader.createCell(2).setCellValue(TOTAL);
         purchasesHeader.createCell(3).setCellValue(FECHA_HORA);
+
+        // Crear hoja de gastos
+        Sheet gastosSheet = workbook.createSheet("Gastos");
+        Row gastosHeader = gastosSheet.createRow(0);
+        gastosHeader.createCell(0).setCellValue("ID Producto");
+        gastosHeader.createCell(1).setCellValue("Nombre Producto");
+        gastosHeader.createCell(2).setCellValue("Cantidad");
+        gastosHeader.createCell(3).setCellValue("Precio Compra");
+        gastosHeader.createCell(4).setCellValue("Fecha y Hora");
 
         // Guarda el archivo en la ruta especificada
         try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH.toString())) {
@@ -190,56 +198,7 @@ public class ExcelManager {
         return totalSum;
     }
 
-    // Método para crear una copia de la hoja "Compras" y renombrarla
-    private void copiarHojaCompras(Workbook workbook, Sheet purchasesSheet, double totalCompra) {
-        // Crear una nueva hoja con el nombre "Facturacion_<fecha>"
-        String nuevaHojaNombre = FACTURACION + LocalDateTime.now().toString().replace(DOS_PUNTOS ,GUION);
-        Sheet nuevaHoja = workbook.createSheet(nuevaHojaNombre);
 
-        // Copiar el contenido de la hoja "Compras" a la nueva hoja
-        for (int i = ZERO; i <= purchasesSheet.getLastRowNum(); i++) {
-            Row oldRow = purchasesSheet.getRow(i);
-            Row newRow = nuevaHoja.createRow(i);
-            if (oldRow != null) {
-                for (int j = ZERO; j < oldRow.getLastCellNum(); j++) {
-                    Cell oldCell = oldRow.getCell(j);
-                    Cell newCell = newRow.createCell(j);
-
-                    if (oldCell != null) {
-                        switch (oldCell.getCellType()) {
-                            case STRING:
-                                newCell.setCellValue(oldCell.getStringCellValue());
-                                break;
-                            case NUMERIC:
-                                newCell.setCellValue(oldCell.getNumericCellValue());
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                }
-            }
-        }
-
-        // Crear un estilo de celda para resaltar en rojo
-        CellStyle redStyle = workbook.createCellStyle();
-        Font font = workbook.createFont();
-        font.setColor(IndexedColors.RED.getIndex());  // Establecer el color de la fuente en rojo
-        font.setBold(true); // Poner en negrita
-        redStyle.setFont(font);
-
-        // Agregar una fila extra con el total al final de la nueva hoja
-        int lastRow = purchasesSheet.getLastRowNum() + ONE; // La siguiente fila vacía
-        Row totalRow = nuevaHoja.createRow(lastRow);
-        Cell totalLabelCell = totalRow.createCell(ONE); // Columna 1 para la etiqueta
-        totalLabelCell.setCellValue(REALIZO);
-
-        Cell totalValueCell = totalRow.createCell(TWO); // Columna 2 para el valor total
-        totalValueCell.setCellValue(totalCompra);
-
-        // Aplicar el estilo de color rojo a la celda del total
-        totalValueCell.setCellStyle(redStyle);
-    }
 
     // Método para limpiar la hoja "Compras"
     private void limpiarHojaCompras(Sheet purchasesSheet) {
@@ -270,12 +229,7 @@ public class ExcelManager {
                 // Copiar la hoja "Compras" y renombrarla, pasando el total de la compra
                 //copiarHojaCompras(workbook, purchasesSheet, totalFinal); // Cambiar totalCompra a totalFinal
 
-                // Limpiar la hoja "Compras"
-                limpiarHojaCompras(purchasesSheet);
-                limpiarHojaCompras(gastosSheet);
 
-                // Borrar el contenido de la carpeta Facturas
-                limpiarFacturas();
 
                 crearArchivoFacturacionYGastos(purchasesSheet, gastosSheet, totalCompra, totalGastos);
 
@@ -284,6 +238,12 @@ public class ExcelManager {
                     workbook.write(fos);
                     guardarTotalFacturadoEnArchivo(totalFinal); // Cambiar totalCompra a totalFinal
                 }
+                // Limpiar la hoja "Compras"
+                limpiarHojaCompras(purchasesSheet);
+                limpiarHojaCompras(gastosSheet);
+
+                // Borrar el contenido de la carpeta Facturas
+                limpiarFacturas();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -486,6 +446,7 @@ public class ExcelManager {
                     Cell newCell = newRow.createCell(j);
 
                     if (oldCell != null) {
+                        // Copiar el tipo de celda
                         switch (oldCell.getCellType()) {
                             case STRING:
                                 newCell.setCellValue(oldCell.getStringCellValue());
@@ -493,13 +454,36 @@ public class ExcelManager {
                             case NUMERIC:
                                 newCell.setCellValue(oldCell.getNumericCellValue());
                                 break;
+                            case BOOLEAN:
+                                newCell.setCellValue(oldCell.getBooleanCellValue());
+                                break;
+                            case FORMULA:
+                                newCell.setCellFormula(oldCell.getCellFormula());
+                                break;
+                            case BLANK:
+                                newCell.setBlank();
+                                break;
+                            // Otros tipos de celda según sea necesario
                             default:
                                 break;
                         }
+
+                        // Aplicar el estilo a la nueva celda
+                        newCell.setCellStyle(crearEstiloParaCelda(oldCell, newSheet.getWorkbook()));
                     }
                 }
             }
         }
+    }
+
+    // Método para crear un nuevo estilo de celda basado en el estilo de otra celda
+    private CellStyle crearEstiloParaCelda(Cell oldCell, Workbook newWorkbook) {
+        CellStyle newStyle = newWorkbook.createCellStyle();
+
+        // Copia las propiedades que consideres necesarias
+        newStyle.cloneStyleFrom(oldCell.getCellStyle());
+
+        return newStyle;
     }
 
     // Método auxiliar para crear un estilo de celda en rojo
@@ -514,17 +498,18 @@ public class ExcelManager {
 
     // Método auxiliar para agregar el total al final de la hoja
     private void agregarTotal(Sheet sheet, double total, String label, CellStyle style) {
-        int lastRow = sheet.getLastRowNum() + ONE; // La siguiente fila vacía
+        int lastRow = sheet.getLastRowNum() + 1; // La siguiente fila vacía
         Row totalRow = sheet.createRow(lastRow);
-        Cell totalLabelCell = totalRow.createCell(ONE); // Columna 1 para la etiqueta
+        Cell totalLabelCell = totalRow.createCell(0); // Columna 0 para la etiqueta
         totalLabelCell.setCellValue(label);
 
-        Cell totalValueCell = totalRow.createCell(TWO); // Columna 2 para el valor total
+        Cell totalValueCell = totalRow.createCell(1); // Columna 1 para el valor total
         totalValueCell.setCellValue(total);
 
         // Aplicar el estilo de color rojo a la celda del total
         totalValueCell.setCellStyle(style);
     }
+
     // Método auxiliar para guardar el archivo en el directorio
     private void guardarArchivo(Workbook workbook) throws IOException {
         // Crear el directorio si no existe

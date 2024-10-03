@@ -54,9 +54,10 @@ public class UIHelpers {
         return dialog;
     }
 
-    public static JPanel createInputPanel() {
-        JPanel inputPanel = new JPanel(new GridLayout(FOUR, TWO));
+    public static JPanel createInputPanel(JTable table, VentaMesaManager ventaMesaManager) {
+        JPanel inputPanel = new JPanel(new GridLayout(3, 2)); // Tres filas, dos columnas
 
+        // Primera fila: ComboBox de productos
         inputPanel.add(new JLabel(PRODUCT_FIELD));
         productComboBox = new JComboBox<>();
         java.util.List<Producto> productos = productoManager.getProducts();
@@ -65,17 +66,21 @@ public class UIHelpers {
         }
         inputPanel.add(productComboBox);
 
+        // Segunda fila: Spinner de cantidad
         inputPanel.add(new JLabel(CANTIDAD_FIELD));
-        cantidadSpinner = new JSpinner(new SpinnerNumberModel(ONE, ONE, ONE_HUNDRED, ONE)); // Incremento en 1
+        cantidadSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1)); // Incremento en 1
         inputPanel.add(cantidadSpinner);
 
-        inputPanel.add(new JLabel(DINERO_RECIBIDO));
-        dineroRecibidoField = UIHelpers.createTextField();
-        inputPanel.add(dineroRecibidoField);
+        // Tercera fila: Espacio vacío para alineación, y el botón alineado a la derecha
+        inputPanel.add(new JLabel("")); // Espacio vacío en la primera celda de la fila
 
-        inputPanel.add(new JLabel(COMPRA_TOTAL));
-        dineroTotalField = UIHelpers.createTextField();
-        inputPanel.add(dineroTotalField);
+        // Crear un panel para el botón con FlowLayout alineado a la derecha
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton agregarProductoButton = createAddProductMesaButton(table, ventaMesaManager);
+        buttonPanel.add(agregarProductoButton);
+
+        // Añadir el buttonPanel al inputPanel (segunda celda de la tercera fila)
+        inputPanel.add(buttonPanel);
 
         return inputPanel;
     }
@@ -178,7 +183,7 @@ public class UIHelpers {
                 totalCompraLabel.setText(TOTAL_COMPRA_PESO + total);
 
                 ventaManager.addProductToCart(producto, cantidad);
-                dineroTotalField.setText(String.valueOf(total));
+                /*dineroTotalField.setText(String.valueOf(total));*/
 
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(compraDialog, INVALID_AMOUNT, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
