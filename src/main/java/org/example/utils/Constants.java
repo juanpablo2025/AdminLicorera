@@ -64,7 +64,7 @@ public class Constants {
     public static final String CONFIRM_PURCHASE = "Confirmar Compra";
     public static final String CHANGE_PESO = "Devuelto: $";
     public static final String CHANGE_GUION = "Devuelto: -";
-    public static final String PURCHASE_SUCCEDED = "Venta realizada con éxito. Total: $";
+    public static final String PURCHASE_SUCCEDED = "Venta realizada con éxito.";
     public static final String INVALID_MONEY = "Dinero recibido debe ser un número válido.";
     public static final String EMPTY = " ";
 

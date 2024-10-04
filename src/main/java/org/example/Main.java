@@ -806,14 +806,14 @@ public class Main {
 
                 // Preguntar al usuario si quiere imprimir la factura
                 int respuesta = JOptionPane.showConfirmDialog(null, PRINT_BILL, COMFIRM_TITLE, JOptionPane.YES_NO_OPTION);
-
+                NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
                 if (respuesta == JOptionPane.YES_OPTION) {
                     // Si el usuario selecciona 'Sí', generar e imprimir la factura
                     ventaMesaManager.generarFactura(ventaID, Collections.singletonList(listaProductosEnLinea.toString()), total, dateTime);
                 }
 
                 // Mostrar un mensaje de éxito de la compra
-                JOptionPane.showMessageDialog(compraDialog, PURCHASE_SUCCEDED + total);
+                JOptionPane.showMessageDialog(compraDialog, PURCHASE_SUCCEDED +"\n"+"Total: $ " + formatCOP.format(total));
 
                 // Cerrar el diálogo de la venta
                 compraDialog.dispose();
@@ -971,7 +971,7 @@ public class Main {
                             workbook.write(fos);
                         }
 
-                        JOptionPane.showMessageDialog(null, "Compra guardada para la mesa " + mesaID + ".");
+                        JOptionPane.showMessageDialog(null, "Compra guardada para la: " + mesaID + ".");
                     } else {
                         JOptionPane.showMessageDialog(null, "Hoja 'mesas' no encontrada en el archivo Excel.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
