@@ -136,7 +136,7 @@ public class VentaManager {
             // Definir el tamaño de la página con el alto dinámico
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
 
-            String nombreArchivo = System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador\\Facturas\\" + BILL_FILE + ventaID + PDF_FORMAT;
+            String nombreArchivo = System.getProperty("user.home") + "\\Calculadora del Administrador\\Facturas\\" + BILL_FILE + ventaID + PDF_FORMAT;
             File pdfFile = new File(nombreArchivo);
             PdfWriter writer = new PdfWriter(nombreArchivo);
             PdfDocument pdfDoc = new PdfDocument(writer);

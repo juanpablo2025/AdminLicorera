@@ -31,13 +31,13 @@ import static org.example.utils.Constants.*;
 
 public class ExcelManager {
     public static final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
-    public static final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
+    public static final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Calculadora del Administrador";
     public static final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
     static LocalDateTime fechaHora = LocalDateTime.now();
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH_mm_ss");
     static String fechaFormateada = fechaHora.format(formatter);
 
-    public static final String DIRECTORY_PATH_FACTURACION = System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
+    public static final String DIRECTORY_PATH_FACTURACION = System.getProperty("user.home") + "\\Calculadora del Administrador";
     public static final String FACTURACION_FILENAME = "\\Facturacion\\Facturacion"+ fechaFormateada+".xlsx";
 
     public ExcelManager() {
@@ -275,7 +275,7 @@ public class ExcelManager {
 
     // Método para limpiar la carpeta de facturas
     public void limpiarFacturas() {
-        String rutaFacturas = System.getProperty("user.home") +"\\Documents\\Calculadora del Administrador\\Facturas";
+        String rutaFacturas = System.getProperty("user.home") +"\\Calculadora del Administrador\\Facturas";
         borrarContenidoCarpeta(rutaFacturas);
     }
 
@@ -306,7 +306,7 @@ public class ExcelManager {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         // Ruta del archivo
-        String carpetaPath = System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador\\Realizo";
+        String carpetaPath = System.getProperty("user.home") + "\\Calculadora del Administrador\\Realizo";
         File carpeta = new File(carpetaPath);
 
         // Crear la carpeta si no existe
@@ -543,7 +543,7 @@ public class ExcelManager {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
         // Ruta del archivo
-        String carpetaPath = System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador\\Resumen del día";
+        String carpetaPath = System.getProperty("user.home") + "\\Calculadora del Administrador\\Resumen del día";
         File carpeta = new File(carpetaPath);
 
         // Crear la carpeta si no existe

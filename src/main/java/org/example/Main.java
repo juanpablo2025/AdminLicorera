@@ -219,7 +219,7 @@ public class Main {
 
     }*/
     public static void crearDirectorios() {
-        String documentosPath = System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
+        String documentosPath = System.getProperty("user.home") + "\\Calculadora del Administrador";
         String facturacionPath = documentosPath + "\\Facturacion";
         String facturasPath = documentosPath + "\\Facturas";
         String realizadoPath = documentosPath + "\\Realizo";
@@ -431,7 +431,7 @@ public class Main {
     private static ArrayList<Mesa> cargarMesasDesdeExcel() {
 
          final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
-         final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
+         final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Calculadora del Administrador";
          final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
 
             ArrayList<Mesa> mesas = new ArrayList<>();
@@ -537,7 +537,7 @@ public class Main {
 
     private static void agregarMesaAExcel(Mesa nuevaMesa) {
         final String FILE_NAME = "productos.xlsx";
-        final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
+        final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Calculadora del Administrador";
         final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
         String filePath = FILE_PATH; // Reemplaza con la ruta correcta
         try (FileInputStream fis = new FileInputStream(filePath);
@@ -993,7 +993,7 @@ public class Main {
 
     private static List<String[]> cargarProductosMesaDesdeExcel(String mesaID) {
         final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
-        final String DIRECTORY_PATH = System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
+        final String DIRECTORY_PATH = System.getProperty("user.home") + "\\Calculadora del Administrador";
         final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
 
         List<String[]> productosMesa = new ArrayList<>();
