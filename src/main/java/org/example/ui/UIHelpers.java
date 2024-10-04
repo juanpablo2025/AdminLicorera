@@ -10,6 +10,7 @@ import org.example.model.Producto;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -57,9 +58,17 @@ public class UIHelpers {
     public static JPanel createInputPanel(JTable table, VentaMesaManager ventaMesaManager) {
         JPanel inputPanel = new JPanel(new GridLayout(3, 2)); // Tres filas, dos columnas
 
+        // Definir la fuente que se aplicará a todos los componentes
+        Font labelFont = new Font("Arial", Font.BOLD, 16);
+        Font inputFont = new Font("Arial", Font.PLAIN, 14); // Para los campos de entrada
+
         // Primera fila: ComboBox de productos
-        inputPanel.add(new JLabel(PRODUCT_FIELD));
+        JLabel productLabel = new JLabel(PRODUCT_FIELD);
+        productLabel.setFont(labelFont);
+        inputPanel.add(productLabel);
+
         productComboBox = new JComboBox<>();
+        productComboBox.setFont(new Font("Arial", Font.BOLD, 18)); // Cambiar la fuente del ComboBox
         java.util.List<Producto> productos = productoManager.getProducts();
         for (Producto producto : productos) {
             productComboBox.addItem(producto.getName());
@@ -67,16 +76,22 @@ public class UIHelpers {
         inputPanel.add(productComboBox);
 
         // Segunda fila: Spinner de cantidad
-        inputPanel.add(new JLabel(CANTIDAD_FIELD));
-        cantidadSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1)); // Incremento en 1
+        JLabel cantidadLabel = new JLabel(CANTIDAD_FIELD);
+        cantidadLabel.setFont(labelFont);
+        inputPanel.add(cantidadLabel);
+
+        cantidadSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+        JSpinner.DefaultEditor spinnerEditor = (JSpinner.DefaultEditor) cantidadSpinner.getEditor();
+        spinnerEditor.getTextField().setFont(new Font("Arial", Font.BOLD, 18)); // Cambiar la fuente del Spinner
         inputPanel.add(cantidadSpinner);
 
-        // Tercera fila: Espacio vacío para alineación, y el botón alineado a la derecha
+        // Tercera fila: Espacio vacío para alineación y el botón alineado a la derecha
         inputPanel.add(new JLabel("")); // Espacio vacío en la primera celda de la fila
 
         // Crear un panel para el botón con FlowLayout alineado a la derecha
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton agregarProductoButton = createAddProductMesaButton(table, ventaMesaManager);
+        agregarProductoButton.setFont(new Font("Arial", Font.BOLD, 20)); // Fuente del botón
         buttonPanel.add(agregarProductoButton);
 
         // Añadir el buttonPanel al inputPanel (segunda celda de la tercera fila)
@@ -166,24 +181,36 @@ public class UIHelpers {
                 String selectedProduct = (String) productComboBox.getSelectedItem();
                 int cantidad = (int) cantidadSpinner.getValue();
 
+                if (cantidad <= 0) {
+                    JOptionPane.showMessageDialog(null, "La cantidad debe ser mayor que 0.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 Producto producto = productoManager.getProductByName(selectedProduct);
-                double precioUnitario = producto.getPrice();
-                double totalProducto = precioUnitario * cantidad;
+
+                // Verificar que el producto tiene suficiente stock
+                if (producto.getCantidad() < cantidad) {
+                    JOptionPane.showMessageDialog(null, "No hay suficiente stock para el producto: " + selectedProduct, "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+
 
                 // Añadir producto a la tabla
+                double precioUnitario = producto.getPrice();
+                double totalProducto = precioUnitario * cantidad;
                 tableModel.addRow(new Object[]{selectedProduct, cantidad, precioUnitario, totalProducto, "X"});
 
                 // Calcular el total general
-                double total = ZERO_DOUBLE;
-                for (int i = ZERO; i < tableModel.getRowCount(); i++) {
-                    total += (double) tableModel.getValueAt(i, THREE);
+                double total = 0;
+                for (int i = 0; i < tableModel.getRowCount(); i++) {
+                    total += (double) tableModel.getValueAt(i, 3);  // Sumar la columna del total (index 3)
                 }
                 totalLabel.setText(TOTAL_PESO + total);
-
                 totalCompraLabel.setText(TOTAL_COMPRA_PESO + total);
 
+                // Añadir el producto al carrito de ventas
                 ventaManager.addProductToCart(producto, cantidad);
-                /*dineroTotalField.setText(String.valueOf(total));*/
 
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(compraDialog, INVALID_AMOUNT, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);

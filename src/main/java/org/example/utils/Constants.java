@@ -6,8 +6,8 @@ public class Constants {
 
     public static final String CALCULADORA_ADMINISTRADOR = "Calculadora del Administrador";
     public static final String VENTA = "Venta";
-    public static final String LISTAR_PRODUCTOS = "Listar Productos";
-    public static final String SALIR_FACTURAR = "Salir/Facturar";
+    public static final String LISTAR_PRODUCTOS = "LISTA DE PRODUCTOS";
+    public static final String SALIR_FACTURAR = "FACTURAR Y SALIR";
 
 
     //Salir/Facturar
@@ -17,7 +17,7 @@ public class Constants {
     //Lista de productos
     public static final String PRODUCT_LIST = "Lista de Productos";
     public static final String CLOSE_BUTTON = "Cerrar";
-    public static final String STRINGBUILDER = "ID\tNombre\tCantidad\tPrecio\n";
+    public static final String STRINGBUILDER = "Nombre\tCantidad\tPrecio\n";
     public static final String T = "\t";
     public static final String N = "\n";
 
@@ -55,8 +55,8 @@ public class Constants {
     public static final String FACTURACION ="Facturacion_";
     public static final String ID ="Id";
     public static final String X_BTN = "X";
-    public static final String PRODUCT_FIELD = "Producto: ";
-    public static final String CANTIDAD_FIELD = "Cantidad: ";
+    public static final String PRODUCT_FIELD = "PRODUCTO:";
+    public static final String CANTIDAD_FIELD = "CANTIDAD:";
     public static final String DINERO_RECIBIDO = "Dinero Recibido: ";
     public static final String COMPRA_TOTAL = "Compra Total: ";
     public static final String INVALID_AMOUNT = "Cantidad inválida. Por favor, ingresa un número válido.";
@@ -70,7 +70,7 @@ public class Constants {
 
 
 // ARCHIVOS   CAMBIAR RUTAS
-    public static final String FILE_NAME = "productos.xlsx";
+    public static final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
     public static final String PRODUCTS_SHEET_NAME = "Productos";
     public static final String PURCHASES_SHEET_NAME = "Ventas";
     public static final String BILL_FILE = "Factura N°";

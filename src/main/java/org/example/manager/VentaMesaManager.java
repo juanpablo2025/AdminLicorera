@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.List;
 
 
+import static org.example.manager.VentaManager.imprimirPDF;
 import static org.example.utils.Constants.*;
 import static org.example.utils.Constants.EIGHT;
 
@@ -79,6 +80,8 @@ public class VentaMesaManager {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String fechaFormateada = fechaHora.format(formatter);
+
+
 
             // Ancho del papel térmico
             float anchoMm = 58;  // Ancho en mm
@@ -150,12 +153,33 @@ public class VentaMesaManager {
                     .setFont(fontBold)
                     .setFontSize(TEN));
 
-            // Agregar productos
+            // Crear un formateador de moneda para Colombia
+            NumberFormat formatoColombiano = NumberFormat.getCurrencyInstance(new Locale("es", "CO"));
+
+// Agregar productos con formato de moneda colombiano
             for (String producto : productos) {
-                document.add(new Paragraph(String.valueOf(producto))
-                        .setFont(fontNormal)
-                        .setFontSize(EIGHT));
-            }
+                // Suponiendo que el formato de cada producto es "nombreProducto xCantidad $precioUnitario"
+                String[] detallesProducto = producto.split(" ");
+                if (detallesProducto.length >= 3) {
+                    // Extraer el nombre del producto y el precio unitario
+                    String nombreProducto = detallesProducto[0];
+                    String cantidadStr = detallesProducto[1]; // Ejemplo: "x2"
+                    String precioStr = detallesProducto[2];   // Ejemplo: "$1000.0"
+
+                    // Convertir el precio a double (sin el símbolo "$")
+                    double precioUnitario = Double.parseDouble(precioStr.substring(1));
+
+                    // Formatear el precio en el formato de moneda colombiano (COP)
+                    NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
+                    String formattedPrice = formatCOP.format(precioUnitario);
+                    // Crear el texto del producto con el formato de moneda colombiano
+                    String productoConPrecioFormateado = nombreProducto + " " + cantidadStr + " " + formattedPrice;
+
+                    // Agregar el producto al documento con el nuevo formato de precio
+                    document.add(new Paragraph(productoConPrecioFormateado)
+                            .setFont(fontNormal)
+                            .setFontSize(EIGHT));
+                }}
 
             document.add(new Paragraph(new String(new char[33]).replace(SLASH_ZERO, EQUALS))
                     .setFont(fontNormal)
@@ -191,8 +215,8 @@ public class VentaMesaManager {
             document.close();
 
             // Método para abrir el PDF después de generarlo
-            abrirPDF(nombreArchivo);
-            //imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
+            //abrirPDF(nombreArchivo);
+            imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -224,10 +248,10 @@ public class VentaMesaManager {
         try (FileInputStream fis = new FileInputStream(ExcelManager.FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
-            // Verificar si la pestaña "mesas" ya existe
-            Sheet mesasSheet = workbook.getSheet("mesas");
+            // Verificar si la pestaña "Mesas" ya existe
+            Sheet mesasSheet = workbook.getSheet("Mesas");
             if (mesasSheet == null) {
-                mesasSheet = workbook.createSheet("mesas");
+                mesasSheet = workbook.createSheet("Mesas");
                 Row headerRow = mesasSheet.createRow(0);
                 headerRow.createCell(0).setCellValue("Mesa ID");
                 headerRow.createCell(1).setCellValue("Estado");

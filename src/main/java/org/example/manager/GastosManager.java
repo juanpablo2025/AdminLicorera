@@ -8,7 +8,9 @@ import org.example.model.Producto;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 
 import static org.example.utils.Constants.*;
@@ -35,14 +37,15 @@ public class GastosManager {
                 headerRow.createCell(3).setCellValue("Precio Compra");
                 headerRow.createCell(4).setCellValue("Fecha y Hora");
             }
-
+            LocalDateTime fechaHora = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             // Añadir el registro del gasto
             int lastRowNum = gastosSheet.getLastRowNum();
             Row newRow = gastosSheet.createRow(lastRowNum + 1);
             newRow.createCell(1).setCellValue(nombreGasto);
             newRow.createCell(2).setCellValue(i);
             newRow.createCell(3).setCellValue(precio);  // Guardar el precio ingresado
-            newRow.createCell(4).setCellValue(java.time.LocalDateTime.now().toString());
+            newRow.createCell(4).setCellValue(formatter.format(fechaHora));
 
             // Guardar los cambios en el archivo Excel
             try (FileOutputStream fos = new FileOutputStream(ExcelManager.FILE_PATH)) {
@@ -102,6 +105,9 @@ public class GastosManager {
                 headerRow.createCell(4).setCellValue("Fecha y Hora");
             }
 
+            LocalDateTime fechaHora = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+            String fechaFormateada = fechaHora.format(formatter);
             // Añadir el registro del gasto
             int lastRowNum = gastosSheet.getLastRowNum();
             Row newRow = gastosSheet.createRow(lastRowNum + 1);
@@ -109,7 +115,7 @@ public class GastosManager {
             newRow.createCell(1).setCellValue(producto.getName());
             newRow.createCell(2).setCellValue(cantidad);
             newRow.createCell(3).setCellValue(precioCompra);  // Guardar el precio ingresado
-            newRow.createCell(4).setCellValue(java.time.LocalDateTime.now().toString());
+            newRow.createCell(4).setCellValue(fechaFormateada);
 
             // Guardar los cambios en el archivo Excel
             try (FileOutputStream fos = new FileOutputStream(ExcelManager.FILE_PATH)) {

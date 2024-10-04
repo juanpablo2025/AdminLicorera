@@ -7,13 +7,17 @@ import org.example.model.Producto;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
@@ -33,75 +37,149 @@ public class Main {
     public static void main(String[] args) {
         crearDirectorios();
         JFrame frame = new JFrame(CALCULADORA_ADMINISTRADOR);
-        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // Cambiar a DO_NOTHING_ON_CLOSE
-        frame.setUndecorated(true); // Quitar los decorados de la ventana
-        frame.setSize(FOUR_HUNDRED, FOUR_HUNDRED);
-        frame.setLayout(new GridLayout(TWO, ONE));
-        VentaMesaManager.initializeMesasSheet(); // Inicializar la pestaña de mesas en el archivo Excel
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // Evitar cerrar directamente
+        frame.setUndecorated(true); // Quitar bordes
+        frame.setSize(600, 400); // Tamaño de la ventana
 
+        // Crear un panel principal con un fondo azul oscuro y márgenes
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(new Color(45, 85, 135)); // Fondo azul oscuro para el panel principal
+
+        // Panel central con botones
+        JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 10, 10)); // Grid 2x2 con espacio entre botones
+        buttonPanel.setBackground(new Color(45, 85, 135)); // Fondo azul oscuro para las líneas de los botones
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Añadir márgenes alrededor del panel
+
+        // Inicializar la pestaña de mesas en el archivo Excel
+        VentaMesaManager.initializeMesasSheet();
 
         FacturacionManager facturacionManager = new FacturacionManager(); // Instancia de FacturacionManager
 
-        // Botones principales
-        //JButton ventaButton = createButton(VENTA, e -> showVentaDialog());
+        // Crear botones estilizados
+
         JButton adminProductosButton = createButton(LISTAR_PRODUCTOS, e -> showListProductsDialog());
-        JButton gastosButton = createButton("Gastos", e -> showGastosDialog());
-        JButton mesasButton = createButton("Administrar Mesas", e -> showMesas()); // Nuevo botón para administrar mesas
+        adminProductosButton.setFont(new Font("Arial", Font.BOLD, 18)); // Fuente y tamaño
+
+        JButton gastosButton = createButton("GASTOS", e -> showGastosDialog());
+        gastosButton.setFont(new Font("Arial", Font.BOLD, 18)); // Fuente y tamaño
+
+        JButton mesasButton = createButton("MESAS", e -> showMesas());
+        mesasButton.setFont(new Font("Arial", Font.BOLD, 18)); // Fuente y tamaño
 
         JButton salirButton = createButton(SALIR_FACTURAR, e -> {
-            // Mostrar un cuadro de diálogo solicitando que el usuario escriba "Facturar"
             String input = JOptionPane.showInputDialog(null, POR_FAVOR_ESCRIBE_FACTURAR, CONFIRMAR_FACTURACION, JOptionPane.QUESTION_MESSAGE);
-
-            // Verificar si el usuario ingresó correctamente la palabra "Facturar"
             if (facturacionManager.verificarFacturacion(input)) {
-                // Si la palabra es correcta, se procede a facturar y salir
                 facturacionManager.facturarYSalir();
-
             } else {
-                // Si la palabra es incorrecta o el usuario cancela, mostrar un mensaje y regresar al menú principal
                 facturacionManager.mostrarErrorFacturacion();
             }
         });
-       frame.add(mesasButton); // Añadir el botón de mesas
+        salirButton.setFont(new Font("Arial", Font.BOLD, 18)); // Fuente y tamaño
 
-        //frame.add(ventaButton);
-        frame.add(adminProductosButton);
-        frame.add(gastosButton);
-        frame.add(salirButton);
 
-        // Centrar el frame en la pantalla
+        // Añadir botones al panel de botones
+        buttonPanel.add(mesasButton);
+        buttonPanel.add(adminProductosButton);
+        buttonPanel.add(gastosButton);
+        buttonPanel.add(salirButton);
+
+        // Añadir el panel de botones al panel principal
+        mainPanel.add(buttonPanel, BorderLayout.CENTER); // Centrar el panel de botones
+
+        // Añadir el panel principal a la ventana
+        frame.add(mainPanel);
+
+        // Centrar la ventana
         frame.setLocationRelativeTo(null);
 
         // Mostrar la ventana principal
         frame.setVisible(true);
     }
 
+    // Método auxiliar para crear botones estilizados
+    private static JButton createStyledButton(String text, ActionListener action) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.BOLD, 18)); // Fuente y tamaño
+        button.setForeground(Color.DARK_GRAY); // Texto en negro
+        button.setBackground(Color.LIGHT_GRAY); // Fondo gris claro
+        button.setFocusPainted(false); // Sin borde de enfoque
+        button.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2)); // Borde negro
+        button.setPreferredSize(new Dimension(150, 50)); // Tamaño del botón
+
+        // Añadir efecto hover (cambiar color al pasar el ratón)
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(Color.GRAY); // Color más oscuro al pasar el ratón
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(Color.LIGHT_GRAY); // Color original
+            }
+        });
+
+        button.addActionListener(action);
+        return button;
+    }
+
+    // Método auxiliar para crear botones estilizados con fondo gris claro y línea azul oscura
+
+
+
+
     private static void showListProductsDialog() {
         // Crear el diálogo
-        JDialog listProductsDialog = createDialog(LISTAR_PRODUCTO, FOUR_HUNDRED, THREE_HUNDRED, new BorderLayout());
+        JDialog listProductsDialog = createDialog(LISTAR_PRODUCTO, 1000, 600, new BorderLayout());
+        listProductsDialog.setResizable(true); // Permitir que la ventana sea redimensionable
 
-        // Crear el área de texto
-        JTextArea textArea = new JTextArea();
-        textArea.setEditable(false);
-
-        // Obtener la lista de productos y formatearla
+        // Obtener la lista de productos
         List<Producto> products = productoManager.getProducts();
-        String formattedProductList = productoManager.formatProductList(products);
+        String[] columnNames = {"Nombre", "Cantidad", "Precio"};
+        Object[][] data = new Object[products.size()][3];
 
-        // Asignar la lista formateada al área de texto
-        textArea.setText(formattedProductList);
+        // Llenar los datos en la matriz
+        for (int i = 0; i < products.size(); i++) {
+            NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
+            Producto p = products.get(i);
+            double precio = p.getPrice();
+            data[i][0] = p.getName(); // Nombre
+            data[i][1] = p.getQuantity(); // Cantidad
+            data[i][2] = formatCOP.format(precio);
+        }
 
-        // Añadir el área de texto dentro de un JScrollPane
-        listProductsDialog.add(new JScrollPane(textArea), BorderLayout.CENTER);
+        // Crear el JTable
+        JTable productTable = new JTable(data, columnNames);
+        productTable.setFillsViewportHeight(true);
+        productTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); // Ajustar automáticamente el tamaño de las columnas
+
+        // Establecer la fuente y el tamaño
+        Font font = new Font("Arial", Font.PLAIN, 18); // Cambiar el tipo y tamaño de fuente
+        productTable.setFont(font);
+        productTable.setRowHeight(30); // Aumentar la altura de las filas
+
+        // Establecer la fuente para el encabezado
+        JTableHeader header = productTable.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 20)); // Fuente más grande para el encabezado
+        header.setBackground(Color.LIGHT_GRAY); // Fondo para el encabezado
+        header.setForeground(Color.BLACK); // Color del texto del encabezado
+
+        // Configuración de borde para mejorar la visibilidad
+        productTable.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        productTable.setBackground(Color.WHITE); // Fondo de la tabla
+        productTable.setSelectionBackground(Color.CYAN); // Color de selección
+        productTable.setSelectionForeground(Color.BLACK); // Color del texto seleccionado
+
+        // Añadir el JTable dentro de un JScrollPane
+        JScrollPane scrollPane = new JScrollPane(productTable);
+        listProductsDialog.add(scrollPane, BorderLayout.CENTER);
 
         // Botón de cerrar
         JButton closeButton = createButton(CLOSE_BUTTON, e -> listProductsDialog.dispose());
+        closeButton.setFont(new Font("Arial", Font.BOLD, 18)); // Aumentar la fuente del botón
         listProductsDialog.add(closeButton, BorderLayout.SOUTH);
 
         // Mostrar el diálogo
         listProductsDialog.setVisible(true);
         listProductsDialog.setLocationRelativeTo(null);
-
     }
 
     /*private static void showAdminProductosDialog() {
@@ -168,11 +246,12 @@ public class Main {
 
 
     private static void showGastosDialog() {
-        JDialog gastosDialog = createDialog("Registrar Gastos", 300, 200, new GridLayout(2, 1));
+        JDialog gastosDialog = createDialog("Registrar Gastos", 400, 300, new GridLayout(2, 1));
 
         JButton reabastecimientoButton = createButton("Reabastecimiento", e -> showReabastecimientoDialog());
+        reabastecimientoButton.setFont(new Font("Arial", Font.BOLD, 18));
         JButton gastosGeneralesButton = createButton("Gastos Generales", e -> showGastosGeneralesDialog());
-
+        gastosGeneralesButton.setFont(new Font("Arial", Font.BOLD, 18));
         gastosDialog.add(reabastecimientoButton);
         gastosDialog.add(gastosGeneralesButton);
 
@@ -180,7 +259,7 @@ public class Main {
         gastosDialog.setVisible(true);
     }
     private static void showReabastecimientoDialog() {
-        JDialog reabastecimientoDialog = createDialog("Reabastecimiento de Productos", 300, 250, new GridLayout(4, 2));
+        JDialog reabastecimientoDialog = createDialog("Reabastecimiento de Productos", 500, 300, new GridLayout(4, 2));
 
         JComboBox<String> productComboBox = new JComboBox<>();
         List<Producto> productos = productoManager.getProducts();
@@ -193,17 +272,31 @@ public class Main {
         // Campo para ingresar el precio de la compra
         JTextField precioCompraField = new JTextField();
 
-        JButton confirmarReabastecimientoButton = createButton("Confirmar", e -> {
+        JButton confirmarReabastecimientoButton = createButton("CONFIRMAR", e -> {
             try {
                 String selectedProduct = (String) productComboBox.getSelectedItem();
                 int cantidad = (int) cantidadSpinner.getValue();
-                double precioCompra = Double.parseDouble(precioCompraField.getText());
+                //double precioCompra = Double.parseDouble(precioCompraField.getText());
+                String input = precioCompraField.getText(); // Por ejemplo, "3.500" o "3,500"
+
+
+                input = input.replace(".", "");
+
+                // Reemplazar la coma (si existe) por un punto para manejar decimales correctamente
+                input = input.replace(",", "");
+
+                // Convertir el input limpio a un double
+                double precio = Double.parseDouble(input);
+
+
+
+
 
                 Producto producto = productoManager.getProductByName(selectedProduct);
 
                 // Guardar el reabastecimiento en Excel sin hacer operaciones adicionales
                 GastosManager gastosManager = new GastosManager();
-                gastosManager.reabastecerProducto(producto, cantidad, precioCompra);
+                gastosManager.reabastecerProducto(producto, cantidad, precio);
 
                 // Mostrar mensaje de éxito
                 JOptionPane.showMessageDialog(null, "Producto reabastecido correctamente.");
@@ -217,13 +310,17 @@ public class Main {
             }
         });
 
-        reabastecimientoDialog.add(new JLabel("Producto:"));
+        reabastecimientoDialog.add(new JLabel("PRODUCTO:"));
+        productComboBox.setFont(new Font("Arial", Font.PLAIN, 18));
         reabastecimientoDialog.add(productComboBox);
-        reabastecimientoDialog.add(new JLabel("Cantidad:"));
+        reabastecimientoDialog.add(new JLabel("CANTIDAD:"));
+        cantidadSpinner.setFont(new Font("Arial", Font.PLAIN, 18));
         reabastecimientoDialog.add(cantidadSpinner);
-        reabastecimientoDialog.add(new JLabel("Precio de la compra:"));
+        reabastecimientoDialog.add(new JLabel("PRECIO TOTAL DE LA COMPRA:"));
+        precioCompraField.setFont(new Font("Arial", Font.PLAIN, 18));
         reabastecimientoDialog.add(precioCompraField);  // Añadir el campo de texto para el precio
         reabastecimientoDialog.add(confirmarReabastecimientoButton);
+        confirmarReabastecimientoButton.setFont(new Font("Arial", Font.BOLD, 18));
 
         reabastecimientoDialog.setLocationRelativeTo(null);
         reabastecimientoDialog.setVisible(true);
@@ -231,15 +328,25 @@ public class Main {
 
 
     private static void showGastosGeneralesDialog() {
-        JDialog gastosGeneralesDialog = createDialog("Registrar Gastos Generales", 300, 150, new GridLayout(3, 2));
+        JDialog gastosGeneralesDialog = createDialog("Registrar Gastos Generales", 500, 200, new GridLayout(3, 2));
 
         JTextField nombreGastoField = new JTextField(); // Campo para la descripción del gasto
         JTextField precioField = new JTextField();      // Campo para el precio del gasto
 
-        JButton confirmarGastoButton = createButton("Confirmar", e -> {
+        JButton confirmarGastoButton = createButton("CONFIRMAR", e -> {
             try {
                 String nombreGasto = nombreGastoField.getText();
-                double precio = Double.parseDouble(precioField.getText());
+                String input = precioField.getText(); // Por ejemplo, "3.500" o "3,500"
+
+
+                input = input.replace(".", "");
+
+                // Reemplazar la coma (si existe) por un punto para manejar decimales correctamente
+                input = input.replace(",", "");
+
+                // Convertir el input limpio a un double
+                double precio = Double.parseDouble(input);
+
 
                 // Lógica para registrar el gasto en el Excel
                 GastosManager.saveGasto(nombreGasto, 1, precio); // Implementar la lógica de guardado en el Excel, sin cantidad
@@ -254,9 +361,9 @@ public class Main {
             }
         });
 
-        gastosGeneralesDialog.add(new JLabel("Descripción del Gasto:"));
+        gastosGeneralesDialog.add(new JLabel("DESCRIPCIÓN O RAZÓN DEL GASTO:"));
         gastosGeneralesDialog.add(nombreGastoField);
-        gastosGeneralesDialog.add(new JLabel("Precio:"));
+        gastosGeneralesDialog.add(new JLabel("PRECIO:"));
         gastosGeneralesDialog.add(precioField);
         gastosGeneralesDialog.add(confirmarGastoButton);
 
@@ -323,7 +430,7 @@ public class Main {
     // Método para cargar las mesas desde el archivo Excel
     private static ArrayList<Mesa> cargarMesasDesdeExcel() {
 
-         final String FILE_NAME = "productos.xlsx";
+         final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
          final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
          final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
 
@@ -375,21 +482,28 @@ public class Main {
         TitledBorder border = BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(Color.BLACK, 2),
                 "Mesa " + mesa.getId(), // Mostrar el número de la mesa
-                TitledBorder.CENTER, TitledBorder.TOP);
+                TitledBorder.CENTER, TitledBorder.TOP
+        );
+
+        // Establecer la fuente personalizada para el título
+        border.setTitleFont(new Font("Arial", Font.BOLD, 13));
+
 
         // Asignar el borde al panel de la mesa
         mesaPanel.setBorder(border);
-
         // Cambiar color de fondo según estado de ocupación
         mesaPanel.setBackground(mesa.isOcupada() ? Color.RED : Color.GREEN);
 
         // Texto descriptivo dentro de la mesa
-        JLabel mesaLabel = new JLabel(mesa.isOcupada() ? "Ocupada" : "Libre", SwingConstants.CENTER);
-        mesaLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        mesaLabel.setForeground(Color.WHITE);
+        JLabel mesaLabel = new JLabel(mesa.isOcupada() ? "OCUPADA" : "LIBRE", SwingConstants.CENTER);
+        mesaLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        mesaLabel.setForeground(Color.BLACK);
 
         // Crear el botón "Atender Mesa"
-        JButton editarButton = new JButton("Atender Mesa");
+        JButton editarButton = new JButton("ATENDER MESA");
+        editarButton.setFont(new Font("Arial", Font.BOLD, 13));
+        // Fuente más grande para el encabezado
+
 
         // Añadir un ActionListener que capture el título del borde del panel (que contiene el ID de la mesa)
         editarButton.addActionListener(e -> {
@@ -411,6 +525,8 @@ public class Main {
         // Panel de botones
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(editarButton);
+        buttonPanel.setBackground(Color.GRAY);
+        buttonPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2)); /// Fondo blanco para los botones
 
         // Añadir componentes al panel de la mesa
         mesaPanel.add(mesaLabel, BorderLayout.CENTER); // Etiqueta en el centro
@@ -455,8 +571,8 @@ public class Main {
 
 
     public static void showVentaMesaDialog(List<String[]> productos, String mesaID) {
-        ventaMesaDialog = createDialog("Realizar Venta", 500, 400, new BorderLayout());
-
+        ventaMesaDialog = createDialog("Realizar Venta", 800, 600, new BorderLayout());
+        ventaMesaDialog.setResizable(true);
 
 
         // Crear la tabla de productos y cargar los productos de la mesa
@@ -483,11 +599,37 @@ public class Main {
 
         // Crear y añadir el panel del botón "Añadir" antes de la tabla
         /*JPanel addButtonPanel = addButtonPanelMesa(table, ventaMesaManager);
+
         ventaMesaDialog.add(addButtonPanel, BorderLayout.NORTH); */// Cambia a NORTH para que aparezca antes de la tabla
-        JPanel inputPanel = createInputPanel(table, ventaMesaManager);
-        ventaMesaDialog.add(inputPanel, BorderLayout.NORTH);
+        // Estilizar la tabla
+        table.setFillsViewportHeight(true);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); // Ajustar automáticamente el tamaño de las columnas
+
+        // Establecer la fuente y el tamaño
+        Font font = new Font("Arial", Font.PLAIN, 16); // Cambiar el tipo y tamaño de fuente
+        table.setFont(font);
+        table.setRowHeight(30); // Aumentar la altura de las filas
+
+        // Establecer la fuente para el encabezado
+        JTableHeader header = table.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 18)); // Fuente más grande para el encabezado
+        header.setBackground(Color.LIGHT_GRAY); // Fondo para el encabezado
+        header.setForeground(Color.BLACK); // Color del texto del encabezado
+
+        // Configuración de borde para mejorar la visibilidad
+        table.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        table.setBackground(Color.WHITE); // Fondo de la tabla
+        table.setSelectionBackground(Color.CYAN); // Color de selección
+        table.setSelectionForeground(Color.BLACK); // Color del texto seleccionado
+
+        // Crear el JScrollPane para la tabla
         JScrollPane tableScrollPane = new JScrollPane(table);
         ventaMesaDialog.add(tableScrollPane, BorderLayout.CENTER);
+
+
+        JPanel inputPanel = createInputPanel(table, ventaMesaManager);
+        ventaMesaDialog.add(inputPanel, BorderLayout.NORTH);
+
 
         JPanel totalPanel = createTotalPanel();
         ventaMesaDialog.add(totalPanel, BorderLayout.SOUTH);
@@ -518,8 +660,11 @@ public class Main {
         /*JButton agregarProductoButton = createAddProductMesaButton(table, ventaMesaManager);
         buttonPanel.add(agregarProductoButton);*/
         JButton guardarCompra = createSavePurchaseMesaButton(ventaMesaManager, mesaID); // Usar mesaID dinámicamente
+        guardarCompra.setFont(new Font("Arial", Font.BOLD, 18)); // Fuente del botón
+        buttonPanel.add(guardarCompra);
         JButton confirmarCompraButton = createConfirmPurchaseMesaButton(ventaMesaManager, compraDialog, mesaID); // Usar mesaID dinámicamente
-
+        confirmarCompraButton.setFont(new Font("Arial", Font.BOLD, 18)); // Fuente del botón
+        buttonPanel.add(confirmarCompraButton);
 
         buttonPanel.add(guardarCompra);
         buttonPanel.add(confirmarCompraButton);
@@ -585,6 +730,7 @@ public class Main {
                                 "No hay suficiente stock para " + nombreProducto + ". Stock disponible: " + producto.getCantidad(),
                                 "Error de stock",
                                 JOptionPane.ERROR_MESSAGE);
+                        ventaMesaDialog.dispose(); // Cerrar el diálogo de la venta
                         return; // Salir del método si no hay suficiente stock
                     }
 
@@ -654,7 +800,7 @@ public class Main {
                         }
 
                         // Mensaje indicando que la mesa fue limpiada
-                        JOptionPane.showMessageDialog(compraDialog, "Mesa " + mesaID + " ha sido limpiada y marcada como libre.");
+                        //JOptionPane.showMessageDialog(compraDialog, "Mesa " + mesaID + " ha sido limpiada y marcada como libre.");
                     }
                 }
 
@@ -709,25 +855,6 @@ public class Main {
 
                 double total = ventaMesaManager.getTotalCartAmount(); // Obtener el total de la compra
                 LocalDateTime dateTime = LocalDateTime.now(); // Fecha y hora actuales
-                StringBuilder listaProductosNuevos = new StringBuilder();
-
-                // Construir la lista de productos con cantidad
-                for (Map.Entry<String, Integer> entry : productosComprados.entrySet()) {
-                    String nombreProducto = entry.getKey();
-                    int cantidad = entry.getValue();
-                    Producto producto = productoManager.getProductByName(nombreProducto);
-                    double precioUnitario = producto.getPrice();
-                    double precioTotal = precioUnitario * cantidad;
-
-                    listaProductosNuevos.append(nombreProducto)
-                            .append(" x")
-                            .append(cantidad)
-                            .append(" $")
-                            .append(precioUnitario)
-                            .append(" = ")
-                            .append(precioTotal)
-                            .append("\n"); // Asegura que cada producto termine con un salto de línea
-                }
 
                 // Guardar la compra en la pestaña "mesas"
                 try (FileInputStream fis = new FileInputStream(ExcelManager.FILE_PATH);
@@ -751,20 +878,74 @@ public class Main {
                                     }
                                     estadoCell.setCellValue("Ocupada");
 
-                                    // Leer productos existentes y agregar nuevos
+                                    // Leer productos existentes
                                     Cell productosCell = row.getCell(2); // Columna C: Productos
+                                    Map<String, Integer> productosExistentes = new HashMap<>(); // Para guardar productos ya registrados
+                                    Map<String, Double> preciosExistentes = new HashMap<>();   // Para guardar precios
+
+// Verificar si productosCell es null y crearla si es necesario
                                     if (productosCell == null) {
-                                        productosCell = row.createCell(2); // Crear si no existe
+                                        productosCell = row.createCell(2); // Crear celda si no existe
                                     }
 
-                                    String productosExistentes = "";
+// Ahora puedes proceder a leer los productos
                                     if (productosCell.getCellType() == CellType.STRING) {
-                                        productosExistentes = productosCell.getStringCellValue();
+                                        String[] lineasProductos = productosCell.getStringCellValue().split("\n");
+                                        for (String linea : lineasProductos) {
+                                            String[] partes = linea.split(" x| \\$| = "); // Separar por la estructura "producto x cantidad $precioUnitario = total"
+                                            if (partes.length == 4) {
+                                                String nombreProductoExistente = partes[0].trim();
+                                                int cantidadExistente = Integer.parseInt(partes[1]);
+                                                double precioTotalExistente = Double.parseDouble(partes[3]);
+
+                                                productosExistentes.put(nombreProductoExistente, cantidadExistente);
+                                                preciosExistentes.put(nombreProductoExistente, precioTotalExistente);
+                                            }
+                                        }
                                     }
 
-                                    // Concatenar los nuevos productos con los existentes, asegurando un salto de línea
-                                    String listaActualizada = productosExistentes.trim() + "\n" + listaProductosNuevos.toString();
-                                    productosCell.setCellValue(listaActualizada);
+                                    // Combinar productos nuevos con productos existentes
+                                    for (Map.Entry<String, Integer> entry : productosComprados.entrySet()) {
+                                        String nombreProducto = entry.getKey();
+                                        int cantidadNueva = entry.getValue();
+                                        Producto producto = productoManager.getProductByName(nombreProducto);
+                                        double precioUnitario = producto.getPrice();
+                                        double precioTotalNuevo = precioUnitario * cantidadNueva;
+
+                                        // Si el producto ya existe, actualizar cantidad y precios
+                                        if (productosExistentes.containsKey(nombreProducto)) {
+                                            int cantidadTotal = productosExistentes.get(nombreProducto) + cantidadNueva;
+                                            double precioTotal = preciosExistentes.get(nombreProducto) + precioTotalNuevo;
+
+                                            productosExistentes.put(nombreProducto, cantidadTotal);
+                                            preciosExistentes.put(nombreProducto, precioTotal);
+                                        } else {
+                                            // Si es nuevo, agregarlo
+                                            productosExistentes.put(nombreProducto, cantidadNueva);
+                                            preciosExistentes.put(nombreProducto, precioTotalNuevo);
+                                        }
+                                    }
+
+                                    // Construir la lista actualizada de productos
+                                    StringBuilder listaProductosActualizados = new StringBuilder();
+                                    for (Map.Entry<String, Integer> productoEntry : productosExistentes.entrySet()) {
+                                        String nombreProducto = productoEntry.getKey();
+                                        int cantidadTotal = productoEntry.getValue();
+                                        double precioTotal = preciosExistentes.get(nombreProducto);
+                                        double precioUnitario = precioTotal / cantidadTotal;  // Precio unitario calculado
+
+                                        listaProductosActualizados.append(nombreProducto)
+                                                .append(" x")
+                                                .append(cantidadTotal)
+                                                .append(" $")
+                                                .append(precioUnitario)
+                                                .append(" = ")
+                                                .append(precioTotal)
+                                                .append("\n");
+                                    }
+
+                                    // Guardar la lista actualizada de productos en la celda
+                                    productosCell.setCellValue(listaProductosActualizados.toString());
 
                                     // Guardar el total en la columna D
                                     Cell totalCell = row.getCell(3); // Columna D: Total de la compra
@@ -811,7 +992,7 @@ public class Main {
 
 
     private static List<String[]> cargarProductosMesaDesdeExcel(String mesaID) {
-        final String FILE_NAME = "productos.xlsx";
+        final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
         final String DIRECTORY_PATH = System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
         final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
 

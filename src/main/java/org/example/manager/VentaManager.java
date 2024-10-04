@@ -234,8 +234,8 @@ public class VentaManager {
             document.close();
 
             // Método para abrir el PDF después de generarlo
-           abrirPDF(nombreArchivo);
-            //imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
+           //abrirPDF(nombreArchivo);
+            imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
         } catch (IOException e) {
             e.printStackTrace();
         }

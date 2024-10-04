@@ -25,16 +25,20 @@ import java.util.Locale;
 
 
 import static org.example.manager.VentaManager.abrirPDF;
+import static org.example.manager.VentaManager.imprimirPDF;
 import static org.example.utils.Constants.*;
 
 
 public class ExcelManager {
-    public static final String FILE_NAME = "productos.xlsx";
+    public static final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
     public static final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
     public static final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
+    static LocalDateTime fechaHora = LocalDateTime.now();
+    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH_mm_ss");
+    static String fechaFormateada = fechaHora.format(formatter);
 
     public static final String DIRECTORY_PATH_FACTURACION = System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador";
-    public static final String FACTURACION_FILENAME = "\\Facturacion\\Facturacion"+ LocalDateTime.now().toString().replace(":", "-")+".xlsx";
+    public static final String FACTURACION_FILENAME = "\\Facturacion\\Facturacion"+ fechaFormateada+".xlsx";
 
     public ExcelManager() {
         // Verificar si la carpeta existe, si no, crearla
@@ -127,7 +131,6 @@ public class ExcelManager {
             for (int i = ONE; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row != null) {
-                    int id = (int) row.getCell(ZERO).getNumericCellValue();
                     String name = row.getCell(ONE).getStringCellValue();
                     int quantity = (int) row.getCell(TWO).getNumericCellValue();
                     double price = row.getCell(THREE).getNumericCellValue();
@@ -232,15 +235,17 @@ public class ExcelManager {
 
 
                 crearArchivoFacturacionYGastos(purchasesSheet, gastosSheet, totalCompra, totalGastos);
+                generarResumenDiarioEstilizadoPDF();
 
+                // Limpiar la hoja "Compras"
+                limpiarHojaCompras(purchasesSheet);
+                limpiarHojaCompras(gastosSheet);
                 // Guardar el archivo actualizado
                 try (FileOutputStream fos = new FileOutputStream(FILE_PATH.toString())) {
                     workbook.write(fos);
                     guardarTotalFacturadoEnArchivo(totalFinal); // Cambiar totalCompra a totalFinal
                 }
-                // Limpiar la hoja "Compras"
-                limpiarHojaCompras(purchasesSheet);
-                limpiarHojaCompras(gastosSheet);
+
 
                 // Borrar el contenido de la carpeta Facturas
                 limpiarFacturas();
@@ -354,7 +359,7 @@ public class ExcelManager {
             // Detalles del total facturado
             NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
             String formattedPrice = formatCOP.format(totalFacturado);
-            document.add(new Paragraph("Realizo Sistema: $" + formattedPrice + " pesos")
+            document.add(new Paragraph("Realizo: $" + formattedPrice + " pesos")
                     .setFont(fontBold)
                     .setFontSize(12)
                     .setTextAlignment(TextAlignment.LEFT)
@@ -396,8 +401,8 @@ public class ExcelManager {
                     .setTextAlignment(TextAlignment.CENTER));
 
             document.close();
-            abrirPDF(nombreArchivo);
-            //imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
+            //abrirPDF(nombreArchivo);
+            imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -407,9 +412,11 @@ public class ExcelManager {
     public void crearArchivoFacturacionYGastos(Sheet purchasesSheet, Sheet gastosSheet, double totalCompra, double totalGastos) throws IOException {
         // Crear un nuevo Workbook (archivo Excel)
         Workbook workbook = new XSSFWorkbook();
-
+        LocalDateTime fechaHoraFacturacion = LocalDateTime.now();
+        DateTimeFormatter formatterFac = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH_mm_ss");
+        String formatterFacturacion = fechaHoraFacturacion.format(formatterFac);
         // Crear la hoja "Facturacion"
-        String facturacionHojaNombre = "Facturacion_" + LocalDateTime.now().toString().replace(":", "-");
+        String facturacionHojaNombre = "Ventas_" + formatterFacturacion;
         Sheet facturacionSheet = workbook.createSheet(facturacionHojaNombre);
 
         // Copiar el contenido de la hoja "Compras" a la hoja "Facturacion"
@@ -420,9 +427,12 @@ public class ExcelManager {
 
         // Agregar una fila extra con el total al final de la hoja "Facturacion"
         agregarTotal(facturacionSheet, totalCompra, "Total Compra", redStyle);
+        LocalDateTime fechaHora = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH_mm_ss");
+        String fechaFormateada = fechaHora.format(formatter);
 
         // Crear la hoja "Gastos"
-        String gastosHojaNombre = "Gastos_" + LocalDateTime.now().toString().replace(":", "-");
+        String gastosHojaNombre = "Gastos_" + fechaFormateada;
         Sheet gastosSheetNueva = workbook.createSheet(gastosHojaNombre);
 
         // Copiar el contenido de la hoja "Gastos" a la nueva hoja "Gastos"
@@ -526,6 +536,192 @@ public class ExcelManager {
 
         // Cerrar el Workbook para liberar recursos
         workbook.close();
+    }
+
+    public void generarResumenDiarioEstilizadoPDF() {
+        LocalDate fechaActual = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+        // Ruta del archivo
+        String carpetaPath = System.getProperty("user.home") + "\\Documents\\Calculadora del Administrador\\Resumen del día";
+        File carpeta = new File(carpetaPath);
+
+        // Crear la carpeta si no existe
+        if (!carpeta.exists()) {
+            boolean wasSuccessful = carpeta.mkdirs();
+            if (!wasSuccessful) {
+                System.err.println("No se pudo crear la carpeta 'Resumen del día'.");
+                return; // Salir si no se puede crear la carpeta
+            }
+        }
+
+        LocalTime horaActual = LocalTime.now();
+        DateTimeFormatter horaFormatter = DateTimeFormatter.ofPattern("HH-mm-ss");
+        String nombreArchivo = carpetaPath + "\\Resumen_Diario_" + fechaActual.format(formatter) + "_" + horaActual.format(horaFormatter) + ".pdf";
+
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            // Obtener las hojas de compras, gastos y productos
+            Sheet purchasesSheet = workbook.getSheet(PURCHASES_SHEET_NAME);
+            Sheet gastosSheet = workbook.getSheet("Gastos");
+            Sheet productsSheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
+
+            // Calcular totales
+            double totalVentas = sumarTotalesCompras(purchasesSheet);
+            double totalGastos = restarTotalesGastos(gastosSheet);
+            List<Producto> productosAgotados = obtenerProductosAgotados(productsSheet);
+            int totalProductos = productsSheet.getLastRowNum();  // Total de productos
+            int productosAgotadosCount = productosAgotados.size();  // Total de productos con cantidad 0
+
+            // Calcular porcentaje de productos agotados
+            double porcentajeAgotados = ((double) productosAgotadosCount / totalProductos) * 100;
+
+            // Crear el PDF con tamaño de tarjeta
+            float anchoMm = 85;  // Ancho de tarjeta (en mm)
+            float altoMm = 120;  // Alto de tarjeta (en mm)
+            float anchoPuntos = anchoMm * 2.83465f;
+            float altoPuntos = altoMm * 2.83465f;
+
+            PageSize cardSize = new PageSize(anchoPuntos, altoPuntos);
+            PdfWriter writer = new PdfWriter(nombreArchivo);
+            PdfDocument pdfDoc = new PdfDocument(writer);
+            Document document = new Document(pdfDoc, cardSize);
+
+            // Fuentes y estilos
+            PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+            PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            PdfFont fontItalic = PdfFontFactory.createFont(StandardFonts.HELVETICA_OBLIQUE);
+
+            // Márgenes ajustados
+            document.setMargins(5, 5, 5, 5);
+            LocalTime horaResumen = LocalTime.now();
+            DateTimeFormatter horaResumenFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+            // Encabezado del PDF
+            document.add(new Paragraph("Resumen Diario "+ fechaActual.format(formatter) + " " + horaResumen.format(horaResumenFormatter))
+                    .setFont(fontBold)
+                    .setFontSize(10)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(10));
+
+            // Mostrar el total de ventas
+            document.add(new Paragraph("Total en VENTAS: $" + formatearMoneda(totalVentas)+ " pesos")
+                    .setFont(fontBold)
+                    .setFontSize(8)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setMarginBottom(5));
+
+            // Mostrar el total de gastos
+            document.add(new Paragraph("Total en GASTOS: $" + formatearMoneda(totalGastos) + " pesos")
+                    .setFont(fontBold)
+                    .setFontSize(8)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setMarginBottom(10));
+
+            // Mostrar la lista de todos los gastos
+            document.add(new Paragraph("Detalle de GASTOS:")
+                    .setFont(fontBold)
+                    .setFontSize(9)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setMarginBottom(5));
+
+            // Recorrer la hoja de gastos y listar cada uno
+            for (int i = 1; i <= gastosSheet.getLastRowNum(); i++) {
+                Row row = gastosSheet.getRow(i);
+                if (row != null) {
+                    String producto = row.getCell(1).getStringCellValue();  // Nombre del producto
+                    double precioGasto = row.getCell(3).getNumericCellValue();  // Precio de gasto
+
+                    document.add(new Paragraph("- " + producto + ": $" + formatearMoneda(precioGasto) + " pesos")
+                            .setFont(fontNormal)
+                            .setFontSize(7)
+                            .setTextAlignment(TextAlignment.LEFT));
+                }
+            }
+
+            // Calcular el total de ventas menos gastos
+            double total = totalVentas - totalGastos;
+
+            String textoTotal = (total < 0)
+                    ? "REALIZO DEL SISTEMA: -$" + formatearMoneda(Math.abs(total)) + " pesos"
+                    : "REALIZO DEL SISTEMA: $" + formatearMoneda(total) + " pesos";
+
+            // Añadir el texto al documento PDF
+            document.add(new Paragraph(textoTotal)
+                    .setFont(fontBold)
+                    .setFontSize(12)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setMarginBottom(10));
+
+            // Mostrar estadísticas de productos agotados
+            document.add(new Paragraph("Productos Agotados: " + productosAgotadosCount + " productos (" + String.format("%.2f", porcentajeAgotados) + "%) del inventario")
+                    .setFont(fontNormal)
+                    .setFontSize(8)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setMarginBottom(10));
+
+            // Mostrar lista de productos agotados
+            if (productosAgotados.isEmpty()) {
+                document.add(new Paragraph("No hay productos agotados.")
+                        .setFont(fontItalic)
+                        .setFontSize(8)
+                        .setTextAlignment(TextAlignment.LEFT)
+                        .setMarginBottom(5));
+            } else {
+                for (Producto producto : productosAgotados) {
+                    document.add(new Paragraph("- " + producto.getName())
+                            .setFont(fontNormal)
+                            .setFontSize(7)
+                            .setTextAlignment(TextAlignment.LEFT));
+                }
+            }
+
+            // Línea divisoria
+            document.add(new Paragraph(new String(new char[33]).replace('\0', '-'))
+                    .setFont(fontNormal)
+                    .setFontSize(6)
+                    .setMarginTop(10)
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            // Pie de página
+            document.add(new Paragraph("Sistema Licorera CR La 70")
+                    .setFont(fontBold)
+                    .setFontSize(7)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginTop(5));
+
+            // Cerrar el documento
+            document.close();
+            System.out.println("Archivo PDF de resumen creado: " + nombreArchivo);
+            //abrirPDF(nombreArchivo);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Método auxiliar para obtener productos con cantidad 0
+    private List<Producto> obtenerProductosAgotados(Sheet productsSheet) {
+        List<Producto> productosAgotados = new ArrayList<>();
+        for (int i = ONE; i <= productsSheet.getLastRowNum(); i++) {
+            Row row = productsSheet.getRow(i);
+            if (row != null) {
+                String name = row.getCell(ONE).getStringCellValue();
+                int quantity = (int) row.getCell(TWO).getNumericCellValue();
+
+                if (quantity == 0) {
+                    productosAgotados.add(new Producto(name, quantity, row.getCell(THREE).getNumericCellValue()));
+                }
+            }
+        }
+        return productosAgotados;
+    }
+
+    // Método auxiliar para formatear el valor de la moneda
+    private String formatearMoneda(double valor) {
+        NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
+        return formatCOP.format(valor);
     }
 
 }
