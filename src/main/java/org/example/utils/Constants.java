@@ -3,12 +3,10 @@ package org.example.utils;
 public class Constants {
 
     //Main Menu
-
     public static final String CALCULADORA_ADMINISTRADOR = "Calculadora del Administrador";
     public static final String VENTA = "Venta";
     public static final String LISTAR_PRODUCTOS = "LISTA DE PRODUCTOS";
     public static final String SALIR_FACTURAR = "FACTURAR Y SALIR";
-
 
     //Salir/Facturar
     public static final String POR_FAVOR_ESCRIBE_FACTURAR = "Por favor, escribe 'Facturar' para proceder:";
@@ -21,10 +19,7 @@ public class Constants {
     public static final String T = "\t";
     public static final String N = "\n";
 
-
-
     //Agregar Producto
-
     public static final String AGREGAR_PRODUCTO = "Agregar Producto";
     public static final String LISTAR_PRODUCTO = "Listar Productos";
     public static final String AGREGAR_BTN = "Agregar";
@@ -37,9 +32,7 @@ public class Constants {
     public static final String SPACE = "";
     public static final String PRECIO_UNITARIO = "Precio Unitario";
     public static final String TOTALP = "Total";
-
-
-
+    
     //VENTA
     public static final String REALIZAR_VENTA = "Realizar Venta";
     public static final String PRODUCTO = "Producto";

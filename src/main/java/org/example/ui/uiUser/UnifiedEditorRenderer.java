@@ -1,6 +1,6 @@
-package org.example.ui;
+package org.example.ui.uiUser;
 
-import org.example.manager.VentaManager;
+import org.example.manager.userManager.VentaMesaManager;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -18,9 +18,9 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
     private DefaultTableModel tableModel;
     private int editingRow;
     private int editingColumn;
-    private VentaManager ventaManager;
+    private VentaMesaManager ventaMesaManager;
 
-    public UnifiedEditorRenderer(DefaultTableModel model, VentaManager manager) {
+    public UnifiedEditorRenderer(DefaultTableModel model, VentaMesaManager manager) {
         // Inicializar el botón
         button = new JButton(X_BTN);
         button.addActionListener(this);
@@ -30,7 +30,7 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
 
         // Referencias externas
         this.tableModel = model;
-        this.ventaManager = manager;
+        this.ventaMesaManager = manager;
     }
 
     @Override
@@ -81,7 +81,7 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
 
             // Verificar si el índice de la fila es válido antes de intentar eliminar
             if (selectedRow >= ZERO && selectedRow < tableModel.getRowCount()) {
-                ventaManager.removeProductFromCart(selectedRow);  // Eliminar el producto del carrito
+                ventaMesaManager.removeProductFromCart(selectedRow);  // Eliminar el producto del carrito
                 tableModel.removeRow(selectedRow);  // Eliminar la fila de la tabla
 
                 // Notificar a la tabla que una fila ha sido eliminada

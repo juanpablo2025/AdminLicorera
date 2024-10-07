@@ -1,4 +1,4 @@
-package org.example.manager;
+package org.example.manager.userManager;
 
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.font.PdfFont;
@@ -11,8 +11,11 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.properties.TextAlignment;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.example.model.Mesa;
 import org.example.model.Producto;
 
+
+import javax.swing.*;
 import java.io.*;
 import java.text.NumberFormat;
 import java.time.LocalDate;
@@ -22,11 +25,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 
-import static org.example.manager.VentaManager.abrirPDF;
-import static org.example.manager.VentaManager.imprimirPDF;
+import static org.example.manager.userManager.PrintManager.abrirPDF;
 import static org.example.utils.Constants.*;
+import static org.example.utils.FormatterHelpers.formatearMoneda;
 
 
 public class ExcelManager {
@@ -83,6 +87,11 @@ public class ExcelManager {
         gastosHeader.createCell(2).setCellValue("Cantidad");
         gastosHeader.createCell(3).setCellValue("Precio Compra");
         gastosHeader.createCell(4).setCellValue("Fecha y Hora");
+
+        // crear hoja de mesas
+
+
+
 
         // Guarda el archivo en la ruta especificada
         try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH.toString())) {
@@ -401,8 +410,8 @@ public class ExcelManager {
                     .setTextAlignment(TextAlignment.CENTER));
 
             document.close();
-            //abrirPDF(nombreArchivo);
-            imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
+            abrirPDF(nombreArchivo);
+            //imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -718,10 +727,231 @@ public class ExcelManager {
         return productosAgotados;
     }
 
-    // Método auxiliar para formatear el valor de la moneda
-    private String formatearMoneda(double valor) {
-        NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
-        return formatCOP.format(valor);
+
+
+    // Método para cargar las mesas desde el archivo Excel
+    public static ArrayList<Mesa> cargarMesasDesdeExcel() {
+
+        final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
+        final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Calculadora del Administrador";
+        final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
+
+        ArrayList<Mesa> mesas = new ArrayList<>();
+
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            Sheet mesasSheet = workbook.getSheet("Mesas"); // Acceder a la hoja llamada "mesas"
+            if (mesasSheet != null) {
+                for (int i = 1; i <= mesasSheet.getLastRowNum(); i++) { // Empezamos en la fila 1 (saltamos el encabezado)
+                    Row row = mesasSheet.getRow(i);
+                    if (row != null) {
+                        // Leer el ID de la mesa (columna 0)
+                        Cell idCell = row.getCell(0);
+                        String idText = idCell.getStringCellValue();
+
+                        // Extraer el número de la mesa, por ejemplo, de "Mesa 1" extraer 1
+                        int id = extraerNumeroDeTexto(idText);
+
+                        // Leer el estado de la mesa (columna 1)
+                        String estado = row.getCell(1).getStringCellValue();
+                        Mesa mesa = new Mesa("Mesa "+id);
+                        mesa.setOcupada(estado.equalsIgnoreCase("Ocupada"));
+                        mesas.add(mesa);
+                    }
+                }
+            }
+        } catch (IOException | NumberFormatException e) {
+            e.printStackTrace();
+        }
+
+        return mesas;
+    }
+
+    // Método auxiliar para extraer el número del ID de la mesa
+    private static int extraerNumeroDeTexto(String texto) {
+        // Remover cualquier cosa que no sea un número del texto
+        String numeroTexto = texto.replaceAll("[^0-9]", "");
+        return Integer.parseInt(numeroTexto);
+    }
+
+    // Método para actualizar las cantidades en el stock de Excel
+    public static void actualizarCantidadStockExcel(Map<String, Integer> productosComprados, List<String[]> productosPrevios) {
+        try (FileInputStream fis = new FileInputStream(ExcelManager.FILE_PATH);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
+
+            // Para tener en cuenta los productos previos, primero actualizamos las cantidades de estos
+            for (String[] productoPrevio : productosPrevios) {
+                String nombreProducto = productoPrevio[0]; // nombre del producto
+                int cantidadPrev = Integer.parseInt(productoPrevio[1].substring(1)); // xCantidad
+
+                // Descontar el stock del producto previo
+                boolean productoEncontrado = false;
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                    Row row = sheet.getRow(i);
+                    if (row != null) {
+                        if (row.getCell(1).getStringCellValue().equalsIgnoreCase(nombreProducto)) {
+                            Cell cantidadCell = row.getCell(2);
+                            if (cantidadCell != null && cantidadCell.getCellType() == CellType.NUMERIC) {
+                                int cantidadActual = (int) cantidadCell.getNumericCellValue();
+                                int nuevaCantidad = cantidadActual - cantidadPrev;
+
+                                if (nuevaCantidad < 0) {
+                                    JOptionPane.showMessageDialog(null, "No hay suficiente stock para el producto '" + nombreProducto + "'.", "Error", JOptionPane.ERROR_MESSAGE);
+                                    return;
+                                } else {
+                                    cantidadCell.setCellValue(nuevaCantidad);
+                                    productoEncontrado = true;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if (!productoEncontrado) {
+                    JOptionPane.showMessageDialog(null, "Producto '" + nombreProducto + "' no encontrado en stock.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+
+            // Ahora actualizar las cantidades de los productos nuevos comprados
+            for (Map.Entry<String, Integer> entry : productosComprados.entrySet()) {
+                String nombreProducto = entry.getKey();
+                int cantidadComprada = entry.getValue();
+
+                boolean productoEncontrado = false;
+
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                    Row row = sheet.getRow(i);
+                    if (row != null) {
+                        if (row.getCell(1).getStringCellValue().equalsIgnoreCase(nombreProducto)) {
+                            Cell cantidadCell = row.getCell(2);
+                            if (cantidadCell != null && cantidadCell.getCellType() == CellType.NUMERIC) {
+                                int cantidadActual = (int) cantidadCell.getNumericCellValue();
+                                int nuevaCantidad = cantidadActual - cantidadComprada;
+
+                                if (nuevaCantidad < 0) {
+                                    JOptionPane.showMessageDialog(null, "No hay suficiente stock para el producto '" + nombreProducto + "'.", "Error", JOptionPane.ERROR_MESSAGE);
+                                    return;
+                                } else {
+                                    cantidadCell.setCellValue(nuevaCantidad);
+                                    productoEncontrado = true;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if (!productoEncontrado) {
+                    JOptionPane.showMessageDialog(null, "Producto '" + nombreProducto + "' no encontrado en stock.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+
+            // Guardar los cambios en el archivo Excel
+            try (FileOutputStream fos = new FileOutputStream(ExcelManager.FILE_PATH)) {
+                workbook.write(fos);
+            }
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public static List<String[]> cargarProductosMesaDesdeExcel(String mesaID) {
+        final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
+        final String DIRECTORY_PATH = System.getProperty("user.home") + "\\Calculadora del Administrador";
+        final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
+
+        List<String[]> productosMesa = new ArrayList<>();
+
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            Sheet sheet = workbook.getSheet("Mesas"); // Asegúrate de tener una hoja "mesas" en el archivo Excel
+            if (sheet != null) {
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) { // Recorrer las filas de la hoja, empezando en la fila 1
+                    Row row = sheet.getRow(i);
+                    if (row != null) {
+                        Cell idCell = row.getCell(0); // Columna A: ID de la mesa
+
+                        // Asegúrate de que la celda no sea nula y de que contenga un valor de tipo String
+                        if (idCell != null && idCell.getCellType() == CellType.STRING) {
+                            String id = idCell.getStringCellValue(); // Obtener el ID como String
+                            System.out.println("ID de mesa en fila " + (i + 1) + ": " + id); // Log del ID leído
+
+                            // Comparar el ID de la mesa con el valor esperado
+                            if (mesaID.equals(id)) { // Si el ID coincide con el de la mesa
+                                System.out.println("Mesa encontrada: " + id); // Log si se encuentra la mesa
+
+                                // Leer los productos de la mesa (suponiendo que los productos están en la columna C)
+                                Cell productosCell = row.getCell(2);
+                                if (productosCell != null && productosCell.getCellType() == CellType.STRING) {
+                                    String productosTexto = productosCell.getStringCellValue(); // Obtener los productos como String
+                                    System.out.println("Productos encontrados: " + productosTexto); // Log de los productos encontrados
+
+                                    // Suponiendo que cada producto está separado por un salto de línea
+                                    String[] productos = productosTexto.split("\n");
+                                    for (String producto : productos) {
+                                        // Suponiendo que los productos tienen un formato "nombreProducto xCantidad $PrecioUnitario"
+                                        String[] detallesProducto = producto.trim().split(" ");
+                                        if (detallesProducto.length >= 3) { // Verifica que hay suficientes elementos
+                                            productosMesa.add(detallesProducto); // Añadir el producto a la lista
+                                        }
+                                    }
+                                } else {
+                                    System.out.println("Celda de productos está vacía o no es de tipo String.");
+                                }
+                                break; // Una vez encontrados los productos de la mesa, no necesitamos seguir buscando
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return productosMesa;
+    }
+
+
+    public static void agregarMesaAExcel(Mesa nuevaMesa) {
+        final String FILE_NAME = "productos.xlsx";
+        final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Calculadora del Administrador";
+        final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
+        String filePath = FILE_PATH; // Reemplaza con la ruta correcta
+        try (FileInputStream fis = new FileInputStream(filePath);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            Sheet mesasSheet = workbook.getSheet("Mesas");
+            if (mesasSheet == null) {
+                // Si no existe la hoja "mesas", crearla
+                mesasSheet = workbook.createSheet("Mesas");
+                // Crear encabezado si es una hoja nueva
+                Row headerRow = mesasSheet.createRow(0);
+                headerRow.createCell(0).setCellValue("ID");
+                headerRow.createCell(1).setCellValue("Estado");
+            }
+
+            // Agregar nueva fila con los datos de la nueva mesa
+            int newRowNum = mesasSheet.getLastRowNum() + 1; // La última fila más uno
+            Row newRow = mesasSheet.createRow(newRowNum);
+            newRow.createCell(0).setCellValue("Mesa " + nuevaMesa.getId()); // ID de la mesa
+            newRow.createCell(1).setCellValue(nuevaMesa.isOcupada() ? "Ocupada" : "Libre"); // Estado de la mesa
+
+            // Escribir los cambios en el archivo
+            try (FileOutputStream fos = new FileOutputStream(filePath)) {
+                workbook.write(fos);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

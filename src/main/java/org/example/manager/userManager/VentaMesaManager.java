@@ -1,4 +1,4 @@
-package org.example.manager;
+package org.example.manager.userManager;
 
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.font.PdfFont;
@@ -13,11 +13,12 @@ import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import org.apache.poi.ss.usermodel.*;
 
+import org.example.model.Mesa;
 import org.example.model.Producto;
 
 
 import javax.swing.*;
-
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -29,18 +30,69 @@ import java.util.*;
 import java.util.List;
 
 
-import static org.example.manager.VentaManager.imprimirPDF;
+import static org.example.manager.userManager.ExcelManager.agregarMesaAExcel;
+import static org.example.manager.userManager.ExcelManager.cargarMesasDesdeExcel;
+import static org.example.manager.userManager.PrintManager.abrirPDF;
+import static org.example.ui.uiUser.UIMesas.crearMesaPanel;
 import static org.example.utils.Constants.*;
 import static org.example.utils.Constants.EIGHT;
 
 public class VentaMesaManager {
     private List<Producto> cartProducts = new ArrayList<>();  // Lista para almacenar los productos en el carrito
     private List<Integer> cartQuantities = new ArrayList<>(); // Lista para almacenar las cantidades correspondientes
+    // Método para mostrar las mesas en la interfaz
+    private static void showMesas() {
+        JFrame mesasFrame = new JFrame("Administrar Mesas");
+        mesasFrame.setSize(1200, 600);
+        mesasFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-    private static ProductoManager productoManager = new ProductoManager();
+        JPanel mesasPanel = new JPanel();
+        mesasPanel.setLayout(new GridLayout(0, 5)); // Filas de 5 mesas
 
-    private static JDialog ventaDialog;
-    private static JDialog ventaMesaDialog;
+        // Cargar las mesas desde el archivo Excel
+        ArrayList<Mesa> mesas = cargarMesasDesdeExcel();
+
+        // Mostrar las mesas cargadas desde el archivo Excel
+        for (int i = 0; i < mesas.size(); i++) {
+            Mesa mesa = mesas.get(i);
+            mesa.setID(String.valueOf((i + 1))); // Asignar ID basado en la posición
+            JPanel mesaPanel = crearMesaPanel(mesa,mesasFrame); // Pasar el objeto Mesa
+            mesasPanel.add(mesaPanel);
+        }
+
+        // Botón para añadir más mesas
+        JButton addMesaButton = new JButton("Añadir Mesa");
+        addMesaButton.addActionListener(e -> {
+            // Generar un nuevo ID basado en la cantidad actual de mesas
+            String nuevoID = String.valueOf(mesas.size() + 1); // Asegurarse de que el ID sea único
+            Mesa nuevaMesa = new Mesa(nuevoID); // Crear la nueva mesa con el ID basado en el nuevo ID
+
+            // Añadir la nueva mesa a la lista de mesas
+            mesas.add(nuevaMesa);
+
+            // Crear el panel para la nueva mesa
+            JPanel nuevaMesaPanel = crearMesaPanel(nuevaMesa,mesasFrame);
+            mesasPanel.add(nuevaMesaPanel);
+
+            // Actualizar el panel de mesas
+            mesasPanel.revalidate();
+            mesasPanel.repaint();
+
+            // Guardar la nueva mesa en el archivo Excel
+            agregarMesaAExcel(nuevaMesa);
+        });
+
+        // Panel inferior con el botón para añadir mesas
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.add(addMesaButton);
+
+        mesasFrame.setLayout(new BorderLayout());
+        mesasFrame.add(mesasPanel, BorderLayout.CENTER);
+        mesasFrame.add(bottomPanel, BorderLayout.SOUTH);
+
+        mesasFrame.setLocationRelativeTo(null);
+        mesasFrame.setVisible(true);
+    }
 
     // Método para añadir un producto al carrito
     public void addProductToCart(Producto producto, int cantidad) {
@@ -68,8 +120,6 @@ public class VentaMesaManager {
 
         return total;
     }
-
-
 
     private static void addTableRow(Table table, String key, String value) {
         table.addCell(new Paragraph(key).setFontSize(EIGHT));
@@ -156,7 +206,7 @@ public class VentaMesaManager {
             // Crear un formateador de moneda para Colombia
             NumberFormat formatoColombiano = NumberFormat.getCurrencyInstance(new Locale("es", "CO"));
 
-// Agregar productos con formato de moneda colombiano
+            // Agregar productos con formato de moneda colombiano
             for (String producto : productos) {
                 // Suponiendo que el formato de cada producto es "nombreProducto xCantidad $precioUnitario"
                 String[] detallesProducto = producto.split(" ");
@@ -215,18 +265,8 @@ public class VentaMesaManager {
             document.close();
 
             // Método para abrir el PDF después de generarlo
-            //abrirPDF(nombreArchivo);
-            imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    static void abrirPDF(String pdfFilePath) {
-        try {
-            File pdfFile = new File(pdfFilePath);
-            if (pdfFile.exists()) {
-                Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + pdfFilePath);
-            }
+            abrirPDF(nombreArchivo);
+            //imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -273,5 +313,6 @@ public class VentaMesaManager {
             e.printStackTrace();
         }
     }
-
+    public void removeProductFromCart(int row) {
+    }
 }
