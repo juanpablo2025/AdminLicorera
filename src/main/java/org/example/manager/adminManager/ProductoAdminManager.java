@@ -1,33 +1,29 @@
-package org.example.manager;
+package org.example.manager.adminManager;
 
 import org.example.model.Producto;
 import org.example.ui.UIHelpers;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.List;
 
 import static org.example.utils.Constants.*;
 
-public class ProductoManager {
-    private ExcelManager excelManager = new ExcelManager();
+public class ProductoAdminManager {
+    private ExcelAdminManager excelAdminManager = new ExcelAdminManager();
 
     public void addProduct(Producto product) {
-        excelManager.addProduct(product);
+        excelAdminManager.addProduct(product);
     }
 
     public List<Producto> getProducts() {
-        return excelManager.getProducts();
+        return excelAdminManager.getProducts();
     }
 
     public Producto getProductByName(String name) {
-        return excelManager.getProductByName(name);
+        return excelAdminManager.getProductByName(name);
     }
 
 
-    /**
-     * Crea un campo de entrada de texto y añade una etiqueta asociada al diálogo.
-     */
     public JTextField createField(JDialog dialog, String label) {
         dialog.add(new JLabel(label));
         JTextField textField = UIHelpers.createTextField();
@@ -59,19 +55,4 @@ public class ProductoManager {
             JOptionPane.showMessageDialog(dialog, INVALID_DATA, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
-
-
-
-
-    // Nuevo método: Formatea la lista de productos para mostrarla
-    public String formatProductList(List<Producto> products) {
-        StringBuilder productList = new StringBuilder(STRINGBUILDER);
-        for (Producto p : products) {
-            productList.append(p.getName()).append(T)
-                    .append(p.getQuantity()).append(T)
-                    .append(p.getPrice()).append(N);
-        }
-        return productList.toString();
-    }
-
 }
