@@ -1,21 +1,32 @@
 package org.example.ui.uiUser;
 
-import org.example.manager.userManager.GastosManager;
+import org.example.manager.userManager.GastosUserManager;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-import static org.example.ui.uiUser.UIHelpers.createButton;
-import static org.example.ui.uiUser.UIHelpers.createDialog;
+import static org.example.ui.UIHelpers.createButton;
+import static org.example.ui.UIHelpers.createDialog;
+import static org.example.ui.uiUser.UIUserMain.mainUser;
+import static org.example.ui.uiUser.UIUserMesas.showMesas;
 
-public class UIGastos {
+public class UIUserGastos {
 
     public static void showGastosGeneralesDialog() {
         JDialog gastosGeneralesDialog = createDialog("Registrar Gastos Generales", 500, 200, new GridLayout(3, 2));
 
         JTextField nombreGastoField = new JTextField(); // Campo para la descripción del gasto
         JTextField precioField = new JTextField();      // Campo para el precio del gasto
-
+        // Añadir un WindowListener para detectar el cierre de la ventana
+        gastosGeneralesDialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                // Cuando se cierra la ventana de venta, mostrar la ventana de mesas
+                mainUser() ; // Llamada a showMesas cuando se cierra la ventana
+            }
+        });
         JButton confirmarGastoButton = createButton("CONFIRMAR", e -> {
             try {
                 String nombreGasto = nombreGastoField.getText();
@@ -32,7 +43,7 @@ public class UIGastos {
 
 
                 // Lógica para registrar el gasto en el Excel
-                GastosManager.saveGasto(nombreGasto, 1, precio); // Implementar la lógica de guardado en el Excel, sin cantidad
+                GastosUserManager.saveGasto(nombreGasto, 1, precio); // Implementar la lógica de guardado en el Excel, sin cantidad
 
                 JOptionPane.showMessageDialog(null, "Gasto registrado correctamente.");
                 gastosGeneralesDialog.dispose();

@@ -5,22 +5,35 @@ import org.example.model.Mesa;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.example.manager.userManager.ExcelManager.*;
-import static org.example.ui.uiUser.UIVenta.showVentaMesaDialog;
+import static org.example.manager.userManager.ExcelUserManager.*;
+import static org.example.ui.uiUser.UIUserMain.mainUser;
+import static org.example.ui.uiUser.UIUserVenta.showVentaMesaDialog;
 
-public class UIMesas {
+public class UIUserMesas {
     // Método para mostrar las mesas en la interfaz
     public static void showMesas() {
         JFrame mesasFrame = new JFrame("Administrar Mesas");
-        mesasFrame.setSize(1200, 600);
-        mesasFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        mesasFrame.setSize(1280, 720);
+        // Añadir un WindowListener para detectar el cierre de la ventana
+        mesasFrame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                // Cuando se cierra la ventana de venta, mostrar la ventana de mesas
+                mainUser();  // Llamada a showMesas cuando se cierra la ventana
+            }
+        });
 
         JPanel mesasPanel = new JPanel();
         mesasPanel.setLayout(new GridLayout(0, 5)); // Filas de 5 mesas
-
+        // Crear el título estilizado para la parte superior
+        JLabel titleLabel = new JLabel("Mesas", JLabel.CENTER);
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 30)); // Estilo y tamaño de la fuente
+        titleLabel.setForeground(new Color(50, 50, 50)); // Color del texto
         // Cargar las mesas desde el archivo Excel
         ArrayList<Mesa> mesas = cargarMesasDesdeExcel();
 
@@ -28,7 +41,7 @@ public class UIMesas {
         for (int i = 0; i < mesas.size(); i++) {
             Mesa mesa = mesas.get(i);
             mesa.setID(String.valueOf((i + 1))); // Asignar ID basado en la posición
-            JPanel mesaPanel = crearMesaPanel(mesa,mesasFrame); // Pasar el objeto Mesa
+            JPanel mesaPanel = crearMesaPanel(mesa, mesasFrame); // Pasar el objeto Mesa
             mesasPanel.add(mesaPanel);
         }
 
@@ -43,7 +56,7 @@ public class UIMesas {
             mesas.add(nuevaMesa);
 
             // Crear el panel para la nueva mesa
-            JPanel nuevaMesaPanel = crearMesaPanel(nuevaMesa,mesasFrame);
+            JPanel nuevaMesaPanel = crearMesaPanel(nuevaMesa, mesasFrame);
             mesasPanel.add(nuevaMesaPanel);
 
             // Actualizar el panel de mesas
@@ -59,12 +72,14 @@ public class UIMesas {
         bottomPanel.add(addMesaButton);
 
         mesasFrame.setLayout(new BorderLayout());
+        mesasFrame.add(titleLabel, BorderLayout.NORTH);
         mesasFrame.add(mesasPanel, BorderLayout.CENTER);
         mesasFrame.add(bottomPanel, BorderLayout.SOUTH);
 
         mesasFrame.setLocationRelativeTo(null);
         mesasFrame.setVisible(true);
     }
+
     // Método para crear un panel de mesa con botón "Atender Mesa"
     public static JPanel crearMesaPanel(Mesa mesa, JFrame mesasFrame) {
         JPanel mesaPanel = new JPanel(new BorderLayout());
@@ -72,7 +87,7 @@ public class UIMesas {
 
         // Crear el borde con el título que incluye el número de la mesa
         TitledBorder border = BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(Color.BLACK, 2),
+                BorderFactory.createLineBorder(Color.GRAY, 2),
                 "Mesa " + mesa.getId(), // Mostrar el número de la mesa
                 TitledBorder.CENTER, TitledBorder.TOP
         );
@@ -80,11 +95,11 @@ public class UIMesas {
         // Establecer la fuente personalizada para el título
         border.setTitleFont(new Font("Arial", Font.BOLD, 13));
 
-
         // Asignar el borde al panel de la mesa
         mesaPanel.setBorder(border);
+
         // Cambiar color de fondo según estado de ocupación
-        mesaPanel.setBackground(mesa.isOcupada() ? Color.RED : Color.GREEN);
+        mesaPanel.setBackground(mesa.isOcupada() ? new Color(255, 102, 102) : new Color(144, 238, 144)); // Rojo suave si está ocupada, verde claro si está libre
 
         // Texto descriptivo dentro de la mesa
         JLabel mesaLabel = new JLabel(mesa.isOcupada() ? "OCUPADA" : "LIBRE", SwingConstants.CENTER);
@@ -94,8 +109,8 @@ public class UIMesas {
         // Crear el botón "Atender Mesa"
         JButton editarButton = new JButton("ATENDER MESA");
         editarButton.setFont(new Font("Arial", Font.BOLD, 13));
-        // Fuente más grande para el encabezado
-
+        editarButton.setBackground(new Color(220, 220, 220)); // Fondo gris claro
+        editarButton.setForeground(Color.BLACK); // Texto en negro
 
         // Añadir un ActionListener que capture el título del borde del panel (que contiene el ID de la mesa)
         editarButton.addActionListener(e -> {
@@ -117,8 +132,8 @@ public class UIMesas {
         // Panel de botones
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(editarButton);
-        buttonPanel.setBackground(Color.GRAY);
-        buttonPanel.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2)); /// Fondo blanco para los botones
+        buttonPanel.setBackground(new Color(245, 245, 245)); // Fondo gris muy claro para los botones
+        buttonPanel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 2)); // Borde gris claro
 
         // Añadir componentes al panel de la mesa
         mesaPanel.add(mesaLabel, BorderLayout.CENTER); // Etiqueta en el centro

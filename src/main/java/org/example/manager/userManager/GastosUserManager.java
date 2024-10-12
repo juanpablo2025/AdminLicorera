@@ -12,11 +12,11 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 
-public class GastosManager {
+public class GastosUserManager {
 
 
     public static void saveGasto(String nombreGasto, int i, double precio) {
-        try (FileInputStream fis = new FileInputStream(ExcelManager.FILE_PATH);
+        try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
             // Crear la pestaña de gastos si no existe
             String GASTOS_SHEET_NAME = "Gastos";
@@ -43,7 +43,7 @@ public class GastosManager {
             newRow.createCell(4).setCellValue(formatter.format(fechaHora));
 
             // Guardar los cambios en el archivo Excel
-            try (FileOutputStream fos = new FileOutputStream(ExcelManager.FILE_PATH)) {
+            try (FileOutputStream fos = new FileOutputStream(ExcelUserManager.FILE_PATH)) {
                 workbook.write(fos);
                 System.out.println("Reabastecimiento registrado en la pestaña de gastos.");
             }

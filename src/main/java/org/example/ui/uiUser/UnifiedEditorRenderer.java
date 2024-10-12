@@ -1,6 +1,7 @@
 package org.example.ui.uiUser;
 
-import org.example.manager.userManager.VentaMesaManager;
+
+import org.example.manager.userManager.VentaMesaUserManager;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -11,6 +12,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import static org.example.utils.Constants.*;
+import static org.example.manager.userManager.ProductoUserManager.*;
 
 public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCellEditor, TableCellRenderer, ActionListener {
     private JButton button;
@@ -18,9 +20,9 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
     private DefaultTableModel tableModel;
     private int editingRow;
     private int editingColumn;
-    private VentaMesaManager ventaMesaManager;
+    private VentaMesaUserManager ventaMesaUserManager;
 
-    public UnifiedEditorRenderer(DefaultTableModel model, VentaMesaManager manager) {
+    public UnifiedEditorRenderer(DefaultTableModel model, VentaMesaUserManager manager) {
         // Inicializar el botón
         button = new JButton(X_BTN);
         button.addActionListener(this);
@@ -30,7 +32,7 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
 
         // Referencias externas
         this.tableModel = model;
-        this.ventaMesaManager = manager;
+        this.ventaMesaUserManager = manager;
     }
 
     @Override
@@ -81,7 +83,7 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
 
             // Verificar si el índice de la fila es válido antes de intentar eliminar
             if (selectedRow >= ZERO && selectedRow < tableModel.getRowCount()) {
-                ventaMesaManager.removeProductFromCart(selectedRow);  // Eliminar el producto del carrito
+                removeProductFromCart(selectedRow);  // Eliminar el producto del carrito
                 tableModel.removeRow(selectedRow);  // Eliminar la fila de la tabla
 
                 // Notificar a la tabla que una fila ha sido eliminada

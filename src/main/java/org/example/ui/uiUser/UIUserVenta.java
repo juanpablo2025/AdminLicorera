@@ -1,17 +1,19 @@
 package org.example.ui.uiUser;
 
 import org.apache.poi.ss.usermodel.*;
-import org.example.manager.userManager.ExcelManager;
-import org.example.manager.userManager.ProductoManager;
-import org.example.manager.userManager.VentaMesaManager;
+import org.example.manager.userManager.ExcelUserManager;
+import org.example.manager.userManager.ProductoUserManager;
+import org.example.manager.userManager.VentaMesaUserManager;
 import org.example.model.Producto;
+import org.example.utils.FormatterHelpers;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,92 +22,124 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
 
-import static org.example.manager.userManager.ExcelManager.actualizarCantidadStockExcel;
-import static org.example.manager.userManager.ExcelManager.cargarProductosMesaDesdeExcel;
-import static org.example.ui.uiUser.UIHelpers.*;
-import static org.example.ui.uiUser.UIHelpers.createTotalPanel;
+import static org.example.manager.userManager.ExcelUserManager.actualizarCantidadStockExcel;
+import static org.example.manager.userManager.ExcelUserManager.cargarProductosMesaDesdeExcel;
+import static org.example.manager.userManager.FacturacionUserManager.generarFacturadeCompra;
+import static org.example.manager.userManager.ProductoUserManager.getProductListWithQuantities;
+import static org.example.ui.UIHelpers.*;
+import static org.example.ui.uiUser.UIUserMesas.showMesas;
 import static org.example.utils.Constants.*;
 import static org.example.utils.Constants.ERROR_TITLE;
 
-public class UIVenta {
-    private static ProductoManager productoManager = new ProductoManager();
+public class UIUserVenta {
+    private static ProductoUserManager productoUserManager = new ProductoUserManager();
 
     private static JDialog ventaMesaDialog;
 
+    private static JLabel totalLabel;
+    private static JLabel totalCompraLabel;
+
     public static void showVentaMesaDialog(List<String[]> productos, String mesaID) {
+        // Crear el diálogo de venta
         ventaMesaDialog = createDialog("Realizar Venta", 800, 600, new BorderLayout());
         ventaMesaDialog.setResizable(true);
 
+        // Añadir un WindowListener para detectar el cierre de la ventana
+        ventaMesaDialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                // Cuando se cierra la ventana de venta, mostrar la ventana de mesas
+                showMesas();  // Llamada a showMesas cuando se cierra la ventana
+            }
+        });
+        // Variable para acumular el total
+        double sumaTotal = 0;
 
-        // Crear la tabla de productos y cargar los productos de la mesa
+        // Crear la tabla de productos
         JTable table = createProductTable();
         DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
 
-        // Añadir los productos a la tabla, asegurando que los datos sean correctos
+        // Añadir los productos a la tabla y calcular el total
         for (String[] productoDetalles : productos) {
             try {
-                String nombreProducto = productoDetalles[0].trim(); // Asegurarse de eliminar espacios innecesarios
-                int cantidad = Integer.parseInt(productoDetalles[1].substring(1).trim()); // Extraer cantidad (x1, x2, etc.)
-                double precioUnitario = Double.parseDouble(productoDetalles[2].substring(1).trim()); // Precio sin el símbolo $
-                double total = Double.parseDouble(productoDetalles[4].trim()); // Total final del producto
+
+                String nombreProducto = productoDetalles[0].trim();  // Nombre del producto
+                int cantidad = Integer.parseInt(productoDetalles[1].substring(1).trim());  // Cantidad (x1, x2, etc.)
+                double precioUnitario = Double.parseDouble(productoDetalles[2].substring(1).trim());  // Precio sin $
+                double total = Double.parseDouble(productoDetalles[4].trim());  // Total del producto
 
                 // Añadir la fila a la tabla
                 tableModel.addRow(new Object[] { nombreProducto, cantidad, precioUnitario, total });
+
+                // Acumular el total de los productos
+                sumaTotal += total;
             } catch (NumberFormatException ex) {
                 System.err.println("Error al parsear los datos del producto: " + Arrays.toString(productoDetalles));
                 ex.printStackTrace();  // Para depuración
             }
         }
 
-        VentaMesaManager ventaMesaManager = new VentaMesaManager();
+        VentaMesaUserManager ventaMesaUserManager = new VentaMesaUserManager();
+        // Actualizar el totalLabel con el total calculado
+        JTextField totalField = new JTextField(String.format("Total de la compra: $ "+ FormatterHelpers.formatearMoneda(sumaTotal)+" Pesos"));
+        totalField.setFont(new Font("Arial", Font.BOLD, 24));
+        totalField.setForeground(Color.RED);  // Color rojo para resaltar
+        totalField.setEditable(false);  // Campo no editable
+        totalField.setHorizontalAlignment(JTextField.RIGHT);  // Alinear texto a la derecha
+        totalField.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));  // Añadir márgenes
 
-        // Crear y añadir el panel del botón "Añadir" antes de la tabla
-        /*JPanel addButtonPanel = addButtonPanelMesa(table, ventaMesaManager);
-
-        ventaMesaDialog.add(addButtonPanel, BorderLayout.NORTH); */// Cambia a NORTH para que aparezca antes de la tabla
-        // Estilizar la tabla
-        table.setFillsViewportHeight(true);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); // Ajustar automáticamente el tamaño de las columnas
-
-        // Establecer la fuente y el tamaño
-        Font font = new Font("Arial", Font.PLAIN, 16); // Cambiar el tipo y tamaño de fuente
-        table.setFont(font);
-        table.setRowHeight(30); // Aumentar la altura de las filas
-
-        // Establecer la fuente para el encabezado
-        JTableHeader header = table.getTableHeader();
-        header.setFont(new Font("Arial", Font.BOLD, 18)); // Fuente más grande para el encabezado
-        header.setBackground(Color.LIGHT_GRAY); // Fondo para el encabezado
-        header.setForeground(Color.BLACK); // Color del texto del encabezado
-
-        // Configuración de borde para mejorar la visibilidad
-        table.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-        table.setBackground(Color.WHITE); // Fondo de la tabla
-        table.setSelectionBackground(Color.CYAN); // Color de selección
-        table.setSelectionForeground(Color.BLACK); // Color del texto seleccionado
-
-        // Crear el JScrollPane para la tabla
+        // Añadir un JScrollPane para la tabla
         JScrollPane tableScrollPane = new JScrollPane(table);
         ventaMesaDialog.add(tableScrollPane, BorderLayout.CENTER);
 
-
-        JPanel inputPanel = createInputPanel(table, ventaMesaManager);
+        // Crear el panel de entrada
+        JPanel inputPanel = createInputPanel(table, ventaMesaUserManager);
         ventaMesaDialog.add(inputPanel, BorderLayout.NORTH);
 
-
+        // Crear el panel de total
+// Crear el panel de total
         JPanel totalPanel = createTotalPanel();
-        ventaMesaDialog.add(totalPanel, BorderLayout.SOUTH);
+        totalPanel.add(totalField, BorderLayout.CENTER);  // Añadir el campo de texto
 
-        // Pasar el ID de la mesa al crear el panel de botones
-        JPanel buttonPanel = createButtonPanelVentaMesa(table, ventaMesaManager, ventaMesaDialog, mesaID);
-        ventaMesaDialog.add(buttonPanel, BorderLayout.SOUTH);
+        // Crear el panel de botones
+        JPanel buttonPanel = createButtonPanelVentaMesa(table, ventaMesaUserManager, ventaMesaDialog, mesaID);
 
+        // Combinar totalPanel y buttonPanel en un panel contenedor
+        JPanel southPanel = new JPanel(new BorderLayout());
+        southPanel.add(totalPanel, BorderLayout.NORTH);  // Total en la parte superior
+        southPanel.add(buttonPanel, BorderLayout.SOUTH);  // Botones en la parte inferior
+
+        // Añadir el panel combinado al sur del diálogo
+        ventaMesaDialog.add(southPanel, BorderLayout.SOUTH);
+
+        // Mostrar el diálogo
         ventaMesaDialog.setVisible(true);
         ventaMesaDialog.setLocationRelativeTo(null);
     }
 
-    public static JButton createConfirmPurchaseMesaButton(VentaMesaManager ventaMesaManager, JDialog compraDialog, String mesaID) {
+    // Método modificado para crear el panel de botones de la mesa
+    public static JPanel createButtonPanelVentaMesa(JTable table, VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID) {
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
+
+        JButton guardarCompra = createSavePurchaseMesaButton(ventaMesaUserManager, mesaID); // Usar mesaID dinámicamente
+        guardarCompra.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 18)); // Fuente del botón
+        buttonPanel.add(guardarCompra);
+        JButton confirmarCompraButton = createConfirmPurchaseMesaButton(ventaMesaUserManager, compraDialog, mesaID); // Usar mesaID dinámicamente
+        confirmarCompraButton.setFont(new java.awt.Font("Arial", Font.BOLD, 18)); // Fuente del botón
+        buttonPanel.add(confirmarCompraButton);
+
+        buttonPanel.add(guardarCompra);
+        buttonPanel.add(confirmarCompraButton);
+
+        //showMesas();
+
+        return buttonPanel;
+    }
+
+
+    public static JButton createConfirmPurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID) {
         JButton confirmarCompraButton = new JButton(CONFIRM_PURCHASE);
+
         confirmarCompraButton.addActionListener(e -> {
             try {
                 // Inicializamos el total en 0
@@ -140,7 +174,7 @@ public class UIVenta {
                 }
 
                 // Obtener la lista de productos comprados y sus cantidades (nuevos productos)
-                Map<String, Integer> productosComprados = ventaMesaManager.getProductListWithQuantities();
+                Map<String, Integer> productosComprados = getProductListWithQuantities();
 
                 // Validar si hay productos agregados
                 if (productosComprados.isEmpty() && productosPrevios.isEmpty()) {
@@ -152,7 +186,7 @@ public class UIVenta {
                 for (Map.Entry<String, Integer> entrada : productosComprados.entrySet()) {
                     String nombreProducto = entrada.getKey(); // Nombre del producto
                     int cantidad = entrada.getValue(); // Cantidad comprada
-                    Producto producto = productoManager.getProductByName(nombreProducto);
+                    Producto producto = productoUserManager.getProductByName(nombreProducto);
 
                     // Validar stock
                     if (producto.getCantidad() < cantidad) {
@@ -177,15 +211,14 @@ public class UIVenta {
                     total += precioTotal;
                 }
 
-                // Actualizar las cantidades en el stock de Excel
-                actualizarCantidadStockExcel(productosComprados, productosPrevios);
+                createSavePurchaseMesaButton(ventaMesaUserManager, mesaID);
 
                 // Guardar la compra en Excel
-                ExcelManager excelManager = new ExcelManager();
-                excelManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total, dateTime);
+                ExcelUserManager excelUserManager = new ExcelUserManager();
+                excelUserManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total, dateTime);
 
                 // Limpiar la mesa (borrar productos y cambiar el estado a "Libre")
-                try (FileInputStream fis = new FileInputStream(ExcelManager.FILE_PATH);
+                try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
                      Workbook workbook = WorkbookFactory.create(fis)) {
 
                     // Acceder a la hoja de "mesas"
@@ -225,7 +258,7 @@ public class UIVenta {
                         }
 
                         // Guardar los cambios en el archivo Excel
-                        try (FileOutputStream fos = new FileOutputStream(ExcelManager.FILE_PATH)) {
+                        try (FileOutputStream fos = new FileOutputStream(ExcelUserManager.FILE_PATH)) {
                             workbook.write(fos);
                         }
 
@@ -239,7 +272,7 @@ public class UIVenta {
                 NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
                 if (respuesta == JOptionPane.YES_OPTION) {
                     // Si el usuario selecciona 'Sí', generar e imprimir la factura
-                    ventaMesaManager.generarFactura(ventaID, Collections.singletonList(listaProductosEnLinea.toString()), total, dateTime);
+                    generarFacturadeCompra(ventaID, Collections.singletonList(listaProductosEnLinea.toString()), total, dateTime);
                 }
 
                 // Mostrar un mensaje de éxito de la compra
@@ -247,6 +280,7 @@ public class UIVenta {
 
                 // Cerrar el diálogo de la venta
                 compraDialog.dispose();
+                showMesas();
 
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(compraDialog, INVALID_MONEY, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
@@ -259,12 +293,12 @@ public class UIVenta {
 
 
 
-    public static JButton createSavePurchaseMesaButton(VentaMesaManager ventaMesaManager, String mesaID) {
+    public static JButton createSavePurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, String mesaID) {
         JButton saveCompraButton = new JButton("Guardar Compra");
         saveCompraButton.addActionListener(e -> {
             try {
                 // Obtener los productos comprados y sus cantidades
-                Map<String, Integer> productosComprados = ventaMesaManager.getProductListWithQuantities();
+                Map<String, Integer> productosComprados = getProductListWithQuantities();
 
                 // Validar que haya productos en la compra
                 if (productosComprados.isEmpty()) {
@@ -276,18 +310,18 @@ public class UIVenta {
                 for (Map.Entry<String, Integer> entry : productosComprados.entrySet()) {
                     String nombreProducto = entry.getKey();
                     int cantidadComprada = entry.getValue();
-                    Producto producto = productoManager.getProductByName(nombreProducto);
+                    Producto producto = productoUserManager.getProductByName(nombreProducto);
                     if (producto.getCantidad() < cantidadComprada) {
                         JOptionPane.showMessageDialog(null, "No hay suficiente stock para el producto: " + nombreProducto, "Error", JOptionPane.ERROR_MESSAGE);
                         return; // Salir si no hay suficiente stock
                     }
                 }
 
-                double total = ventaMesaManager.getTotalCartAmount(); // Obtener el total de la compra
+                double total = productoUserManager.getTotalCartAmount(); // Obtener el total de la compra
                 LocalDateTime dateTime = LocalDateTime.now(); // Fecha y hora actuales
 
                 // Guardar la compra en la pestaña "mesas"
-                try (FileInputStream fis = new FileInputStream(ExcelManager.FILE_PATH);
+                try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
                      Workbook workbook = WorkbookFactory.create(fis)) {
 
                     // Acceder a la hoja de "mesas"
@@ -338,7 +372,7 @@ public class UIVenta {
                                     for (Map.Entry<String, Integer> entry : productosComprados.entrySet()) {
                                         String nombreProducto = entry.getKey();
                                         int cantidadNueva = entry.getValue();
-                                        Producto producto = productoManager.getProductByName(nombreProducto);
+                                        Producto producto = productoUserManager.getProductByName(nombreProducto);
                                         double precioUnitario = producto.getPrice();
                                         double precioTotalNuevo = precioUnitario * cantidadNueva;
 
@@ -396,8 +430,11 @@ public class UIVenta {
                             return;
                         }
 
+                        // Actualizar las cantidades en el stock de Excel
+                        actualizarCantidadStockExcel(productosComprados);
+
                         // Guardar los cambios en el archivo Excel
-                        try (FileOutputStream fos = new FileOutputStream(ExcelManager.FILE_PATH)) {
+                        try (FileOutputStream fos = new FileOutputStream(ExcelUserManager.FILE_PATH)) {
                             workbook.write(fos);
                         }
 
@@ -408,6 +445,7 @@ public class UIVenta {
 
                     // Cerrar el diálogo de la venta
                     ventaMesaDialog.dispose();
+                    showMesas();
 
                 } catch (IOException ex) {
                     ex.printStackTrace();
@@ -420,20 +458,5 @@ public class UIVenta {
         return saveCompraButton;
     }
 
-    // Método modificado para crear el panel de botones de la mesa
-    public static JPanel createButtonPanelVentaMesa(JTable table, VentaMesaManager ventaMesaManager, JDialog compraDialog, String mesaID) {
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
 
-        JButton guardarCompra = createSavePurchaseMesaButton(ventaMesaManager, mesaID); // Usar mesaID dinámicamente
-        guardarCompra.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 18)); // Fuente del botón
-        buttonPanel.add(guardarCompra);
-        JButton confirmarCompraButton = createConfirmPurchaseMesaButton(ventaMesaManager, compraDialog, mesaID); // Usar mesaID dinámicamente
-        confirmarCompraButton.setFont(new java.awt.Font("Arial", Font.BOLD, 18)); // Fuente del botón
-        buttonPanel.add(confirmarCompraButton);
-
-        buttonPanel.add(guardarCompra);
-        buttonPanel.add(confirmarCompraButton);
-
-        return buttonPanel;
-    }
 }

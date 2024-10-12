@@ -1,31 +1,40 @@
 package org.example.ui.uiUser;
 
-import org.example.manager.userManager.ProductoManager;
+import org.example.manager.userManager.ProductoUserManager;
 import org.example.model.Producto;
 
 import javax.swing.*;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
-import static org.example.ui.uiUser.UIHelpers.createButton;
-import static org.example.ui.uiUser.UIHelpers.createDialog;
+import static org.example.ui.UIHelpers.createButton;
+import static org.example.ui.UIHelpers.createDialog;
+import static org.example.ui.uiUser.UIUserMain.mainUser;
 import static org.example.utils.Constants.CLOSE_BUTTON;
 import static org.example.utils.Constants.LISTAR_PRODUCTO;
 
-public class UIProductList {
-    private static ProductoManager productoManager = new ProductoManager();
+public class UIUserProductList {
+    private static ProductoUserManager productoUserManager = new ProductoUserManager();
 
 
     public static void showListProductsDialog() {
         // Crear el diálogo
         JDialog listProductsDialog = createDialog(LISTAR_PRODUCTO, 1000, 600, new BorderLayout());
         listProductsDialog.setResizable(true); // Permitir que la ventana sea redimensionable
-
+        listProductsDialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                // Cuando se cierra la ventana de venta, mostrar la ventana de mesas
+                mainUser() ; // Llamada a showMesas cuando se cierra la ventana
+            }
+        });
         // Obtener la lista de productos
-        List<Producto> products = productoManager.getProducts();
+        List<Producto> products = productoUserManager.getProducts();
         String[] columnNames = {"Nombre", "Cantidad", "Precio"};
         Object[][] data = new Object[products.size()][3];
 
@@ -65,10 +74,6 @@ public class UIProductList {
         JScrollPane scrollPane = new JScrollPane(productTable);
         listProductsDialog.add(scrollPane, BorderLayout.CENTER);
 
-        // Botón de cerrar
-        JButton closeButton = createButton(CLOSE_BUTTON, e -> listProductsDialog.dispose());
-        closeButton.setFont(new Font("Arial", Font.BOLD, 18)); // Aumentar la fuente del botón
-        listProductsDialog.add(closeButton, BorderLayout.SOUTH);
 
         // Mostrar el diálogo
         listProductsDialog.setVisible(true);

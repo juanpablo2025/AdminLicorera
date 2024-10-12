@@ -2,7 +2,7 @@ package org.example.manager.userManager;
 
 import java.io.File;
 
-public class MainManager {
+public class MainUserManager {
 
     public static void crearDirectorios() {
         String documentosPath = System.getProperty("user.home") + "\\Calculadora del Administrador";

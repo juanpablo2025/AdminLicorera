@@ -3,17 +3,17 @@ package org.example.manager.userManager;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.printing.PDFPageable;
-import javax.print.PrintService;
-import javax.print.PrintServiceLookup;
+
+import javax.print.*;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
 
 
-public class PrintManager {
+public class PrintUserManager {
 
-    static void abrirPDF(String pdfFilePath) {
+    public static void abrirPDF(String pdfFilePath) {
         try {
             File pdfFile = new File(pdfFilePath);
             if (pdfFile.exists()) {
@@ -57,6 +57,35 @@ public class PrintManager {
         } catch (PrinterException e) {
             e.printStackTrace();
             System.out.println("Error al imprimir el archivo PDF.");
+        }
+    }
+
+    public static void abrirCajaRegistradora() {
+        try {
+            // Buscar la impresora predeterminada del sistema
+            PrintService printService = PrintServiceLookup.lookupDefaultPrintService();
+
+            if (printService != null) {
+                // Crear un trabajo de impresión
+                DocPrintJob printJob = printService.createPrintJob();
+
+                // Comando típico para abrir la caja registradora (código ESC/POS)
+                byte[] abrirCajaComando = new byte[]{27, 112, 0, 50, (byte) 250};  // Comando ESC/POS para abrir la caja
+
+                // Crear un documento que envía el comando a la impresora
+                DocFlavor flavor = DocFlavor.BYTE_ARRAY.AUTOSENSE;
+                Doc doc = new SimpleDoc(abrirCajaComando, flavor, null);
+
+                // Enviar el comando a la impresora
+                printJob.print(doc, null);
+
+                System.out.println("Caja registradora abierta.");
+            } else {
+                System.out.println("No se encontró una impresora predeterminada.");
+            }
+        } catch (PrintException e) {
+            e.printStackTrace();
+            System.out.println("Error al intentar abrir la caja registradora.");
         }
     }
 
