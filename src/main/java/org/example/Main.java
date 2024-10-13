@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.Set;
 
+import static java.awt.Component.CENTER_ALIGNMENT;
 import static org.example.manager.userManager.ExcelUserManager.hayRegistroDeHoy;
 import static org.example.manager.userManager.ExcelUserManager.registrarDia;
 import static org.example.manager.userManager.MainUserManager.crearDirectorios;
@@ -39,7 +40,7 @@ public class Main {
 
 
     // Mostrar login estilizado
-    private static void mostrarLogin() {
+    public static void mostrarLogin() {
         try {
             // Aplicar FlatLaf para estilo moderno
             UIManager.setLookAndFeel(new FlatLightLaf());
@@ -48,7 +49,7 @@ public class Main {
         }
 
         JFrame frame = new JFrame("Login - Calculadora Administrador");
-        frame.setSize(500, 350);  // Ampliar la ventana para más espacio
+        frame.setSize(600, 300);  // Ampliar la ventana para más espacio
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new GridBagLayout()); // Usamos GridBagLayout para mejor control
 
@@ -63,11 +64,11 @@ public class Main {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // Etiqueta y campo de usuario
-        JLabel userLabel = new JLabel("Nombre de Usuario:");
+        JLabel userLabel = new JLabel("Empleado");
         userLabel.setFont(new Font("Arial", Font.PLAIN, 18));
         JTextField userField = new JTextField(20);  // Hacer el campo de texto más ancho
 
-        // Botón para iniciar sesión
+// Botón para iniciar sesión
         JButton loginButton = new JButton("Iniciar Día");
         loginButton.setFont(new Font("Arial", Font.BOLD, 18));
         loginButton.setBackground(new Color(100, 149, 237)); // Azul claro para el botón
@@ -78,6 +79,7 @@ public class Main {
         adminButton.setFont(new Font("Arial", Font.BOLD, 18));
         adminButton.setBackground(new Color(70, 130, 180)); // Azul oscuro
         adminButton.setForeground(Color.WHITE);
+        adminButton.setPreferredSize(new Dimension(60, 20));  // Tamaño fijo
 
         // Añadir componentes al panel
         gbc.gridx = 0;
@@ -122,6 +124,7 @@ public class Main {
                 JOptionPane.showMessageDialog(frame, "Accediendo al administrador...");
                 frame.dispose(); // Cerrar login*/
                 mainAdmin(); // Lanzar el panel de administrador
+            frame.dispose(); // Cerrar login
            /* } else {
                 JOptionPane.showMessageDialog(frame, "Contraseña incorrecta.");
             }*/
