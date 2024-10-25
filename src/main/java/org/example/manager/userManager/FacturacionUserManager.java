@@ -75,7 +75,7 @@ public class FacturacionUserManager {
 
 
             // Ancho del papel térmico
-            float anchoMm = 58;  // Ancho en mm
+            float anchoMm = 55;  // Ancho en mm
             float anchoPuntos = anchoMm * WIDE_DOTS;  // Conversión de mm a puntos
 
             // Calcular el alto dinámico según el número de productos
@@ -258,7 +258,7 @@ public class FacturacionUserManager {
             double porcentajeAgotados = ((double) productosAgotadosCount / totalProductos) * 100;
 
             // Crear el PDF con tamaño de tarjeta
-            float anchoMm = 85;  // Ancho de tarjeta (en mm)
+            float anchoMm = 60;  // Ancho de tarjeta (en mm)
             float altoMm = 120;  // Alto de tarjeta (en mm)
             float anchoPuntos = anchoMm * 2.83465f;
             float altoPuntos = altoMm * 2.83465f;
@@ -327,9 +327,7 @@ public class FacturacionUserManager {
             // Calcular el total de ventas menos gastos
             double total = totalVentas - totalGastos;
 
-            String textoTotal = (total < 0)
-                    ? "REALIZO DEL SISTEMA: -$" + formatearMoneda(Math.abs(total)) + " pesos"
-                    : "REALIZO DEL SISTEMA: $" + formatearMoneda(total) + " pesos";
+            String textoTotal = "REALIZO DEL SISTEMA: $" + formatearMoneda(totalVentas) + " pesos";
 
             // Añadir el texto al documento PDF
             document.add(new Paragraph(textoTotal)

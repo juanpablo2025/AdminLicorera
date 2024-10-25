@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import java.util.Map;
@@ -239,7 +240,6 @@ public class ExcelUserManager {
         }
     }
 
-    // Método para facturar y limpiar la hoja "Compras"
     public void facturarYLimpiar() {
         try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -249,6 +249,42 @@ public class ExcelUserManager {
             Sheet empleadosSheet = workbook.getSheet("Empleados");
 
             if (purchasesSheet != null) {
+                // Mapa para almacenar las cantidades vendidas por producto
+                Map<String, Integer> productosVendidos = new HashMap<>();
+
+                // Sumar las cantidades vendidas por producto
+                for (int i = 1; i <= purchasesSheet.getLastRowNum(); i++) {  // Suponiendo que la fila 0 es el encabezado
+                    Row row = purchasesSheet.getRow(i);
+                    if (row != null) {
+                        Cell nombreProductoCell = row.getCell(0);  // Columna 0: Nombre del producto
+                        Cell cantidadCell = row.getCell(1);  // Columna 1: Cantidad vendida
+
+                        if (nombreProductoCell != null && cantidadCell != null) {
+                            String nombreProducto = nombreProductoCell.getStringCellValue();
+
+                            // Obtener la cantidad, verificando si es numérico o cadena
+                            int cantidadVendida = 0;
+                            if (cantidadCell.getCellType() == CellType.NUMERIC) {
+                                cantidadVendida = (int) cantidadCell.getNumericCellValue();
+                            } else if (cantidadCell.getCellType() == CellType.STRING) {
+                                try {
+                                    cantidadVendida = Integer.parseInt(cantidadCell.getStringCellValue());
+                                } catch (NumberFormatException e) {
+                                    System.err.println("Error al parsear cantidad de la fila: " + i);
+                                }
+                            }
+
+                            // Acumular las cantidades vendidas para el producto
+                            productosVendidos.put(nombreProducto, productosVendidos.getOrDefault(nombreProducto, 0) + cantidadVendida);
+                        }
+                    }
+                }
+
+                // Aquí tienes el Map productosVendidos con la cantidad total vendida de cada producto
+                for (Map.Entry<String, Integer> entry : productosVendidos.entrySet()) {
+                    System.out.println("Producto: " + entry.getKey() + ", Cantidad Vendida: " + entry.getValue());
+                }
+
                 // Sumar los totales
                 double totalCompra = sumarTotalesCompras(purchasesSheet);
 
@@ -257,8 +293,6 @@ public class ExcelUserManager {
                 double totalFinal = totalCompra - totalGastos; // Calcular el total final
 
                 // Copiar la hoja "Compras" y renombrarla, pasando el total de la compra
-                //copiarHojaCompras(workbook, purchasesSheet, totalFinal); // Cambiar totalCompra a totalFinal
-
                 crearArchivoFacturacionYGastos(purchasesSheet, gastosSheet, totalCompra, totalGastos);
                 generarResumenDiarioEstilizadoPDF();
 
@@ -272,7 +306,6 @@ public class ExcelUserManager {
                     workbook.write(fos);
                     guardarTotalFacturadoEnArchivo(totalFinal); // Cambiar totalCompra a totalFinal
                 }
-
 
                 // Borrar el contenido de la carpeta Facturas
                 limpiarFacturas();

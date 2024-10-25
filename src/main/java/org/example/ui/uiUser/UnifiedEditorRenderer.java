@@ -77,21 +77,28 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
         // Detener la edición de la celda actual para evitar problemas de edición
         stopCellEditing();
 
-        // Acción del botón: Eliminar el producto del carrito y la tabla
+        // Acción del botón: Eliminar una unidad o el producto si solo queda una
         if (editingColumn == FOUR) {  // Verifica si la acción corresponde a la columna del botón
             int selectedRow = editingRow;  // Guardar la fila actual
 
             // Verificar si el índice de la fila es válido antes de intentar eliminar
             if (selectedRow >= ZERO && selectedRow < tableModel.getRowCount()) {
-                removeProductFromCart(selectedRow);  // Eliminar el producto del carrito
-                tableModel.removeRow(selectedRow);  // Eliminar la fila de la tabla
+                // Acceder al valor del JSpinner que está en la columna de cantidad (suponiendo que la columna de cantidad es la columna 1)
+                int cantidadActual = (int) tableModel.getValueAt(selectedRow, ONE);
 
-                // Notificar a la tabla que una fila ha sido eliminada
+                if (cantidadActual > ONE) {
+                    // Si hay más de una unidad, se reduce en una
+                    tableModel.setValueAt(cantidadActual - ONE, selectedRow, ONE);
+                } else {
+                    // Si solo queda una unidad, se elimina la fila entera
+                    removeProductFromCart(selectedRow);  // Eliminar el producto del carrito
+                    tableModel.removeRow(selectedRow);  // Eliminar la fila de la tabla
+                }
+
+                // Redibuja la tabla para reflejar los cambios
+                tableModel.fireTableDataChanged();
                 fireEditingStopped();  // Detener la edición
             }
-
-            // Redibuja la tabla para reflejar los cambios
-            tableModel.fireTableDataChanged();
         }
     }
 
