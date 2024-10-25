@@ -7,6 +7,8 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
+import static org.example.Main.mostrarLogin;
+import static org.example.manager.userManager.ExcelUserManager.hayRegistroDeHoy;
 import static org.example.ui.UIHelpers.createButton;
 import static org.example.ui.uiAdmin.GastosAdminUI.showReabastecimientoDialog;
 import static org.example.ui.uiAdmin.UIAdminProducts.showProductosDialog;
@@ -29,10 +31,15 @@ public class MainAdminUi {
         if (inputPassword != null && inputPassword.equals("admin2024")) {
             // Si la contraseña es correcta, mostrar el panel de administrador
             showAdminPanel();
+
         } else {
             // Mostrar un mensaje de error si la contraseña es incorrecta
             JOptionPane.showMessageDialog(null, "Contraseña incorrecta. Acceso denegado.", "Error de Autenticación", JOptionPane.ERROR_MESSAGE);
-            mainUser(); // Volver a la ventana de Ventas
+            if (hayRegistroDeHoy()) {
+                mainUser(); // Si hay registro, abrir el panel de usuario
+            } else {
+                mostrarLogin(); // Si no, mostrar el login
+            } // Volver a la ventana de Ventas
         }
 }
 
@@ -44,13 +51,22 @@ public class MainAdminUi {
             // Crear ventana principal
             JFrame frame = new JFrame("Calculadora Administrador");
             frame.setSize(1280, 720); // Tamaño más grande para incluir la barra lateral
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
 
             // Añadir un WindowListener para detectar el cierre de la ventana
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    mainUser();  // Volver a la ventana principal al cerrar
+
+
+                    if (hayRegistroDeHoy()) {
+                        mainUser(); // Si hay registro, abrir el panel de usuario
+                    } else {
+                        mostrarLogin(); // Si no, mostrar el login
+                    }
+
+
+                    // Volver a la ventana principal al cerrar
                 }
             });
 
@@ -102,7 +118,11 @@ public class MainAdminUi {
 
             // Botón para volver a la ventana de Ventas
             JButton moreOptionsButton = createButton("Ventas", e -> {
-                mainUser(); // Abrir ventana de ventas
+                if (hayRegistroDeHoy()) {
+                    mainUser(); // Si hay registro, abrir el panel de usuario
+                } else {
+                    mostrarLogin(); // Si no, mostrar el login
+                }
                 frame.dispose(); // Cerrar ventana de Admin
             });
             moreOptionsButton.setFont(new Font("Arial", Font.BOLD, 16));

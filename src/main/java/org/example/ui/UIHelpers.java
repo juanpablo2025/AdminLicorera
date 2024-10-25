@@ -128,7 +128,7 @@ public class UIHelpers {
     }
 
     public static JTable createProductTable() {
-        String[] columnNames = {PRODUCTO, CANTIDAD, PRECIO_UNITARIO, TOTALP, SPACE}; // Sin título en la columna de eliminar
+        String[] columnNames = {PRODUCTO, CANTIDAD, PRECIO_UNITARIO, TOTALP, "Eliminar una unidad"}; // Sin título en la columna de eliminar
         tableModel = new DefaultTableModel(columnNames, ZERO);
         JTable table = new JTable(tableModel);
         UnifiedEditorRenderer editorRenderer = new UnifiedEditorRenderer(tableModel, ventaMesaUserManager);
@@ -141,13 +141,8 @@ public class UIHelpers {
     }
 
     public static JPanel createTotalPanel() {
-        JPanel totalPanel = new JPanel(new GridLayout(THREE, ONE));
-        totalLabel = new JLabel(TOTAL_DOUBLE_ZERO_INIT);
-        totalCompraLabel = new JLabel(TOTAL_PURCHASE_INIT);
-        
+        JPanel totalPanel = new JPanel(new GridLayout(1, 1));
 
-        totalPanel.add(totalLabel);
-        totalPanel.add(totalCompraLabel);
 
         return totalPanel;
     }
@@ -159,42 +154,79 @@ public class UIHelpers {
         JButton agregarProductoButton = new JButton(AGREGAR_PRODUCTO);
         agregarProductoButton.addActionListener(e -> {
             try {
+                // Obtener el producto seleccionado y la cantidad del Spinner
                 String selectedProduct = (String) productComboBox.getSelectedItem();
                 int cantidad = (int) cantidadSpinner.getValue();
 
+                // Validar que la cantidad sea mayor que 0
                 if (cantidad <= 0) {
                     JOptionPane.showMessageDialog(null, "La cantidad debe ser mayor que 0.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
+                // Obtener el producto por su nombre desde el productoUserManager
                 Producto producto = productoUserManager.getProductByName(selectedProduct);
 
-                // Verificar que el producto tiene suficiente stock
+                // Verificar si el producto tiene suficiente stock
                 if (producto.getCantidad() < cantidad) {
                     JOptionPane.showMessageDialog(null, "No hay suficiente stock para el producto: " + selectedProduct, "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
+                // Acceder al DefaultTableModel de la tabla
+                DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
 
+                // Verificar si el producto ya está en la tabla
+                boolean productoExistente = false;
+                for (int i = 0; i < tableModel.getRowCount(); i++) {
+                    String nombreProducto = (String) tableModel.getValueAt(i, 0); // Columna 0 es el nombre del producto
 
-                // Añadir producto a la tabla
-                double precioUnitario = producto.getPrice();
-                double totalProducto = precioUnitario * cantidad;
-                tableModel.addRow(new Object[]{selectedProduct, cantidad, precioUnitario, totalProducto, "X"});
+                    if (nombreProducto.equals(selectedProduct)) {
+                        // Si el producto ya existe en la tabla, sumar la cantidad
+                        int cantidadExistente = (int) tableModel.getValueAt(i, 1); // Columna 1 es la cantidad
+                        int nuevaCantidad = cantidadExistente + cantidad;
 
-                // Calcular el total general
+                        // Verificar que no se exceda el stock disponible
+                        if (nuevaCantidad > producto.getCantidad()) {
+                            JOptionPane.showMessageDialog(null, "No hay suficiente stock disponible para aumentar la cantidad del producto: " + selectedProduct, "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+
+                        // Actualizar la cantidad y el total en la tabla
+                        double precioUnitario = (double) tableModel.getValueAt(i, 2); // Columna 2 es el precio unitario
+                        double nuevoTotal = nuevaCantidad * precioUnitario;
+
+                        tableModel.setValueAt(nuevaCantidad, i, 1); // Actualizar la cantidad
+                        tableModel.setValueAt(nuevoTotal, i, 3); // Actualizar el total
+
+                        productoExistente = true;
+                        break;
+                    }
+                }
+
+                // Si el producto no existe en la tabla, añadirlo como una nueva fila
+                if (!productoExistente) {
+                    double precioUnitario = producto.getPrice();
+                    double totalProducto = precioUnitario * cantidad;
+                    tableModel.addRow(new Object[]{selectedProduct, cantidad, precioUnitario, totalProducto, "X"});
+                }
+
+                // Calcular el total general sumando los valores de la columna 3 (total del producto)
                 double total = 0;
                 for (int i = 0; i < tableModel.getRowCount(); i++) {
-                    total += (double) tableModel.getValueAt(i, 3);  // Sumar la columna del total (index 3)
+                    total += (double) tableModel.getValueAt(i, 3);  // Sumar el total de cada producto
                 }
-                totalLabel.setText(TOTAL_PESO + total);
-                totalCompraLabel.setText(TOTAL_COMPRA_PESO + total);
 
-                // Añadir el producto al carrito de ventas
+                // Actualizar las etiquetas o campos que muestran el total general (descomentando según tu implementación)
+            /*totalLabel.setText(TOTAL_PESO + total);
+            totalCompraLabel.setText(TOTAL_COMPRA_PESO + total);*/
+
+                // Añadir el producto al carrito de ventas en el productoUserManager
                 productoUserManager.addProductToCart(producto, cantidad);
 
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(compraDialog, INVALID_AMOUNT, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+                // Manejar posibles errores de formato en el precio o cantidad
+                JOptionPane.showMessageDialog(null, "Cantidad o precio inválido.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
