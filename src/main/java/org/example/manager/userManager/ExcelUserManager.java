@@ -365,7 +365,7 @@ public class ExcelUserManager {
     private void copiarContenidoHojaConHoraCerrada(Sheet sourceSheet, Sheet targetSheet) {
         int rowCount = sourceSheet.getPhysicalNumberOfRows();
         LocalDateTime horaCerrada = LocalDateTime.now();
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss /dd-MM-yyyy");
 
         for (int i = 0; i < rowCount; i++) {
             Row sourceRow = sourceSheet.getRow(i);
@@ -382,7 +382,7 @@ public class ExcelUserManager {
             Cell horaCerradaCell = targetRow.createCell(cellCount);
             if (i == 0) {
                 // Si es la primera fila (cabecera), escribir "Hora Cerrada"
-                horaCerradaCell.setCellValue("Hora Cerrada");
+                horaCerradaCell.setCellValue("Hora de Cierre");
             } else {
                 // En las demás filas, escribir la hora actual
                 horaCerradaCell.setCellValue(horaCerrada.format(timeFormatter));
