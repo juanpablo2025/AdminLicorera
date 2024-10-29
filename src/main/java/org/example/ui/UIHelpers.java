@@ -11,6 +11,9 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.Font;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.stream.Collectors;
 
 import static org.example.utils.Constants.*;
 import static org.example.utils.FormatterHelpers.formatearMoneda;
@@ -123,46 +126,80 @@ public class UIHelpers {
     public static JPanel createInputPanel(JTable table, VentaMesaUserManager ventaMesaUserManager) {
         JPanel inputPanel = new JPanel(new GridLayout(3, 2)); // Tres filas, dos columnas
 
-        // Definir la fuente que se aplicará a todos los componentes
         Font labelFont = new Font("Arial", Font.BOLD, 16);
-        Font inputFont = new Font("Arial", Font.PLAIN, 14); // Para los campos de entrada
 
-        // Primera fila: ComboBox de productos
-        JLabel productLabel = new JLabel(PRODUCT_FIELD);
+        // First row: Product ComboBox with search functionality
+        JLabel productLabel = new JLabel("Producto");
         productLabel.setFont(labelFont);
         inputPanel.add(productLabel);
 
-        productComboBox = new JComboBox<>();
-        productComboBox.setFont(new Font("Arial", Font.BOLD, 18)); // Cambiar la fuente del ComboBox
-        java.util.List<Producto> productos = productoUserManager.getProducts();
-        for (Producto producto : productos) {
-            productComboBox.addItem(producto.getName());
-        }
+        JComboBox<String> productComboBox = createProductComboBox();
         inputPanel.add(productComboBox);
 
-        // Segunda fila: Spinner de cantidad
-        JLabel cantidadLabel = new JLabel(CANTIDAD_FIELD);
+        // Second row: Quantity Spinner
+        JLabel cantidadLabel = new JLabel("Cantidad");
         cantidadLabel.setFont(labelFont);
         inputPanel.add(cantidadLabel);
 
-        cantidadSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
-        JSpinner.DefaultEditor spinnerEditor = (JSpinner.DefaultEditor) cantidadSpinner.getEditor();
-        spinnerEditor.getTextField().setFont(new Font("Arial", Font.BOLD, 18)); // Cambiar la fuente del Spinner
+        JSpinner cantidadSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+        ((JSpinner.DefaultEditor) cantidadSpinner.getEditor()).getTextField().setFont(new Font("Arial", Font.BOLD, 18));
         inputPanel.add(cantidadSpinner);
 
-        // Tercera fila: Espacio vacío para alineación y el botón alineado a la derecha
-        inputPanel.add(new JLabel("")); // Espacio vacío en la primera celda de la fila
+        // Third row: Spacer and Add Product Button
+        inputPanel.add(new JLabel("")); // Spacer
 
-        // Crear un panel para el botón con FlowLayout alineado a la derecha
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton agregarProductoButton = createAddProductMesaButton(table, ventaMesaUserManager);
-        agregarProductoButton.setFont(new Font("Arial", Font.BOLD, 20)); // Fuente del botón
+        JButton agregarProductoButton = createAddProductMesaButton(table, productComboBox, cantidadSpinner, ventaMesaUserManager);
         buttonPanel.add(agregarProductoButton);
-
-        // Añadir el buttonPanel al inputPanel (segunda celda de la tercera fila)
         inputPanel.add(buttonPanel);
 
         return inputPanel;
+    }
+
+    // Helper method to create a ComboBox with product search functionality
+    private static JComboBox<String> createProductComboBox() {
+        JComboBox<String> productComboBox = new JComboBox<>();
+        productComboBox.setEditable(true);
+        productComboBox.setFont(new Font("Arial", Font.BOLD, 18));
+        JTextField comboBoxEditor = (JTextField) productComboBox.getEditor().getEditorComponent();
+
+        // Using java.awt.List to load product names
+        List productList = new List();
+        for (Producto producto : productoUserManager.getProducts()) {
+            productList.add(producto.getName());
+        }
+
+        // Add items to ComboBox
+        updateComboBox(productComboBox, productList);
+
+        comboBoxEditor.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                String input = comboBoxEditor.getText();
+                List filteredList = new List();
+
+                for (int i = 0; i < productList.getItemCount(); i++) {
+                    String item = productList.getItem(i);
+                    if (item.toLowerCase().contains(input.toLowerCase())) {
+                        filteredList.add(item);
+                    }
+                }
+                updateComboBox(productComboBox, filteredList);
+                productComboBox.showPopup();
+            }
+        });
+
+        return productComboBox;
+    }
+
+
+    // Updates ComboBox items based on search results
+    private static void updateComboBox(JComboBox<String> comboBox, List itemList) {
+        comboBox.removeAllItems();
+        comboBox.addItem(""); // Default empty selection
+        for (int i = 0; i < itemList.getItemCount(); i++) {
+            comboBox.addItem(itemList.getItem(i));
+        }
     }
 
     // Renderer personalizado para formato de moneda
@@ -182,8 +219,8 @@ public class UIHelpers {
         tableModel = new DefaultTableModel(columnNames, ZERO) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                // Solo permite edición en la columna de cantidad, por ejemplo.
-                return column == ONE;
+                // Permitir edición en la columna de cantidad y en la columna del botón (FOUR)
+                return column == FOUR;
             }
         };
 
@@ -194,6 +231,7 @@ public class UIHelpers {
         table.getColumnModel().getColumn(TWO).setCellRenderer(new CurrencyRenderer()); // PRECIO_UNITARIO
         table.getColumnModel().getColumn(THREE).setCellRenderer(new CurrencyRenderer()); // TOTALP
 
+        // Asignar el editor y renderer personalizados a la columna del botón
         table.getColumnModel().getColumn(FOUR).setCellRenderer(editorRenderer);
         table.getColumnModel().getColumn(FOUR).setCellEditor(editorRenderer);
 
@@ -210,12 +248,20 @@ public class UIHelpers {
 
 
 
-    public static JButton createAddProductMesaButton(JTable table, VentaMesaUserManager ventaManager) {
+    public static JButton createAddProductMesaButton(JTable table, JComboBox<String> productComboBox, JSpinner cantidadSpinner, VentaMesaUserManager ventaManager) {
         JButton agregarProductoButton = new JButton(AGREGAR_PRODUCTO);
+
         agregarProductoButton.addActionListener(e -> {
             try {
                 // Obtener el producto seleccionado y la cantidad del Spinner
                 String selectedProduct = (String) productComboBox.getSelectedItem();
+
+                // Verificar que el ComboBox no esté vacío y que haya una selección válida
+                if (selectedProduct == null || selectedProduct.trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Seleccione un producto válido.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 int cantidad = (int) cantidadSpinner.getValue();
 
                 // Validar que la cantidad sea mayor que 0

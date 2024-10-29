@@ -148,7 +148,7 @@ public class UIUserVenta {
 
         JPanel southPanel = new JPanel(new BorderLayout());
         southPanel.add(totalPanel, BorderLayout.NORTH);
-        southPanel.add(openSubMenuButton, BorderLayout.CENTER);
+        //southPanel.add(openSubMenuButton, BorderLayout.CENTER);
         southPanel.add(buttonPanel, BorderLayout.SOUTH);
         ventaMesaDialog.add(southPanel, BorderLayout.SOUTH);
         ventaMesaDialog.setVisible(true);
@@ -301,7 +301,7 @@ public class UIUserVenta {
                         listaProductosEnLinea.append(nombreProducto)
                                 .append(" x").append(cantidad)
                                 .append(" $").append(precioUnitario)
-                                .append(" = ").append(precioTotal).append("\n");
+                                .append(" = ").append(precioTotal+" ").append("\n");
 
                         total += precioTotal;
                     }
@@ -422,7 +422,7 @@ public class UIUserVenta {
                                         if (totalCell == null) {
                                             totalCell = row.createCell(3);
                                         }
-                                        totalCell.setCellValue(0);
+                                        totalCell.setCellValue("");
 
                                         // Terminar el bucle ya que la mesa fue encontrada
                                         break;
@@ -521,7 +521,7 @@ public class UIUserVenta {
                                                 .append(" $")
                                                 .append(precioUnitario)
                                                 .append(" = ")
-                                                .append(precioTotal)
+                                                .append(precioTotal+" ")
                                                 .append("\n");
                                     }
 

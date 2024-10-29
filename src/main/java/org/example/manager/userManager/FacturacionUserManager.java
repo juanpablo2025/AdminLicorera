@@ -9,6 +9,7 @@ import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
+import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
@@ -124,7 +125,7 @@ public class FacturacionUserManager {
                     .setFontSize(SIX)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(new String(new char[33]).replace(SLASH_ZERO, EQUALS))
+            document.add(new Paragraph(new String(new char[30]).replace(SLASH_ZERO, "_"))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
@@ -173,7 +174,7 @@ public class FacturacionUserManager {
                             .setFontSize(EIGHT));
                 }}
 
-            document.add(new Paragraph(new String(new char[33]).replace(SLASH_ZERO, EQUALS))
+            document.add(new Paragraph(new String(new char[30]).replace(SLASH_ZERO, "_"))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
@@ -189,7 +190,7 @@ public class FacturacionUserManager {
 
             document.add(table);
 
-            document.add(new Paragraph(new String(new char[33]).replace(SLASH_ZERO, EQUALS))
+            document.add(new Paragraph(new String(new char[30]).replace(SLASH_ZERO, "_"))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
@@ -216,6 +217,7 @@ public class FacturacionUserManager {
     private static void addTableRow(com.itextpdf.layout.element.Table table, String key, String value) {
         table.addCell(new Paragraph(key).setFontSize(EIGHT));
         table.addCell(new Paragraph(value).setFontSize(EIGHT));
+        table.setBorder(Border.NO_BORDER);
     }
 
 

@@ -48,6 +48,14 @@ public class MainAdminUi {
                     mostrarLogin(); // Si no, mostrar el login
                 }
             }
+
+
+        }else{
+            if (hayRegistroDeHoy()) {
+                mainUser(); // Si hay registro, abrir el panel de usuario
+            } else {
+                mostrarLogin(); // Si no, mostrar el login
+            }
         }
 
 }

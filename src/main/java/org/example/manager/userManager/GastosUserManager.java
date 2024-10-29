@@ -37,8 +37,9 @@ public class GastosUserManager {
             // Añadir el registro del gasto
             int lastRowNum = gastosSheet.getLastRowNum();
             Row newRow = gastosSheet.createRow(lastRowNum + 1);
+            newRow.createCell(0).setCellValue(System.currentTimeMillis() % 1000);
             newRow.createCell(1).setCellValue(nombreGasto);
-            newRow.createCell(2).setCellValue(i);
+            newRow.createCell(2).setCellValue("n/a");
             newRow.createCell(3).setCellValue(precio);  // Guardar el precio ingresado
             newRow.createCell(4).setCellValue(formatter.format(fechaHora));
 

@@ -75,7 +75,7 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
     @Override
     public void actionPerformed(ActionEvent e) {
         // Detener la edición de la celda actual para evitar problemas de edición
-        stopCellEditing();
+        //stopCellEditing();
 
         // Acción del botón: Eliminar una unidad o el producto si solo queda una
         if (editingColumn == FOUR) {  // Verifica si la acción corresponde a la columna del botón
@@ -97,7 +97,7 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
 
                 // Redibuja la tabla para reflejar los cambios
                 tableModel.fireTableDataChanged();
-                fireEditingStopped();  // Detener la edición
+                //fireEditingStopped();  // Detener la edición
             }
         }
     }

@@ -56,7 +56,7 @@ public class ExcelUserManager {
 
 
     // Método para crear el archivo Excel si no existe
-    private void createExcelFile() {
+    private static void createExcelFile() {
         Workbook workbook = new XSSFWorkbook();
 
         // Crear hoja de productos
@@ -823,29 +823,70 @@ public class ExcelUserManager {
         }
         return false; // No hay registro
     }
-    // Registrar la hora y fecha en el archivo Excel
     public static void registrarDia(String nombreUsuario) {
         LocalDateTime now = LocalDateTime.now();
         String horaInicio = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
         String fechaInicio = now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
+        // Verificar si el archivo existe; si no, crear uno nuevo
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            crearArchivoSiNoExiste(); // Llama al método que crea el archivo si no existe
+        }
+
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
-            Sheet sheet = workbook.getSheet("Empleados");
-            int lastRow = sheet.getLastRowNum() + 1;
+            // Obtener o crear la hoja de empleados
+            Sheet empleadosSheet = workbook.getSheet("Empleados");
+            if (empleadosSheet == null) {
+                empleadosSheet = workbook.createSheet("Empleados");
+                // Crear fila de encabezado
+                Row empleadosHeader = empleadosSheet.createRow(0);
+                empleadosHeader.createCell(0).setCellValue("Nombre Empleado");
+                empleadosHeader.createCell(1).setCellValue("Hora Inicio");
+                empleadosHeader.createCell(2).setCellValue("Fecha Inicio");
+            }
 
-            Row row = sheet.createRow(lastRow);
+            // Agregar la nueva entrada
+            int lastRow = empleadosSheet.getLastRowNum() + 1;
+            Row row = empleadosSheet.createRow(lastRow);
             row.createCell(0).setCellValue(nombreUsuario);
             row.createCell(1).setCellValue(horaInicio);
             row.createCell(2).setCellValue(fechaInicio);
 
+            // Guardar cambios en el archivo
             try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
                 workbook.write(fos);
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    // Crea el archivo y la hoja si no existe
+    public static void crearArchivoSiNoExiste() {
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            try (Workbook workbook = new XSSFWorkbook()) {
+                Sheet empleadosSheet = workbook.createSheet("Empleados");
+                Row empleadosHeader = empleadosSheet.createRow(0);
+                empleadosHeader.createCell(0).setCellValue("Nombre Empleado");
+                empleadosHeader.createCell(1).setCellValue("Hora Inicio");
+                empleadosHeader.createCell(2).setCellValue("Fecha Inicio");
+
+                // Guardar el archivo
+                try (FileOutputStream fos = new FileOutputStream(file)) {
+                    workbook.write(fos);
+                }
+
+                System.out.println("Archivo creado exitosamente: " + FILE_PATH);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("El archivo ya existe: " + FILE_PATH);
         }
     }
 
