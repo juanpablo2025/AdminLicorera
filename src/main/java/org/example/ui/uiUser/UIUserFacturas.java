@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.example.manager.userManager.FacturacionUserManager.generarFacturadeCompra;
@@ -47,8 +48,13 @@ public class UIUserFacturas {
         for (int i = 0; i < facturas.size(); i++) {
             Factura f = facturas.get(i);
             data[i][0] = f.getId();
-            data[i][1] = f.getProductos(); // Aquí puedes procesar los productos como una lista
-            data[i][2] = f.getTotal();
+
+            // Convertir la lista de productos a una cadena separada por comas
+            List<String> productos = Collections.singletonList(f.getProductos()); // Obtener directamente la lista de productos
+            data[i][1] = productos != null ? String.join(", ", productos) : ""; // Mostrar todos los productos en una sola celda
+
+            // Asegurarse de que el total sea correctamente representado
+            data[i][2] = f.getTotal(); // Usar el total directamente sin manipulación adicional
             data[i][3] = f.getFechaHora();
         }
 
@@ -60,30 +66,28 @@ public class UIUserFacturas {
             }
         };
 
-
-
-
-// Crear el JTable con el modelo y aplicar el estilo
+        // Crear el JTable con el modelo y aplicar el estilo
         JTable facturasTable = new JTable(tableModel);
         facturasTable.setFillsViewportHeight(true);
         facturasTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
         // Establecer la fuente y el tamaño
-        Font font = new Font("Arial", Font.PLAIN, 18); // Cambiar el tipo y tamaño de fuente
+        Font font = new Font("Arial", Font.PLAIN, 18);
         facturasTable.setFont(font);
-        facturasTable.setRowHeight(30); // Aumentar la altura de las filas
+        facturasTable.setRowHeight(30);
 
         // Establecer la fuente para el encabezado
         JTableHeader header = facturasTable.getTableHeader();
-        header.setFont(new Font("Arial", Font.BOLD, 20)); // Fuente más grande para el encabezado
-        header.setBackground(Color.LIGHT_GRAY); // Fondo para el encabezado
-        header.setForeground(Color.BLACK); // Color del texto del encabezado
+        header.setFont(new Font("Arial", Font.BOLD, 20));
+        header.setBackground(Color.LIGHT_GRAY);
+        header.setForeground(Color.BLACK);
 
         // Configuración de borde y color de fondo
         facturasTable.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-        facturasTable.setBackground(Color.WHITE); // Fondo de la tabla
-        facturasTable.setSelectionBackground(Color.CYAN); // Color de selección
-        facturasTable.setSelectionForeground(Color.BLACK); // Color del texto seleccionado
+        facturasTable.setBackground(Color.WHITE);
+        facturasTable.setSelectionBackground(Color.CYAN);
+        facturasTable.setSelectionForeground(Color.BLACK);
+
         // Aplicar renderer de moneda a la columna "Total"
         facturasTable.getColumnModel().getColumn(2).setCellRenderer(new UIHelpers.CurrencyRenderer());
 
@@ -101,23 +105,29 @@ public class UIUserFacturas {
                 // Obtener los datos de la factura seleccionada
                 String facturaId = facturasTable.getValueAt(selectedRow, 0).toString();
                 String productosStr = facturasTable.getValueAt(selectedRow, 1).toString();
-                double totalCompra = Double.parseDouble(facturasTable.getValueAt(selectedRow, 2).toString().replace(".", "").replace(",", "."));
+                double totalCompra = Double.parseDouble(facturasTable.getValueAt(selectedRow, 2).toString());
                 String fechaHoraStr = facturasTable.getValueAt(selectedRow, 3).toString();
 
-                // Dividir los productos en una lista (suponiendo que los productos están separados por comas)
-                List<String> productos = Arrays.asList(productosStr.split(","));
+                // Convertir la cadena de productos a una lista (suponiendo que los productos están separados por comas)
+                List<String> productos = Arrays.asList(productosStr.split(",\\s*"));
 
                 // Convertir la fecha y hora a LocalDateTime
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
                 LocalDateTime fechaHora = LocalDateTime.parse(fechaHoraStr, formatter);
 
-                // Llamar a la función para generar el PDF con la factura seleccionada
+                // Verificar si la lista de productos tiene más de un elemento
+                if (productos.isEmpty()) {
+                    JOptionPane.showMessageDialog(facturasDialog, "No hay productos en esta factura.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                // Llamar a la función para generar el PDF con todos los productos de la factura seleccionada
                 generarFacturadeCompra(facturaId, productos, totalCompra, fechaHora);
 
             } else {
                 JOptionPane.showMessageDialog(facturasDialog, "Por favor selecciona una factura.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-            }
-        });
+            }});
+
 
         // Crear un panel para el botón de reimprimir
         JPanel buttonPanel = new JPanel();

@@ -95,8 +95,8 @@ public class UIUserMain {
     private static void addInitialButtons(JPanel buttonPanel, JFrame frame) {
         FacturacionUserManager facturacionUserManager = new FacturacionUserManager(); // Instancia de FacturacionManager
         // Cargar la imagen desde la ruta especificada
-        ImageIcon originalIcon = new ImageIcon("src/main/java/org/example/utils/icons/mesa-redonda.png");
-        ImageIcon originalProductsIcon = new ImageIcon("src/main/java/org/example/utils/icons/lista-de_productos.png");
+        ImageIcon originalIcon = new ImageIcon((UIUserMain.class.getResource("/icons/mesa-redonda.png")));
+        ImageIcon originalProductsIcon = new ImageIcon((UIUserMain.class.getResource("/icons/lista-de_productos.png")));
         // Redimensionar la imagen
         Image imgProduct = originalProductsIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
         ImageIcon productsIcon = new ImageIcon(imgProduct);
@@ -105,7 +105,7 @@ public class UIUserMain {
 
 
 
-        ImageIcon originalGastosIcon = new ImageIcon("src/main/java/org/example/utils/icons/Gastos.png");
+        ImageIcon originalGastosIcon = new ImageIcon((UIUserMain.class.getResource("/icons/Gastos.png")));
         // Redimensionar la imagen
         Image imgGastos = originalGastosIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
         ImageIcon GastosIcon = new ImageIcon(imgGastos);
@@ -118,7 +118,7 @@ public class UIUserMain {
         ImageIcon mesaIcon = new ImageIcon(img);
         JButton mesasButton = createButton("Mesas",mesaIcon , e -> { showMesas(); frame.dispose(); });
 
-        ImageIcon originalFacturarIcon = new ImageIcon("src/main/java/org/example/utils/icons/Facturar.png");
+        ImageIcon originalFacturarIcon = new ImageIcon((UIUserMain.class.getResource("/icons/Facturar.png")));
 
         // Redimensionar la imagen
         Image imgFacturar = originalFacturarIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
@@ -150,7 +150,7 @@ public class UIUserMain {
         if (!showingMoreOptions) {
 
 
-            ImageIcon originalfacturasIcon = new ImageIcon("src/main/java/org/example/utils/icons/admin/beneficios.png");
+            ImageIcon originalfacturasIcon = new ImageIcon((UIUserMain.class.getResource("/icons/admin/beneficios.png")));
             // Redimensionar la imagen
             Image imgfacturas = originalfacturasIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
             ImageIcon facturasIcon = new ImageIcon(imgfacturas);
@@ -162,7 +162,7 @@ public class UIUserMain {
             });
 
 
-            ImageIcon originalAdminIcon = new ImageIcon("src/main/java/org/example/utils/icons/obrero.png");
+            ImageIcon originalAdminIcon = new ImageIcon(UIUserMain.class.getResource("/icons/obrero.png"));
             // Redimensionar la imagen
             Image imgAdmin = originalAdminIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
             ImageIcon AdminIcon = new ImageIcon(imgAdmin);
@@ -174,7 +174,7 @@ public class UIUserMain {
                 frame.dispose();  // Cierra la ventana actual
             });
 
-            ImageIcon originalCajaRegistradoraIcon = new ImageIcon("src/main/java/org/example/utils/icons/admin/cajero-automatico.png");
+            ImageIcon originalCajaRegistradoraIcon = new ImageIcon((UIUserMain.class.getResource("/icons/admin/cajero-automatico.png")));
             // Redimensionar la imagen
             Image imgCajaRegistradora = originalCajaRegistradoraIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
             ImageIcon CajaRegistradoraIcon = new ImageIcon(imgCajaRegistradora);

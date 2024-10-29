@@ -1,6 +1,7 @@
 package org.example.ui.uiAdmin;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import org.example.ui.uiUser.UIUserMain;
 
 import javax.swing.*;
 import java.awt.*;
@@ -105,7 +106,7 @@ public class MainAdminUi {
             buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Márgenes
 
 
-            ImageIcon originalreabastecerIcon = new ImageIcon("src/main/java/org/example/utils/icons/admin/transaccion.png");
+            ImageIcon originalreabastecerIcon = new ImageIcon((UIUserMain.class.getResource("/icons/admin/transaccion.png")));
             // Redimensionar la imagen
             Image imgreabastecer = originalreabastecerIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
             ImageIcon reabastecerIcon = new ImageIcon(imgreabastecer);
@@ -120,7 +121,7 @@ public class MainAdminUi {
             reabastecerButton.setFont(new Font("Arial", Font.BOLD, 18));
 
 
-            ImageIcon originalProductosIcon = new ImageIcon("src/main/java/org/example/utils/icons/admin/menu.png");
+            ImageIcon originalProductosIcon = new ImageIcon((UIUserMain.class.getResource("/icons/admin/menu.png")));
             // Redimensionar la imagen
             Image imgProductos = originalProductosIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
             ImageIcon productosIcon = new ImageIcon(imgProductos);
@@ -133,7 +134,7 @@ public class MainAdminUi {
             productosButton.setFont(new Font("Arial", Font.BOLD, 18));
 
 
-            ImageIcon originalfacturasIcon = new ImageIcon("src/main/java/org/example/utils/icons/admin/beneficios.png");
+            ImageIcon originalfacturasIcon = new ImageIcon((UIUserMain.class.getResource("/icons/admin/beneficios.png")));
             // Redimensionar la imagen
             Image imgfacturas = originalfacturasIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
             ImageIcon facturasIcon = new ImageIcon(imgfacturas);
