@@ -5,6 +5,8 @@ import org.example.model.Mesa;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -138,7 +140,20 @@ public class UIUserMesas {
         // Añadir componentes al panel de la mesa
         mesaPanel.add(mesaLabel, BorderLayout.CENTER); // Etiqueta en el centro
         mesaPanel.add(buttonPanel, BorderLayout.SOUTH); // Botones en la parte inferior
+        // Agregar efecto de "elevar" al pasar el mouse
+        mesaPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                // Cambiar el color de fondo
+                mesaPanel.setBounds(mesaPanel.getX(), mesaPanel.getY() - 2, mesaPanel.getWidth(), mesaPanel.getHeight()); // Levantar efecto
+            }
 
+            @Override
+            public void mouseExited(MouseEvent e) {
+                 // Volver al color original
+                mesaPanel.setBounds(mesaPanel.getX(), mesaPanel.getY() + 2, mesaPanel.getWidth(), mesaPanel.getHeight()); // Volver a la posición original
+            }
+        });
         return mesaPanel;
     }
 }

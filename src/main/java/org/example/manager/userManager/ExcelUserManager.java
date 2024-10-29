@@ -290,10 +290,10 @@ public class ExcelUserManager {
 
                 // Restar los totales de gastos
                 double totalGastos = restarTotalesGastos(gastosSheet);
-                double totalFinal = totalCompra - totalGastos; // Calcular el total final
+                double totalFinal = totalCompra; // Calcular el total final
 
                 // Copiar la hoja "Compras" y renombrarla, pasando el total de la compra
-                crearArchivoFacturacionYGastos(purchasesSheet, gastosSheet, totalCompra, totalGastos);
+                crearArchivoFacturacionYGastos(purchasesSheet, gastosSheet, empleadosSheet, totalCompra, totalGastos);
                 generarResumenDiarioEstilizadoPDF();
 
                 // Limpiar la hoja "Compras"
@@ -317,7 +317,7 @@ public class ExcelUserManager {
 
 
     // Método para crear el archivo Excel independiente con las hojas "Facturacion" y "Gastos"
-    public void crearArchivoFacturacionYGastos(Sheet purchasesSheet, Sheet gastosSheet, double totalCompra, double totalGastos) throws IOException {
+    public void crearArchivoFacturacionYGastos(Sheet purchasesSheet, Sheet gastosSheet,Sheet empleadosSheet, double totalCompra, double totalGastos) throws IOException {
         // Crear un nuevo Workbook (archivo Excel)
         Workbook workbook = new XSSFWorkbook();
         LocalDateTime fechaHoraFacturacion = LocalDateTime.now();
@@ -349,9 +349,71 @@ public class ExcelUserManager {
         // Agregar una fila extra con el total al final de la hoja "Gastos"
         agregarTotal(gastosSheetNueva, totalGastos, "Total Gastos", redStyle);
 
+        // Crear la hoja "Empleados" y añadir la hora de cierre
+        String empleadosHojaNombre = "Empleados_" + fechaFormateada;
+        Sheet empleadosSheetNueva = workbook.createSheet(empleadosHojaNombre);
+
+        // Copiar el contenido de la hoja "Empleados" y añadir la columna "Hora Cerrada"
+        copiarContenidoHojaConHoraCerrada(empleadosSheet, empleadosSheetNueva);
+
         // Guardar el archivo Excel en el directorio especificado
         guardarArchivo(workbook);
     }
+
+
+    // Método para copiar el contenido de una hoja y agregar la columna "Hora Cerrada"
+    private void copiarContenidoHojaConHoraCerrada(Sheet sourceSheet, Sheet targetSheet) {
+        int rowCount = sourceSheet.getPhysicalNumberOfRows();
+        LocalDateTime horaCerrada = LocalDateTime.now();
+        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+        for (int i = 0; i < rowCount; i++) {
+            Row sourceRow = sourceSheet.getRow(i);
+            Row targetRow = targetSheet.createRow(i);
+
+            int cellCount = sourceRow.getPhysicalNumberOfCells();
+            for (int j = 0; j < cellCount; j++) {
+                Cell sourceCell = sourceRow.getCell(j);
+                Cell targetCell = targetRow.createCell(j);
+                copiarCelda(sourceCell, targetCell);
+            }
+
+            // Añadir la columna "Hora Cerrada" al final de cada fila
+            Cell horaCerradaCell = targetRow.createCell(cellCount);
+            if (i == 0) {
+                // Si es la primera fila (cabecera), escribir "Hora Cerrada"
+                horaCerradaCell.setCellValue("Hora Cerrada");
+            } else {
+                // En las demás filas, escribir la hora actual
+                horaCerradaCell.setCellValue(horaCerrada.format(timeFormatter));
+            }
+        }
+    }
+
+    // Método para copiar contenido de una celda a otra
+    private void copiarCelda(Cell sourceCell, Cell targetCell) {
+        if (sourceCell == null) return;
+
+        switch (sourceCell.getCellType()) {
+            case STRING:
+                targetCell.setCellValue(sourceCell.getStringCellValue());
+                break;
+            case NUMERIC:
+                targetCell.setCellValue(sourceCell.getNumericCellValue());
+                break;
+            case BOOLEAN:
+                targetCell.setCellValue(sourceCell.getBooleanCellValue());
+                break;
+            case FORMULA:
+                targetCell.setCellFormula(sourceCell.getCellFormula());
+                break;
+            default:
+                targetCell.setCellValue(sourceCell.getStringCellValue());
+                break;
+        }
+    }
+
+
 
     // Método auxiliar para copiar el contenido de una hoja a otra
     private void copiarContenidoHoja(Sheet oldSheet, Sheet newSheet) {
@@ -626,7 +688,7 @@ public class ExcelUserManager {
 
 
     public static void agregarMesaAExcel(Mesa nuevaMesa) {
-        final String FILE_NAME = "productos.xlsx";
+        final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
         final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Calculadora del Administrador";
         final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
         String filePath = FILE_PATH; // Reemplaza con la ruta correcta

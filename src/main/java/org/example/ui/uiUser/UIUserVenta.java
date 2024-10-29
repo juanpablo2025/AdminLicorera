@@ -11,6 +11,7 @@ import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.Color;
 import java.awt.Font;
@@ -42,7 +43,7 @@ public class UIUserVenta {
 
 
     public static void showVentaMesaDialog(List<String[]> productos, String mesaID) {
-        ventaMesaDialog = createDialog("Realizar Venta", 800, 600, new BorderLayout());
+        ventaMesaDialog = createDialog("Realizar Venta", 1280, 720, new BorderLayout());
         ventaMesaDialog.setResizable(true);
 
         // Añadir un WindowListener para detectar el cierre de la ventana
@@ -56,9 +57,26 @@ public class UIUserVenta {
         // Variable para el total acumulado
         AtomicReference<Double> sumaTotal = new AtomicReference<>(0.0);
 
-        // Crear la tabla de productos y el modelo
+        // Crear la tabla de productos usando createProductTable
         JTable table = createProductTable();
         DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+
+        // Establecer la fuente y el tamaño de la tabla
+        Font font = new Font("Arial", Font.PLAIN, 18); // Cambiar el tipo y tamaño de fuente
+        table.setFont(font);
+        table.setRowHeight(30); // Aumentar la altura de las filas
+
+        // Establecer la fuente para el encabezado
+        JTableHeader header = table.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 20)); // Fuente más grande para el encabezado
+        header.setBackground(Color.LIGHT_GRAY); // Fondo para el encabezado
+        header.setForeground(Color.BLACK); // Color del texto del encabezado
+
+        // Configuración de borde y colores para la tabla
+        table.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        table.setBackground(Color.WHITE); // Fondo de la tabla
+        table.setSelectionBackground(Color.CYAN); // Color de selección
+        table.setSelectionForeground(Color.BLACK); // Color del texto seleccionado
 
         // Cargar los productos en la tabla y calcular el total inicial
         for (String[] productoDetalles : productos) {
@@ -68,7 +86,7 @@ public class UIUserVenta {
                 double precioUnitario = Double.parseDouble(productoDetalles[2].substring(1).trim());
                 double total = cantidad * precioUnitario;
 
-                tableModel.addRow(new Object[]{nombreProducto, cantidad, precioUnitario, total});
+                tableModel.addRow(new Object[]{nombreProducto, cantidad, FormatterHelpers.formatearMoneda(precioUnitario), total});
                 sumaTotal.updateAndGet(v -> v + total);
             } catch (NumberFormatException ex) {
                 System.err.println("Error al parsear datos: " + Arrays.toString(productoDetalles));
@@ -114,7 +132,7 @@ public class UIUserVenta {
                 }
             }
         });
-        
+
         JScrollPane tableScrollPane = new JScrollPane(table);
         ventaMesaDialog.add(tableScrollPane, BorderLayout.CENTER);
 
@@ -123,16 +141,77 @@ public class UIUserVenta {
 
         JPanel buttonPanel = createButtonPanelVentaMesa(table, new VentaMesaUserManager(), ventaMesaDialog, mesaID);
 
+        // Botón independiente para abrir el submenú de productos
+        JButton openSubMenuButton = new JButton("Abrir Submenú de Productos");
+        openSubMenuButton.setFont(new Font("Arial", Font.BOLD, 18));
+        openSubMenuButton.addActionListener(e -> openProductSubMenu(table, productoUserManager.getProducts()));
+
         JPanel southPanel = new JPanel(new BorderLayout());
         southPanel.add(totalPanel, BorderLayout.NORTH);
+        southPanel.add(openSubMenuButton, BorderLayout.CENTER);
         southPanel.add(buttonPanel, BorderLayout.SOUTH);
-
         ventaMesaDialog.add(southPanel, BorderLayout.SOUTH);
         ventaMesaDialog.setVisible(true);
         ventaMesaDialog.setLocationRelativeTo(null);
     }
 
+    private static void openProductSubMenu(JTable table, List<Producto> productos) {
+        JDialog subMenuDialog = new JDialog(ventaMesaDialog, "Seleccionar Producto", true);
+        subMenuDialog.setSize(800, 600);
+        subMenuDialog.setLayout(new BorderLayout());
 
+        // Panel principal para los botones
+        JPanel buttonPanel = new JPanel(new GridLayout(0, 3, 10, 10)); // 3 columnas, filas dinámicas
+
+        for (Producto producto : productos) {
+            JButton productoButton = new JButton(producto.getName());
+            productoButton.setPreferredSize(new Dimension(120, 50)); // Tamaño de botón fijo
+            productoButton.setFont(new Font("Arial", Font.BOLD, 16));
+
+            productoButton.addActionListener(e -> {
+                int cantidad = 1;
+                double precioUnitario = producto.getPrice();
+                double total = cantidad * precioUnitario;
+
+                DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+                tableModel.addRow(new Object[]{
+                        producto.getName(),
+                        cantidad,
+                        FormatterHelpers.formatearMoneda(precioUnitario),
+                        total
+                });
+
+                updateTotalField(table);
+                subMenuDialog.dispose();
+            });
+
+            buttonPanel.add(productoButton);
+        }
+
+        // Añadir JScrollPane para que se pueda hacer scroll en el panel de botones
+        JScrollPane scrollPane = new JScrollPane(buttonPanel);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        subMenuDialog.add(scrollPane, BorderLayout.CENTER);
+        subMenuDialog.setLocationRelativeTo(ventaMesaDialog);
+        subMenuDialog.setVisible(true);
+    }
+
+    private static void updateTotalField(JTable table) {
+        double nuevoTotal = 0;
+        DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            int cantidad = (int) tableModel.getValueAt(i, 1);
+            double precioUnitario = Double.parseDouble(tableModel.getValueAt(i, 2).toString().replace(",", ""));
+            nuevoTotal += cantidad * precioUnitario;
+        }
+
+        JTextField totalField = (JTextField) ((JPanel) ventaMesaDialog.getContentPane().getComponent(2)).getComponent(0);
+        totalField.setText("Total: $" + FormatterHelpers.formatearMoneda(nuevoTotal) + " Pesos");
+        totalField.setVisible(nuevoTotal > 0);
+    }
 
 
     // Método modificado para crear el panel de botones de la mesa
@@ -140,13 +219,27 @@ public class UIUserVenta {
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
 
         // Crear el botón de guardar compra y asignar el ID de la mesa y la tabla
-        JButton guardarCompra = createSavePurchaseMesaButton(ventaMesaUserManager, mesaID, table); // Agregar el argumento `table`
+        JButton guardarCompra = createSavePurchaseMesaButton(ventaMesaUserManager, mesaID, table);
         guardarCompra.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 18)); // Configuración de fuente
         buttonPanel.add(guardarCompra);
 
         // Crear el botón de confirmar compra y asignar el ID de la mesa y el diálogo de compra
         JButton confirmarCompraButton = createConfirmPurchaseMesaButton(ventaMesaUserManager, compraDialog, mesaID);
         confirmarCompraButton.setFont(new java.awt.Font("Arial", Font.BOLD, 18)); // Configuración de fuente
+
+        // Verificar si hay productos en Excel para la mesa
+        List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
+        boolean productosEnExcel = !productosPrevios.isEmpty();
+
+        // Deshabilitar el botón si no hay productos en la tabla ni en Excel
+        confirmarCompraButton.setEnabled(productosEnExcel || table.getRowCount() > 0);
+
+        // Agregar un listener a la tabla para verificar el estado al cambiar su contenido
+        ((DefaultTableModel) table.getModel()).addTableModelListener(e -> {
+            confirmarCompraButton.setEnabled(productosEnExcel || table.getRowCount() > 0);
+        });
+
+        // Añadir el botón de confirmación al panel
         buttonPanel.add(confirmarCompraButton);
 
         return buttonPanel;
@@ -160,7 +253,7 @@ public class UIUserVenta {
             try {
                 // Continuar con la confirmación de compra
                 double total = 0;
-                String ventaID = String.valueOf(System.currentTimeMillis() % 1000);
+                String ventaID = mesaID +"_"+ String.valueOf(System.currentTimeMillis() % 1000);
                 LocalDateTime dateTime = LocalDateTime.now();
                 StringBuilder listaProductosEnLinea = new StringBuilder();
 
@@ -294,16 +387,80 @@ public class UIUserVenta {
                 DefaultTableModel tableModel = (DefaultTableModel) productosTable.getModel();
                 int rowCount = tableModel.getRowCount();
 
-                // Validar que haya productos en la compra
+                // Verificar si la tabla está vacía
                 if (rowCount == 0) {
-                    JOptionPane.showMessageDialog(null, "No hay productos agregados a la compra.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return; // Salir si no hay productos
+                    try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
+                         Workbook workbook = WorkbookFactory.create(fis)) {
+
+                        // Acceder a la hoja de "mesas"
+                        Sheet mesasSheet = workbook.getSheet("mesas");
+                        if (mesasSheet != null) {
+                            boolean mesaEncontrada = false;
+                            for (int i = 1; i <= mesasSheet.getLastRowNum(); i++) {
+                                Row row = mesasSheet.getRow(i);
+                                if (row != null) {
+                                    Cell idCell = row.getCell(0); // Columna A: ID de la mesa
+                                    if (idCell != null && idCell.getStringCellValue().equalsIgnoreCase(mesaID)) {
+                                        mesaEncontrada = true;
+
+                                        // Cambiar el estado a "Libre"
+                                        Cell estadoCell = row.getCell(1); // Columna B: Estado de la mesa
+                                        if (estadoCell == null) {
+                                            estadoCell = row.createCell(1);
+                                        }
+                                        estadoCell.setCellValue("Libre");
+
+                                        // Limpiar la celda de productos (columna C)
+                                        Cell productosCell = row.getCell(2);
+                                        if (productosCell == null) {
+                                            productosCell = row.createCell(2);
+                                        }
+                                        productosCell.setCellValue("");
+
+                                        // Poner el total en 0 en la columna D
+                                        Cell totalCell = row.getCell(3); // Columna D: Total de la compra
+                                        if (totalCell == null) {
+                                            totalCell = row.createCell(3);
+                                        }
+                                        totalCell.setCellValue(0);
+
+                                        // Terminar el bucle ya que la mesa fue encontrada
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // Si la mesa no fue encontrada, mostrar un mensaje de error
+                            if (!mesaEncontrada) {
+                                JOptionPane.showMessageDialog(null, "Mesa " + mesaID + " no encontrada en el archivo Excel.", "Error", JOptionPane.ERROR_MESSAGE);
+                                return;
+                            }
+
+                            // Guardar los cambios en el archivo Excel
+                            try (FileOutputStream fos = new FileOutputStream(ExcelUserManager.FILE_PATH)) {
+                                workbook.write(fos); // Sobrescribir el archivo con los cambios
+                            }
+
+                            JOptionPane.showMessageDialog(null, "La mesa " + mesaID + " ha sido limpiada.");
+
+                            // Cerrar el diálogo de la venta
+                            ventaMesaDialog.dispose();
+                            showMesas();
+
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Hoja 'mesas' no encontrada en el archivo Excel.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+
+                    return; // Salir después de limpiar la mesa
                 }
 
-                // Crear un Map para almacenar los productos y cantidades
+                // Código existente para procesar la compra cuando hay productos en la tabla
                 Map<String, Integer> productosComprados = new HashMap<>();
 
-                // Iterar sobre la tabla y obtener los productos y cantidades
                 for (int i = 0; i < rowCount; i++) {
                     String nombreProducto = (String) tableModel.getValueAt(i, 0); // Columna 0: nombre del producto
                     int cantidad = (int) tableModel.getValueAt(i, 1); // Columna 1: cantidad del producto
@@ -329,7 +486,6 @@ public class UIUserVenta {
                 try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
                      Workbook workbook = WorkbookFactory.create(fis)) {
 
-                    // Acceder a la hoja de "mesas"
                     Sheet mesasSheet = workbook.getSheet("mesas");
                     if (mesasSheet != null) {
                         boolean mesaEncontrada = false;
@@ -340,20 +496,17 @@ public class UIUserVenta {
                                 if (idCell != null && idCell.getStringCellValue().equalsIgnoreCase(mesaID)) {
                                     mesaEncontrada = true;
 
-                                    // Cambiar el estado a "Ocupada"
                                     Cell estadoCell = row.getCell(1); // Columna B: Estado de la mesa
                                     if (estadoCell == null) {
                                         estadoCell = row.createCell(1);
                                     }
                                     estadoCell.setCellValue("Ocupada");
 
-                                    // **Sobrescribir** los productos existentes en la columna C
                                     Cell productosCell = row.getCell(2); // Columna C: Productos
                                     if (productosCell == null) {
                                         productosCell = row.createCell(2);
                                     }
 
-                                    // Crear una nueva lista de productos a partir de la compra actual (basada en la tabla)
                                     StringBuilder listaProductos = new StringBuilder();
                                     for (Map.Entry<String, Integer> entry : productosComprados.entrySet()) {
                                         String nombreProducto = entry.getKey();
@@ -362,7 +515,6 @@ public class UIUserVenta {
                                         double precioUnitario = producto.getPrice();
                                         double precioTotal = precioUnitario * cantidadComprada;
 
-                                        // Crear una línea para cada producto (sobreescribiendo la lista anterior)
                                         listaProductos.append(nombreProducto)
                                                 .append(" x")
                                                 .append(cantidadComprada)
@@ -373,36 +525,29 @@ public class UIUserVenta {
                                                 .append("\n");
                                     }
 
-                                    // Sobrescribir la celda de productos con la nueva lista
-                                    productosCell.setCellValue(listaProductos.toString());
+                                    productosCell.setCellValue(""+listaProductos.toString());
 
-                                    // Guardar el total en la columna D
                                     Cell totalCell = row.getCell(3); // Columna D: Total de la compra
                                     if (totalCell == null) {
                                         totalCell = row.createCell(3);
                                     }
                                     totalCell.setCellValue(total);
 
-                                    // Terminar el bucle ya que la mesa fue encontrada
                                     break;
                                 }
                             }
                         }
 
-                        // Si la mesa no fue encontrada, mostrar un mensaje de error
                         if (!mesaEncontrada) {
                             JOptionPane.showMessageDialog(null, "Mesa " + mesaID + " no encontrada en el archivo Excel.", "Error", JOptionPane.ERROR_MESSAGE);
                             return;
                         }
 
-                        // Guardar los cambios en el archivo Excel
                         try (FileOutputStream fos = new FileOutputStream(ExcelUserManager.FILE_PATH)) {
-                            workbook.write(fos); // Sobrescribir el archivo con los cambios
+                            workbook.write(fos);
                         }
 
                         JOptionPane.showMessageDialog(null, "Compra guardada para la mesa: " + mesaID + ".");
-
-                        // Cerrar el diálogo de la venta
                         ventaMesaDialog.dispose();
                         showMesas();
 

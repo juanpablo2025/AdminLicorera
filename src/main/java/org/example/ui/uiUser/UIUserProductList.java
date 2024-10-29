@@ -4,6 +4,7 @@ import org.example.manager.userManager.ProductoUserManager;
 import org.example.model.Producto;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -24,7 +25,7 @@ public class UIUserProductList {
 
     public static void showListProductsDialog() {
         // Crear el diálogo
-        JDialog listProductsDialog = createDialog(LISTAR_PRODUCTO, 1000, 600, new BorderLayout());
+        JDialog listProductsDialog = createDialog(LISTAR_PRODUCTO, 1280, 720, new BorderLayout());
         listProductsDialog.setResizable(true); // Permitir que la ventana sea redimensionable
         listProductsDialog.addWindowListener(new WindowAdapter() {
             @Override
@@ -47,11 +48,17 @@ public class UIUserProductList {
             data[i][1] = p.getQuantity(); // Cantidad
             data[i][2] = formatCOP.format(precio);
         }
-
-        // Crear el JTable
-        JTable productTable = new JTable(data, columnNames);
+// Crear el modelo de la tabla
+        DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Esto hace que todas las celdas no sean editables
+            }
+        };
+        // Crear el JTable con el modelo
+        JTable productTable = new JTable(tableModel);
         productTable.setFillsViewportHeight(true);
-        productTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); // Ajustar automáticamente el tamaño de las columnas
+        productTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);; // Ajustar automáticamente el tamaño de las columnas
 
         // Establecer la fuente y el tamaño
         Font font = new Font("Arial", Font.PLAIN, 18); // Cambiar el tipo y tamaño de fuente

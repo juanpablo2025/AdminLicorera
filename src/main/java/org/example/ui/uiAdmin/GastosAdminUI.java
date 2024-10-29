@@ -3,6 +3,7 @@ package org.example.ui.uiAdmin;
 import org.example.manager.adminManager.GastosAdminManager;
 import org.example.manager.adminManager.ProductoAdminManager;
 import org.example.model.Producto;
+import org.example.ui.uiUser.UIUserMain;
 
 import javax.swing.*;
 import java.awt.*;
@@ -37,7 +38,11 @@ public class GastosAdminUI {
         // Campo para ingresar el precio de la compra
         JTextField precioCompraField = new JTextField();
 
-        JButton confirmarReabastecimientoButton = createButton("CONFIRMAR", e -> {
+
+        // Crear el botón "Confirmar"
+        JButton confirmarReabastecimientoButton = new JButton("Confirmar");
+
+         confirmarReabastecimientoButton.addActionListener( e -> {
             try {
                 String selectedProduct = (String) productComboBox.getSelectedItem();
                 int cantidad = (int) cantidadSpinner.getValue();
@@ -67,6 +72,8 @@ public class GastosAdminUI {
                 JOptionPane.showMessageDialog(null, "Producto reabastecido correctamente.");
 
                 reabastecimientoDialog.dispose();
+                MainAdminUi.mainAdmin(); // Volver a la ventana principal de usuario
+
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(reabastecimientoDialog, "Por favor ingresa un precio válido.", "Error", JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {

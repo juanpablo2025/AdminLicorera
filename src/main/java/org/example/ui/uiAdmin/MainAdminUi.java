@@ -24,23 +24,32 @@ public class MainAdminUi {
 
 
 
-        // Solicitar contraseña al usuario
-        String inputPassword = JOptionPane.showInputDialog(null, "Ingrese la contraseña para acceder al panel de Administrador:", "Acceso Restringido", JOptionPane.QUESTION_MESSAGE);
+        // Crear un campo de contraseña
+        JPasswordField passwordField = new JPasswordField();
+        passwordField.setEchoChar('*'); // Usar '*' como carácter para ocultar el texto
 
-        // Verificar si la contraseña es correcta
-        if (inputPassword != null && inputPassword.equals("admin2024")) {
-            // Si la contraseña es correcta, mostrar el panel de administrador
-            showAdminPanel();
+        // Mostrar el cuadro de diálogo personalizado con el campo de contraseña
+        int option = JOptionPane.showConfirmDialog(null, passwordField, "Ingrese la contraseña del Administrador:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 
-        } else {
-            // Mostrar un mensaje de error si la contraseña es incorrecta
-            JOptionPane.showMessageDialog(null, "Contraseña incorrecta. Acceso denegado.", "Error de Autenticación", JOptionPane.ERROR_MESSAGE);
-            if (hayRegistroDeHoy()) {
-                mainUser(); // Si hay registro, abrir el panel de usuario
+        // Obtener la contraseña ingresada
+        if (option == JOptionPane.OK_OPTION) {
+            String inputPassword = new String(passwordField.getPassword());
+
+            // Verificar si la contraseña es correcta
+            if (inputPassword.equals("admin2024")) {
+                // Si la contraseña es correcta, mostrar el panel de administrador
+                showAdminPanel();
             } else {
-                mostrarLogin(); // Si no, mostrar el login
-            } // Volver a la ventana de Ventas
+                // Mostrar un mensaje de error si la contraseña es incorrecta
+                JOptionPane.showMessageDialog(null, "Contraseña incorrecta. Acceso denegado.", "Error de Autenticación", JOptionPane.ERROR_MESSAGE);
+                if (hayRegistroDeHoy()) {
+                    mainUser(); // Si hay registro, abrir el panel de usuario
+                } else {
+                    mostrarLogin(); // Si no, mostrar el login
+                }
+            }
         }
+
 }
 
     private static void showAdminPanel() {
@@ -49,7 +58,7 @@ public class MainAdminUi {
             UIManager.setLookAndFeel(new FlatLightLaf());
 
             // Crear ventana principal
-            JFrame frame = new JFrame("Calculadora Administrador");
+            JFrame frame = new JFrame("Administrador del Inventario");
             frame.setSize(1280, 720); // Tamaño más grande para incluir la barra lateral
 
 
@@ -87,20 +96,41 @@ public class MainAdminUi {
             buttonPanel.setBackground(new Color(245, 245, 245)); // Fondo igual al principal
             buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Márgenes
 
+
+            ImageIcon originalreabastecerIcon = new ImageIcon("src/main/java/org/example/utils/icons/admin/transaccion.png");
+            // Redimensionar la imagen
+            Image imgreabastecer = originalreabastecerIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+            ImageIcon reabastecerIcon = new ImageIcon(imgreabastecer);
+
+
+
             // Crear botones estilizados
-            JButton reabastecerButton = createButton("Reabastecer", e -> {
+            JButton reabastecerButton = createButton("Reabastecer",reabastecerIcon, e -> {
                 showReabastecimientoDialog();
                 frame.dispose();
             });
             reabastecerButton.setFont(new Font("Arial", Font.BOLD, 18));
 
-            JButton productosButton = createButton("Productos", e -> {
+
+            ImageIcon originalProductosIcon = new ImageIcon("src/main/java/org/example/utils/icons/admin/menu.png");
+            // Redimensionar la imagen
+            Image imgProductos = originalProductosIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+            ImageIcon productosIcon = new ImageIcon(imgProductos);
+
+
+            JButton productosButton = createButton("Productos", productosIcon,e -> {
                 showProductosDialog();
                 frame.dispose();
             });
             productosButton.setFont(new Font("Arial", Font.BOLD, 18));
 
-            JButton facturasButton = createButton("Facturas", e -> {
+
+            ImageIcon originalfacturasIcon = new ImageIcon("src/main/java/org/example/utils/icons/admin/beneficios.png");
+            // Redimensionar la imagen
+            Image imgfacturas = originalfacturasIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+            ImageIcon facturasIcon = new ImageIcon(imgfacturas);
+
+            JButton facturasButton = createButton("Eliminar Facturas",facturasIcon, e -> {
                 UIAdminFacturas.showFacturasDialog();
                 frame.dispose();
             });
@@ -116,8 +146,16 @@ public class MainAdminUi {
             sidebarPanel.setPreferredSize(new Dimension(250, 600)); // Ancho fijo para la barra lateral
             sidebarPanel.setBackground(new Color(235, 235, 235)); // Color gris claro para la barra lateral
 
+// Nombre del empleado en la parte superior de la barra lateral
+            JLabel employeeLabel = new JLabel("Administrador", JLabel.CENTER);
+            employeeLabel.setFont(new Font("Arial", Font.BOLD, 20)); // Estilo y tamaño de la fuente
+            employeeLabel.setForeground(new Color(50, 50, 50)); // Color del texto
+            sidebarPanel.add(employeeLabel, BorderLayout.NORTH); // Colocar en la parte superior
+
+            JButton moreOptionsButton = new JButton("Ventas");
+
             // Botón para volver a la ventana de Ventas
-            JButton moreOptionsButton = createButton("Ventas", e -> {
+            moreOptionsButton.addActionListener( e -> {
                 if (hayRegistroDeHoy()) {
                     mainUser(); // Si hay registro, abrir el panel de usuario
                 } else {

@@ -5,6 +5,7 @@ import org.example.model.Factura;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -19,7 +20,7 @@ public class UIAdminFacturas {
     public static void showFacturasDialog() {
         JDialog facturasDialog = new JDialog();
         facturasDialog.setTitle("Listado de Facturas");
-        facturasDialog.setSize(1000, 600);
+        facturasDialog.setSize(1280, 720);
         facturasDialog.setLayout(new BorderLayout());
         facturasDialog.addWindowListener(new WindowAdapter() {
             @Override
@@ -51,12 +52,38 @@ public class UIAdminFacturas {
                 return false; // Hacer que las celdas no sean editables
             }
         };
+
+
+
+
+        // Crear el JTable con el modelo y aplicar el estilo
         JTable facturasTable = new JTable(tableModel);
+        facturasTable.setFillsViewportHeight(true);
+        facturasTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+
+        // Establecer la fuente y el tamaño
+        Font font = new Font("Arial", Font.PLAIN, 18); // Cambiar el tipo y tamaño de fuente
+        facturasTable.setFont(font);
+        facturasTable.setRowHeight(30); // Aumentar la altura de las filas
+
+        // Establecer la fuente para el encabezado
+        JTableHeader header = facturasTable.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 20)); // Fuente más grande para el encabezado
+        header.setBackground(Color.LIGHT_GRAY); // Fondo para el encabezado
+        header.setForeground(Color.BLACK); // Color del texto del encabezado
+
+        // Configuración de borde y color de fondo
+        facturasTable.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        facturasTable.setBackground(Color.WHITE); // Fondo de la tabla
+        facturasTable.setSelectionBackground(Color.CYAN); // Color de selección
+        facturasTable.setSelectionForeground(Color.BLACK); // Color del texto seleccionado
         JScrollPane scrollPane = new JScrollPane(facturasTable);
         facturasDialog.add(scrollPane, BorderLayout.CENTER);
+        // Crear el botón para eliminar
+        JButton eliminarButton = new JButton("Eliminar");
 
-        // Botón para eliminar una factura seleccionada
-        JButton eliminarButton = createButton("Eliminar", e -> {
+// Botón para eliminar una factura seleccionada
+        eliminarButton.addActionListener(e -> {
             int selectedRow = facturasTable.getSelectedRow();
             if (selectedRow != -1) {
                 String facturaID = facturasTable.getValueAt(selectedRow, 0).toString(); // Obtener el ID de la factura seleccionada

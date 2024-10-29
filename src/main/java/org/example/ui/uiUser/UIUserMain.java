@@ -28,7 +28,7 @@ public class UIUserMain {
             UIManager.setLookAndFeel(new FlatLightLaf());
 
             // Crear ventana principal
-            JFrame frame = new JFrame("Calculadora Administrador");
+            JFrame frame = new JFrame("Ventas");
             frame.setSize(1280, 720); // Tamaño más grande para incluir la barra lateral
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -61,8 +61,13 @@ public class UIUserMain {
             sidebarPanel.add(employeeLabel, BorderLayout.NORTH); // Colocar en la parte superior
 
             // Botón "Más Opciones"
-            JButton moreOptionsButton = createButton("Opciones", e -> toggleButtonOptions(buttonPanel, frame));
-            moreOptionsButton.setFont(new Font("Arial", Font.BOLD, 16));
+// Crear un nuevo botón "Opciones"
+            JButton moreOptionsButton = new JButton("Opciones");
+
+// Agregar el ActionListener al botón
+            moreOptionsButton.addActionListener(e -> {
+                toggleButtonOptions(buttonPanel, frame); // Llamar a la función deseada
+            });            moreOptionsButton.setFont(new Font("Arial", Font.BOLD, 16));
             moreOptionsButton.setPreferredSize(new Dimension(150, 50));
 
             // Colocar el botón "Opciones" en la parte inferior de la barra lateral
@@ -89,15 +94,41 @@ public class UIUserMain {
     // Método para agregar los botones iniciales
     private static void addInitialButtons(JPanel buttonPanel, JFrame frame) {
         FacturacionUserManager facturacionUserManager = new FacturacionUserManager(); // Instancia de FacturacionManager
+        // Cargar la imagen desde la ruta especificada
+        ImageIcon originalIcon = new ImageIcon("src/main/java/org/example/utils/icons/mesa-redonda.png");
+        ImageIcon originalProductsIcon = new ImageIcon("src/main/java/org/example/utils/icons/lista-de_productos.png");
+        // Redimensionar la imagen
+        Image imgProduct = originalProductsIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+        ImageIcon productsIcon = new ImageIcon(imgProduct);
 
-        JButton adminProductosButton = createButton("Listar Productos", e -> {showListProductsDialog();frame.dispose();});
-        JButton gastosButton = createButton("Gastos", e ->{ showGastosGeneralesDialog(); frame.dispose();});
-        JButton mesasButton = createButton("Mesas", e ->{ showMesas();frame.dispose();});
-        JButton salirButton = createButton("Facturar", e -> {
+        JButton adminProductosButton = createButton("Lista de Productos", productsIcon, e -> { showListProductsDialog(); frame.dispose(); });
+
+
+
+        ImageIcon originalGastosIcon = new ImageIcon("src/main/java/org/example/utils/icons/Gastos.png");
+        // Redimensionar la imagen
+        Image imgGastos = originalGastosIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+        ImageIcon GastosIcon = new ImageIcon(imgGastos);
+
+        JButton gastosButton = createButton("Gastos", GastosIcon, e -> { showGastosGeneralesDialog(); frame.dispose(); });
+
+
+        // Redimensionar la imagen
+        Image img = originalIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+        ImageIcon mesaIcon = new ImageIcon(img);
+        JButton mesasButton = createButton("Mesas",mesaIcon , e -> { showMesas(); frame.dispose(); });
+
+        ImageIcon originalFacturarIcon = new ImageIcon("src/main/java/org/example/utils/icons/Facturar.png");
+
+        // Redimensionar la imagen
+        Image imgFacturar = originalFacturarIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+        ImageIcon FacturarIcon = new ImageIcon(imgFacturar);
+
+
+        JButton salirButton = createButton("Facturar", FacturarIcon, e -> {
             String input = JOptionPane.showInputDialog(null, "Por favor escribe 'Facturar'", "Confirmar Facturación", JOptionPane.QUESTION_MESSAGE);
             if (facturacionUserManager.verificarFacturacion(input)) {
                 facturacionUserManager.facturarYSalir();
-                eliminarMesasConIdMayorA10();
 
             } else {
                 facturacionUserManager.mostrarErrorFacturacion();
@@ -117,17 +148,46 @@ public class UIUserMain {
         buttonPanel.removeAll();
 
         if (!showingMoreOptions) {
+
+
+            ImageIcon originalfacturasIcon = new ImageIcon("src/main/java/org/example/utils/icons/admin/beneficios.png");
+            // Redimensionar la imagen
+            Image imgfacturas = originalfacturasIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+            ImageIcon facturasIcon = new ImageIcon(imgfacturas);
             // Mostrar las nuevas opciones "Facturas" y "Administrador"
-            JButton facturasButton = createButton("Re-Imprimir Facturas", e ->{ showFacturasDialog();frame.dispose();});
-            JButton adminButton = createButton("Administrador", e -> {
+            // Crear los botones utilizando createButton y pasando null para el ícono
+            JButton facturasButton = createButton("Re-Imprimir Facturas", facturasIcon, e -> {
+                showFacturasDialog();
+                frame.dispose();
+            });
+
+
+            ImageIcon originalAdminIcon = new ImageIcon("src/main/java/org/example/utils/icons/obrero.png");
+            // Redimensionar la imagen
+            Image imgAdmin = originalAdminIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+            ImageIcon AdminIcon = new ImageIcon(imgAdmin);
+
+
+
+            JButton adminButton = createButton("Administrador", AdminIcon, e -> {
                 mainAdmin();  // Abre la nueva ventana de administración
                 frame.dispose();  // Cierra la ventana actual
             });
-            JButton abrirCajaButton = createButton("Abrir Caja", e -> abrirCajaRegistradora());
 
-            buttonPanel.add(abrirCajaButton);
+            ImageIcon originalCajaRegistradoraIcon = new ImageIcon("src/main/java/org/example/utils/icons/admin/cajero-automatico.png");
+            // Redimensionar la imagen
+            Image imgCajaRegistradora = originalCajaRegistradoraIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+            ImageIcon CajaRegistradoraIcon = new ImageIcon(imgCajaRegistradora);
+
+
+            JButton abrirCajaButton = createButton("Abrir Caja", CajaRegistradoraIcon, e -> abrirCajaRegistradora());
+
+            // Agregar los botones al panel (si es necesario)
             buttonPanel.add(facturasButton);
             buttonPanel.add(adminButton);
+            buttonPanel.add(abrirCajaButton);
+
+
         } else {
             // Restaurar los botones iniciales
             addInitialButtons(buttonPanel,frame);

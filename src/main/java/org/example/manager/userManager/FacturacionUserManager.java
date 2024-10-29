@@ -55,6 +55,7 @@ public class FacturacionUserManager {
      */
     public void facturarYSalir() {
         excelUserManager.facturarYLimpiar();
+        eliminarMesasConIdMayorA10();
         System.exit(ZERO);
         // Salir del programa después de la facturación
     }
@@ -79,7 +80,7 @@ public class FacturacionUserManager {
             float anchoPuntos = anchoMm * WIDE_DOTS;  // Conversión de mm a puntos
 
             // Calcular el alto dinámico según el número de productos
-            float altoBaseMm = 110;  // Altura base en mm (puedes ajustarlo)
+            float altoBaseMm = 130;  // Altura base en mm (puedes ajustarlo)
             float altoPorProductoMm = 10;  // Espacio adicional por cada producto en mm (ajustable)
             float altoTotalMm = altoBaseMm + (productos.size() * altoPorProductoMm);
             float altoPuntos = altoTotalMm * HEIGHT_DOTS;  // Conversión de mm a puntos
@@ -246,6 +247,7 @@ public class FacturacionUserManager {
             Sheet purchasesSheet = workbook.getSheet(PURCHASES_SHEET_NAME);
             Sheet gastosSheet = workbook.getSheet("Gastos");
             Sheet productsSheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
+            Sheet empleadosSheet = workbook.getSheet("Empleados");  // Hoja de empleados
 
             // Calcular totales
             double totalVentas = sumarTotalesCompras(purchasesSheet);
@@ -259,7 +261,7 @@ public class FacturacionUserManager {
 
             // Crear el PDF con tamaño de tarjeta
             float anchoMm = 60;  // Ancho de tarjeta (en mm)
-            float altoMm = 120;  // Alto de tarjeta (en mm)
+            float altoMm = 160;  // Alto de tarjeta (en mm)
             float anchoPuntos = anchoMm * 2.83465f;
             float altoPuntos = altoMm * 2.83465f;
 
@@ -279,7 +281,7 @@ public class FacturacionUserManager {
             DateTimeFormatter horaResumenFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
             // Encabezado del PDF
-            document.add(new Paragraph("Resumen Diario "+ fechaActual.format(formatter) + " " + horaResumen.format(horaResumenFormatter))
+            document.add(new Paragraph("Resumen Diario \n"+ fechaActual.format(formatter) + " " + horaResumen.format(horaResumenFormatter))
                     .setFont(fontBold)
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER)
@@ -322,11 +324,6 @@ public class FacturacionUserManager {
 
 
 
-
-
-            // Calcular el total de ventas menos gastos
-            double total = totalVentas - totalGastos;
-
             String textoTotal = "REALIZO DEL SISTEMA: $" + formatearMoneda(totalVentas) + " pesos";
 
             // Añadir el texto al documento PDF
@@ -359,8 +356,41 @@ public class FacturacionUserManager {
                 }
             }
 
+
+            // Sección de Empleados y Horas de Inicio
+            document.add(new Paragraph("\nEmpleados y Hora de apertura:")
+                    .setFont(fontBold)
+                    .setFontSize(9)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setMarginBottom(5));
+
+            // Recorrer la hoja de empleados y listar cada uno con su hora de inicio
+            for (int i = 1; i <= empleadosSheet.getLastRowNum(); i++) {
+                Row row = empleadosSheet.getRow(i);
+                if (row != null) {
+                    String nombreEmpleado = row.getCell(0).getStringCellValue();  // Asumiendo que el nombre está en la primera columna
+                    String horaInicio = row.getCell(1).getStringCellValue();
+                    String fechaInicio = row.getCell(2).getStringCellValue();      // Asumiendo que la hora de inicio está en la segunda columna
+                    document.add(new Paragraph("- " + nombreEmpleado + ": " + horaInicio + " - " + fechaInicio)
+                            .setFont(fontNormal)
+                            .setFontSize(7)
+                            .setTextAlignment(TextAlignment.LEFT));
+                }
+            }
+            // Sección de Empleados y Horas de Inicio
+            document.add(new Paragraph("\nCierre y facturación:")
+                    .setFont(fontBold)
+                    .setFontSize(9)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setMarginBottom(5));
+            LocalDateTime horasActual = LocalDateTime.now();
+            document.add(new Paragraph(horasActual.format(formatter)+ " " + horaResumen.format(horaResumenFormatter))
+                    .setFont(fontNormal)
+                    .setFontSize(7)
+                    .setTextAlignment(TextAlignment.LEFT));
+
             // Línea divisoria
-            document.add(new Paragraph(new String(new char[33]).replace('\0', '-'))
+            document.add(new Paragraph(new String(new char[30]).replace('\0', '-'))
                     .setFont(fontNormal)
                     .setFontSize(6)
                     .setMarginTop(10)
@@ -433,7 +463,7 @@ public class FacturacionUserManager {
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(new String(new char[33]).replace('\0', '='))
+            document.add(new Paragraph(new String(new char[31]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(8)
                     .setMarginBottom(10));
@@ -447,7 +477,7 @@ public class FacturacionUserManager {
                     .setTextAlignment(TextAlignment.LEFT)
                     .setMarginBottom(10));
 
-            document.add(new Paragraph(new String(new char[33]).replace('\0', '='))
+            document.add(new Paragraph(new String(new char[31]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(8)
                     .setMarginBottom(10));
@@ -465,12 +495,12 @@ public class FacturacionUserManager {
                     .setMarginBottom(5));
 
             // Espacios para el cierre de caja
-            document.add(new Paragraph(new String(new char[26]).replace('\0', '='))
+            document.add(new Paragraph(new String(new char[25]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(10)
                     .setMarginBottom(5));
 
-            document.add(new Paragraph(new String(new char[26]).replace('\0', '='))
+            document.add(new Paragraph(new String(new char[25]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(10)
                     .setMarginTop(160)

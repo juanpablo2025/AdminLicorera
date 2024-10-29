@@ -23,7 +23,7 @@ public class UIAdminProducts {
     static void showProductosDialog() {
 
         // Crear el diálogo
-        JDialog listProductsDialog = createDialog(LISTAR_PRODUCTO, 1000, 600, new BorderLayout());
+        JDialog listProductsDialog = createDialog(LISTAR_PRODUCTO, 1280, 720, new BorderLayout());
         listProductsDialog.setResizable(true); // Permitir que la ventana sea redimensionable
         listProductsDialog.addWindowListener(new WindowAdapter() {
             @Override
@@ -99,7 +99,10 @@ public class UIAdminProducts {
         listProductsDialog.add(addProductPanel, BorderLayout.NORTH);
 
         // Botón para añadir productos
-        JButton addProductButton = createButton("Añadir Producto", e -> {
+        JButton addProductButton = new JButton("Añadir Producto");
+
+// Agregar el ActionListener al botón
+        addProductButton.addActionListener(e -> {
             try {
                 String name = nameField.getText();
                 int quantity = Integer.parseInt(quantityField.getText());
@@ -110,7 +113,11 @@ public class UIAdminProducts {
                 productoAdminManager.addProduct(newProduct); // Método que debes tener en productoManager para añadir productos
 
                 // Añadir el nuevo producto a la tabla
-                tableModel.addRow(new Object[]{name, quantity, NumberFormat.getInstance(new Locale("es", "CO")).format(price)});
+                tableModel.addRow(new Object[]{
+                        name,
+                        quantity,
+                        NumberFormat.getInstance(new Locale("es", "CO")).format(price)
+                });
 
                 // Limpiar los campos de entrada
                 nameField.setText("");

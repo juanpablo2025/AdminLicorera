@@ -6,12 +6,14 @@ import org.example.model.Producto;
 import org.example.ui.uiUser.UnifiedEditorRenderer;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.Font;
 import java.awt.event.ActionListener;
 
 import static org.example.utils.Constants.*;
+import static org.example.utils.FormatterHelpers.formatearMoneda;
 
 
 public class UIHelpers {
@@ -26,8 +28,9 @@ public class UIHelpers {
     private static DefaultTableModel tableModel;
     private static Component compraDialog;
 
-    public static JButton createButton(String text, ActionListener listener) {
-        JButton button = new JButton(text);
+
+    public static JButton createButton(String text, Icon icon, ActionListener listener) {
+        JButton button = new JButton();
         button.addActionListener(listener);
 
         // Estilo del botón
@@ -35,12 +38,47 @@ public class UIHelpers {
         button.setFocusPainted(false);                     // Eliminar borde de foco
         button.setBackground(Color.WHITE);                 // Fondo blanco
         button.setForeground(Color.DARK_GRAY);             // Texto color gris oscuro
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));  // Márgenes del botón
+        button.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));  // Márgenes del botón más delgados
+
+        // Crear un panel para contener el icono y el texto
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));  // Layout vertical
+        panel.setBackground(Color.WHITE);  // Fondo blanco
+
+        // Crear una etiqueta para el icono
+        JLabel iconLabel = new JLabel(icon);
+        iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);  // Centrar icono
+        iconLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        // Crear un separador
+        JSeparator separator = new JSeparator();
+        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2)); // Ancho máximo
+        separator.setForeground(Color.LIGHT_GRAY); // Color de la línea
+
+        separator.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0)); // Margen superior e inferior
+        // Crear una etiqueta para el texto
+        JLabel textLabel = new JLabel(text);
+        textLabel.setAlignmentX(Component.CENTER_ALIGNMENT);  // Centrar texto
+        textLabel.setFont(new Font("Arial", Font.BOLD, 30)); // Asegurar que el texto tenga el mismo estilo
+
+        // Establecer un margen superior al texto
+        textLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0)); // Margen superior de 10 píxeles
+
+        // Ajustar el tamaño preferido del texto
+        textLabel.setPreferredSize(new Dimension(150, 30)); // Cambia las dimensiones según sea necesario
+
+        // Agregar el icono y el separador al panel
+        panel.add(iconLabel);
+        panel.add(separator); // Agregar separador
+        panel.add(textLabel); // Agregar texto
+
+        // Agregar el panel al botón
+        button.setLayout(new BorderLayout());
+        button.add(panel, BorderLayout.CENTER);
 
         // Sombra para el botón
         button.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
-                BorderFactory.createEmptyBorder(10, 20, 10, 20)
+                BorderFactory.createEmptyBorder(5, 10, 5, 10) // Márgenes más delgados
         ));
 
         // Efecto de "levantarse" al pasar el mouse
@@ -49,23 +87,23 @@ public class UIHelpers {
                 button.setBackground(new Color(230, 230, 230));  // Cambiar a gris claro al pasar el mouse
                 button.setBorder(BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
-                        BorderFactory.createEmptyBorder(10, 20, 10, 20)
+                        BorderFactory.createEmptyBorder(3, 7, 3, 7)  // Márgenes más delgados
                 ));
-                button.setBounds(button.getX(), button.getY() - 5, button.getWidth(), button.getHeight() + 5); // Levantar efecto
+                button.setBounds(button.getX(), button.getY() - 2, button.getWidth(), button.getHeight() + 2); // Levantar efecto
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 button.setBackground(Color.WHITE);  // Volver al color blanco
                 button.setBorder(BorderFactory.createCompoundBorder(
                         BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
-                        BorderFactory.createEmptyBorder(10, 20, 10, 20)
+                        BorderFactory.createEmptyBorder(5, 10, 5, 10) // Volver a los márgenes originales
                 ));
-                button.setBounds(button.getX(), button.getY() + 5, button.getWidth(), button.getHeight() - 5); // Volver a la posición original
+                button.setBounds(button.getX(), button.getY() + 2, button.getWidth(), button.getHeight() - 2); // Volver a la posición original
             }
         });
 
         // Establecer tamaño preferido del botón
-        button.setPreferredSize(new Dimension(150, 100));  // Dimensiones personalizadas
+        button.setPreferredSize(new Dimension(150, 120));  // Dimensiones personalizadas
 
         return button;
     }
@@ -127,16 +165,38 @@ public class UIHelpers {
         return inputPanel;
     }
 
+    // Renderer personalizado para formato de moneda
+    public static class CurrencyRenderer extends DefaultTableCellRenderer {
+        @Override
+        protected void setValue(Object value) {
+            if (value instanceof Number) {
+                value = formatearMoneda(((Number) value).doubleValue());
+            }
+            super.setValue(value);
+        }
+    }
+
     public static JTable createProductTable() {
-        String[] columnNames = {PRODUCTO, CANTIDAD, PRECIO_UNITARIO, TOTALP, "Eliminar una unidad"}; // Sin título en la columna de eliminar
-        tableModel = new DefaultTableModel(columnNames, ZERO);
+        String[] columnNames = {PRODUCTO, CANTIDAD, PRECIO_UNITARIO, TOTALP, "Eliminar una unidad"};
+
+        tableModel = new DefaultTableModel(columnNames, ZERO) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                // Solo permite edición en la columna de cantidad, por ejemplo.
+                return column == ONE;
+            }
+        };
+
         JTable table = new JTable(tableModel);
         UnifiedEditorRenderer editorRenderer = new UnifiedEditorRenderer(tableModel, ventaMesaUserManager);
 
-        table.getColumnModel().getColumn(ONE); // Spinner en la columna de cantidad
+        // Asignar el renderer de moneda a las columnas de PRECIO_UNITARIO y TOTALP
+        table.getColumnModel().getColumn(TWO).setCellRenderer(new CurrencyRenderer()); // PRECIO_UNITARIO
+        table.getColumnModel().getColumn(THREE).setCellRenderer(new CurrencyRenderer()); // TOTALP
 
         table.getColumnModel().getColumn(FOUR).setCellRenderer(editorRenderer);
         table.getColumnModel().getColumn(FOUR).setCellEditor(editorRenderer);
+
         return table;
     }
 
