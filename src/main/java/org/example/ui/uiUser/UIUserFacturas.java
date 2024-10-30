@@ -108,14 +108,14 @@ public class UIUserFacturas {
                 double totalCompra = Double.parseDouble(facturasTable.getValueAt(selectedRow, 2).toString());
                 String fechaHoraStr = facturasTable.getValueAt(selectedRow, 3).toString();
 
-                // Convertir la cadena de productos a una lista (suponiendo que los productos están separados por comas)
-                List<String> productos = Arrays.asList(productosStr.split(",\\s*"));
+                // Convertir la cadena de productos a una lista usando saltos de línea como delimitador
+                List<String> productos = Arrays.asList(productosStr.split("\\n"));
 
                 // Convertir la fecha y hora a LocalDateTime
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
                 LocalDateTime fechaHora = LocalDateTime.parse(fechaHoraStr, formatter);
 
-                // Verificar si la lista de productos tiene más de un elemento
+                // Verificar si la lista de productos no está vacía
                 if (productos.isEmpty()) {
                     JOptionPane.showMessageDialog(facturasDialog, "No hay productos en esta factura.", "Advertencia", JOptionPane.WARNING_MESSAGE);
                     return;
@@ -126,8 +126,8 @@ public class UIUserFacturas {
 
             } else {
                 JOptionPane.showMessageDialog(facturasDialog, "Por favor selecciona una factura.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-            }});
-
+            }
+        });
 
         // Crear un panel para el botón de reimprimir
         JPanel buttonPanel = new JPanel();

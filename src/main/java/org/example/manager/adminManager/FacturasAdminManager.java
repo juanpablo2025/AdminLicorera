@@ -16,4 +16,9 @@ public class FacturasAdminManager {
     public void eliminarFactura(String facturaID) {
         excelAdminManager.eliminarFactura(facturaID);
     }
+
+
+    public boolean eliminarFacturaYActualizarProductos(String facturaID) {
+        return excelAdminManager.eliminarFacturaYActualizarProductos(facturaID);
+    }
 }

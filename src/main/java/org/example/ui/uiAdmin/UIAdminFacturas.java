@@ -1,6 +1,8 @@
 package org.example.ui.uiAdmin;
 
 import org.example.manager.adminManager.FacturasAdminManager;
+import org.example.manager.adminManager.GastosAdminManager;
+import org.example.manager.userManager.GastosUserManager;
 import org.example.model.Factura;
 
 import javax.swing.*;
@@ -89,9 +91,16 @@ public class UIAdminFacturas {
                 String facturaID = facturasTable.getValueAt(selectedRow, 0).toString(); // Obtener el ID de la factura seleccionada
                 int confirm = JOptionPane.showConfirmDialog(facturasDialog, "¿Seguro que deseas eliminar esta factura?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
-                    facturasAdminManager.eliminarFactura(facturaID); // Eliminar la factura del Excel
-                    ((DefaultTableModel) facturasTable.getModel()).removeRow(selectedRow); // Eliminar la fila de la tabla
-                    JOptionPane.showMessageDialog(facturasDialog, "Factura eliminada exitosamente.");
+                    // Llamar al método que elimina la factura y actualiza el inventario
+                    boolean eliminado = facturasAdminManager.eliminarFacturaYActualizarProductos(facturaID);
+
+                    if (eliminado) {
+                        // Eliminar la fila de la tabla
+                        ((DefaultTableModel) facturasTable.getModel()).removeRow(selectedRow);
+                        JOptionPane.showMessageDialog(facturasDialog, "Factura eliminada exitosamente y productos actualizados.");
+                    } else {
+                        JOptionPane.showMessageDialog(facturasDialog, "Error al eliminar la factura y actualizar productos.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 }
             } else {
                 JOptionPane.showMessageDialog(facturasDialog, "Por favor, selecciona una factura para eliminar.", "Error", JOptionPane.ERROR_MESSAGE);
