@@ -109,26 +109,70 @@ public class UIUserVenta {
 
 // Listener para actualizar el total al cambiar la cantidad o agregar productos
         tableModel.addTableModelListener(new TableModelListener() {
+            // Bandera para evitar recursión
+            private boolean updatingTable = false;
+
             @Override
             public void tableChanged(TableModelEvent e) {
-                // Escuchar tanto cambios en las cantidades (UPDATE) como nuevas filas agregadas (INSERT)
-                if (e.getType() == TableModelEvent.UPDATE || e.getType() == TableModelEvent.INSERT) {
-                    double nuevoTotal = 0;
-                    for (int i = 0; i < tableModel.getRowCount(); i++) {
-                        int cantidad = (int) tableModel.getValueAt(i, 1); // Cantidad en la columna 1
-                        double precioUnitario = (double) tableModel.getValueAt(i, 2); // Precio unitario en la columna 2
-                        double subtotal = cantidad * precioUnitario;
+                if (updatingTable) {
+                    return; // Si estamos actualizando la tabla, no ejecutamos el evento de nuevo
+                }
 
-                        if ((double) tableModel.getValueAt(i, 3) != subtotal) {
-                            tableModel.setValueAt(subtotal, i, 3); // Actualiza solo si cambia el subtotal
+                try {
+                    // Iniciamos el proceso de actualización manual
+                    updatingTable = true;
+
+                    // Tipo de evento
+                    if (e.getType() == TableModelEvent.UPDATE || e.getType() == TableModelEvent.INSERT) {
+                        double nuevoTotalGeneral = 0;
+
+                        for (int i = 0; i < tableModel.getRowCount(); i++) {
+                            // Obtener el nombre del producto (columna 0)
+                            String nombreProducto = (String) tableModel.getValueAt(i, 0);
+
+                            // Obtener la cantidad (columna 1)
+                            int cantidad = (int) tableModel.getValueAt(i, 1);
+
+                            // Obtener el precio unitario desde el objeto Producto
+                            Producto producto = productoUserManager.getProductByName(nombreProducto);
+                            double precioUnitario;
+
+                            // Verificar si el producto existe
+                            if (producto != null) {
+                                precioUnitario = productoUserManager.getProductByName(nombreProducto).getPrice();
+                            } else {
+                                // Si el producto no se encuentra, asignar un precio por defecto
+                                precioUnitario = 0.0;
+                            }
+
+                            // Calcular el subtotal de cada fila (cantidad * precio unitario)
+                            double subtotal = cantidad * precioUnitario;
+
+                            // Actualizar el subtotal en la columna "Total" (columna 3)
+                            tableModel.setValueAt(subtotal, i, 3);
+
+                            // Sumar el subtotal al total general
+                            nuevoTotalGeneral += subtotal;
                         }
 
-                        nuevoTotal += subtotal; // Suma cada subtotal al total general
+                        // Actualizar el total general en el campo correspondiente
+                        totalField.setText("Total: $" + FormatterHelpers.formatearMoneda(nuevoTotalGeneral) + " Pesos");
+                        totalField.setVisible(nuevoTotalGeneral > 0); // Mostrar/ocultar según el total acumulado
                     }
+                } finally {
+                    // Finalizamos el proceso de actualización manual
+                    updatingTable = false;
+                }
+            }
 
-                    sumaTotal.set(nuevoTotal); // Actualiza suma total acumulada
-                    totalField.setText("Total: $" + FormatterHelpers.formatearMoneda(sumaTotal.get()) + " Pesos");
-                    totalField.setVisible(sumaTotal.get() > 0); // Mostrar/ocultar según el total acumulado
+            // Método auxiliar para parsear el precio desde una cadena
+            private double parsearPrecio(String precioStr) {
+                try {
+                    // Eliminar todo lo que no sea dígito o punto decimal
+                    String precioLimpiado = precioStr.replaceAll("[^\\d.]", "");
+                    return Double.parseDouble(precioLimpiado);
+                } catch (NumberFormatException e) {
+                    return 0.0; // En caso de error, devolvemos 0 como valor predeterminado
                 }
             }
         });
