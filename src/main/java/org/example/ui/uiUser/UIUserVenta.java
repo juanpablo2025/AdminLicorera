@@ -165,16 +165,7 @@ public class UIUserVenta {
                 }
             }
 
-            // Método auxiliar para parsear el precio desde una cadena
-            private double parsearPrecio(String precioStr) {
-                try {
-                    // Eliminar todo lo que no sea dígito o punto decimal
-                    String precioLimpiado = precioStr.replaceAll("[^\\d.]", "");
-                    return Double.parseDouble(precioLimpiado);
-                } catch (NumberFormatException e) {
-                    return 0.0; // En caso de error, devolvemos 0 como valor predeterminado
-                }
-            }
+
         });
 
         JScrollPane tableScrollPane = new JScrollPane(table);
@@ -408,7 +399,14 @@ public class UIUserVenta {
 
                 botonEfectivo.addActionListener(event -> {
                     tipoPagoSeleccionado[0] = "Efectivo";
-                    String input = JOptionPane.showInputDialog(compraDialog, "Ingrese el monto recibido:");
+                    String input = JOptionPane.showInputDialog(compraDialog, "Ingrese el dinero recibido:");
+
+                    // Si el usuario presiona "Cancelar" o cierra el diálogo
+                    if (input == null) {
+                        dialogoPago.dispose();  // Continuar el flujo sin calcular el cambio
+                        return;
+                    }
+
                     try {
                         double dineroRecibido = Double.parseDouble(input);
                         if (dineroRecibido < finalTotal) {
@@ -416,11 +414,12 @@ public class UIUserVenta {
                             return;
                         }
                         double cambio = dineroRecibido - finalTotal;
-                        JOptionPane.showMessageDialog(compraDialog, "Cambio a devolver: $" + cambio, "Cambio", JOptionPane.INFORMATION_MESSAGE);
-                        dialogoPago.dispose();
+                        JOptionPane.showMessageDialog(compraDialog, "Devuelta: $" + FormatterHelpers.formatearMoneda(cambio)+ " Pesos", "Cambio", JOptionPane.INFORMATION_MESSAGE);
                     } catch (NumberFormatException ex) {
                         JOptionPane.showMessageDialog(compraDialog, "Monto inválido.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
+
+                    dialogoPago.dispose();  // Cerrar el diálogo después de manejar el monto recibido o si el usuario cancela
                 });
 
                 botonDatafono.addActionListener(event -> {
@@ -489,7 +488,7 @@ public class UIUserVenta {
                     generarFacturadeCompra(ventaID, Arrays.asList(listaProductosEnLinea.toString().split("\n")), total, dateTime);
                 }
 
-                JOptionPane.showMessageDialog(compraDialog, PURCHASE_SUCCEDED + "\n" + "Total: $ " + formatCOP.format(total));
+                JOptionPane.showMessageDialog(compraDialog, PURCHASE_SUCCEDED + " " + "por un total de: $ " + formatCOP.format(total)+ " Pesos");
 
                 // Actualizar las cantidades en el stock de Excel
                 actualizarCantidadStockExcel(productosComprados);
