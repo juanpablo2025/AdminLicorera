@@ -83,7 +83,7 @@ public class Constants {
     public static final String TELEFONO = "Teléfono: 411 19 00";
 
 //BILL DETAILS
-    public static final String BILL_ID = "Factura No. ";
+    public static final String BILL_ID = "Factura ";
     public static final String BILL_FECHA_HORA = "Fecha y Hora: ";
     public static final String BILL_PRODUCTS = "Productos: ";
     public static final String TOTAL_BILL = "TOTAL COMPRA: ";

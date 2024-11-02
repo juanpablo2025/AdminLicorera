@@ -132,7 +132,7 @@ public class FacturacionUserManager {
                     .setMarginBottom(FIVE));
 
             // Detalles de la compra
-            document.add(new Paragraph(BILL_ID + ventaID)
+            document.add(new Paragraph(BILL_ID +"N°"+ ventaID)
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setTextAlignment(TextAlignment.CENTER));
@@ -175,10 +175,10 @@ public class FacturacionUserManager {
                             .setFontSize(EIGHT));
                 }}
 
-            document.add(new Paragraph(new String(new char[30]).replace(SLASH_ZERO, "_"))
+            /*document.add(new Paragraph(new String(new char[30]).replace(SLASH_ZERO, "_"))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
-                    .setMarginBottom(FIVE));
+                    .setMarginBottom(FIVE));*/
 
             // Totales
             com.itextpdf.layout.element.Table table = new com.itextpdf.layout.element.Table(new float[]{THREE, TWO});

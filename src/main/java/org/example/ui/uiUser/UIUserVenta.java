@@ -253,7 +253,7 @@ public class UIUserVenta {
             try {
                 // Continuar con la confirmación de compra
                 double total = 0;
-                String ventaID = mesaID +"_"+ String.valueOf(System.currentTimeMillis() % 1000);
+                String ventaID = String.valueOf(System.currentTimeMillis() % 1000)+" "+mesaID;
                 LocalDateTime dateTime = LocalDateTime.now();
                 StringBuilder listaProductosEnLinea = new StringBuilder();
 
@@ -307,9 +307,99 @@ public class UIUserVenta {
                     }
                 }
 
-                // Guardar la compra en Excel
+                // Crear íconos redimensionados para los métodos de pago
+                ImageIcon iconoBancolombia = new ImageIcon(new ImageIcon("src/main/resources/icons/bancolombia.png").getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
+                ImageIcon iconoNequi = new ImageIcon(new ImageIcon("src/main/resources/icons/nequi.png").getImage().getScaledInstance(60, 60,Image.SCALE_SMOOTH));
+                ImageIcon iconoEfectivo = new ImageIcon(new ImageIcon("src/main/resources/icons/dinero.png").getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
+                ImageIcon iconoDaviplata = new ImageIcon(new ImageIcon("src/main/resources/icons/Daviplata.png").getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
+                ImageIcon iconoDatafono = new ImageIcon(new ImageIcon("src/main/resources/icons/datafono.png").getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
+
+                // Crear un diálogo modal personalizado
+                JDialog dialogoPago = new JDialog(compraDialog, "Seleccione el método de pago", true);
+                dialogoPago.setSize(1300, 150);
+                dialogoPago.setLayout(new BorderLayout());
+                dialogoPago.setResizable(false);
+
+                // Crear panel para el menú de pago
+                JPanel panelPago = new JPanel();
+                panelPago.setLayout(new GridLayout(1, 3, 10, 10));
+
+                // Crear botones de método de pago
+                JButton botonEfectivo = new JButton("Efectivo", iconoEfectivo);
+                JButton botonBancolombia = new JButton("Bancolombia - Transferencia", iconoBancolombia);
+                JButton botonNequi = new JButton("Nequi - Transferencia", iconoNequi);
+                JButton botonDaviplata = new JButton("Daviplata - Transferencia", iconoDaviplata);
+                JButton botonDatafono = new JButton("Datafono", iconoDatafono);
+
+
+
+                // Añadir botones al panel
+                panelPago.add(botonEfectivo);
+                panelPago.add(botonBancolombia);
+                panelPago.add(botonNequi);
+                panelPago.add(botonDaviplata);
+                panelPago.add(botonDatafono);
+
+                dialogoPago.add(panelPago, BorderLayout.CENTER);
+
+                // Variable para guardar el tipo de pago seleccionado
+                final String[] tipoPagoSeleccionado = {null};
+                final double finalTotal = total;
+
+                // Listener para cada botón de pago y cerrar el diálogo al hacer una selección
+                botonBancolombia.addActionListener(event -> {
+                    tipoPagoSeleccionado[0] = "Transferencia - Bancolombia";
+                    dialogoPago.dispose();
+                });
+
+                botonNequi.addActionListener(event -> {
+                    tipoPagoSeleccionado[0] = "Transferencia - Nequi";
+                    dialogoPago.dispose();
+                });
+
+                botonDaviplata.addActionListener(event -> {
+                    tipoPagoSeleccionado[0] = "Transferencia - Daviplata";
+                    dialogoPago.dispose();
+                });
+
+                botonEfectivo.addActionListener(event -> {
+                    tipoPagoSeleccionado[0] = "Efectivo";
+                    String input = JOptionPane.showInputDialog(compraDialog, "Ingrese el monto recibido:");
+                    try {
+                        double dineroRecibido = Double.parseDouble(input);
+                        if (dineroRecibido < finalTotal) {
+                            JOptionPane.showMessageDialog(compraDialog, "El monto recibido es insuficiente.", "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        double cambio = dineroRecibido - finalTotal;
+                        JOptionPane.showMessageDialog(compraDialog, "Cambio a devolver: $" + cambio, "Cambio", JOptionPane.INFORMATION_MESSAGE);
+                        dialogoPago.dispose();
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(compraDialog, "Monto inválido.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+
+                botonDatafono.addActionListener(event -> {
+                    tipoPagoSeleccionado[0] = "Datafono";
+                    dialogoPago.dispose();
+                });
+
+                // Mostrar el diálogo modal y esperar la selección
+                dialogoPago.setLocationRelativeTo(compraDialog);
+                dialogoPago.setVisible(true);
+
+                // Si no se seleccionó ningún tipo de pago, detener el flujo
+                if (tipoPagoSeleccionado[0] == null) {
+                    JOptionPane.showMessageDialog(compraDialog, "No se seleccionó un método de pago.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+
+                }
+
+                // Guardar la compra en Excel con el tipo de pago seleccionado
                 ExcelUserManager excelUserManager = new ExcelUserManager();
-                excelUserManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total, dateTime);
+                excelUserManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total, dateTime, tipoPagoSeleccionado[0]);
+
+
 
                 try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
                      Workbook workbook = WorkbookFactory.create(fis)) {
@@ -375,7 +465,6 @@ public class UIUserVenta {
 
         return confirmarCompraButton;
     }
-
 
 
     public static JButton createSavePurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, String mesaID, JTable productosTable) {

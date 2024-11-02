@@ -74,6 +74,7 @@ public class ExcelUserManager {
         purchasesHeader.createCell(1).setCellValue(PRODUCTOS);
         purchasesHeader.createCell(2).setCellValue(TOTAL);
         purchasesHeader.createCell(3).setCellValue(FECHA_HORA);
+        purchasesHeader.createCell(4).setCellValue("Forma de Pago");
 
         // Crear hoja de gastos
         Sheet gastosSheet = workbook.createSheet("Gastos");
@@ -166,7 +167,7 @@ public class ExcelUserManager {
     }
 
     // Método para guardar una compra en el archivo Excel
-    public void savePurchase(String compraID, String productos, double total, LocalDateTime now) {
+    public void savePurchase(String compraID, String productos, double total, LocalDateTime now, String tipoCompra) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         String fechaFormateada = now.format(formatter);
         try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
@@ -180,6 +181,10 @@ public class ExcelUserManager {
                 header.createCell(ONE).setCellValue(PRODUCTOS);
                 header.createCell(TWO).setCellValue(TOTAL);
                 header.createCell(THREE).setCellValue(FECHA_HORA);
+                header.createCell(4).setCellValue("Forma de Pago");
+
+
+
             }
             int lastRow = sheet.getLastRowNum() + ONE;
             Row row = sheet.createRow(lastRow);
@@ -188,6 +193,7 @@ public class ExcelUserManager {
             row.createCell(ONE).setCellValue(productos);  // Los productos se listan en líneas nuevas dentro de la misma celda
             row.createCell(TWO).setCellValue(total);
             row.createCell(THREE).setCellValue(fechaFormateada);
+            row.createCell(FOUR).setCellValue(tipoCompra);
 
             try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH.toString())) {
                 workbook.write(fileOut);
