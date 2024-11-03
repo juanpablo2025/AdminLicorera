@@ -32,11 +32,22 @@ public class Producto {
         return price;
     }
 
-    public int getCantidad() {
-        return quantity;
-    }
 
     public void setCantidad(int cantidad) {
+        this.quantity = cantidad;
+    }
 
+    // Implementamos equals para comparar productos por nombre
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Producto producto = (Producto) obj;
+        return name.equalsIgnoreCase(producto.name); // Comparación basada en nombre (ignorar mayúsculas/minúsculas)
+    }
+
+    @Override
+    public int hashCode() {
+        return name.toLowerCase().hashCode();
     }
 }

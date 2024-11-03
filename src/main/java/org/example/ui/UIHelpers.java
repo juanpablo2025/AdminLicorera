@@ -4,7 +4,6 @@ import org.example.manager.userManager.ProductoUserManager;
 import org.example.manager.userManager.VentaMesaUserManager;
 import org.example.model.Producto;
 import org.example.ui.uiUser.UnifiedEditorRenderer;
-import org.example.utils.FormatterHelpers;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -14,7 +13,6 @@ import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.stream.Collectors;
 
 import static org.example.utils.Constants.*;
 import static org.example.utils.FormatterHelpers.formatearMoneda;
@@ -269,7 +267,7 @@ public class UIHelpers {
                 }
 
                 Producto producto = productoUserManager.getProductByName(selectedProduct);
-                if (producto.getCantidad() < cantidad) {
+                if (producto.getQuantity() < cantidad) {
                     JOptionPane.showMessageDialog(null, "No hay suficiente stock para el producto: " + selectedProduct, "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -286,7 +284,7 @@ public class UIHelpers {
                         int nuevaCantidad = cantidadExistente + cantidad;
 
                         // Verificar que la nueva cantidad no exceda el stock disponible
-                        if (nuevaCantidad > producto.getCantidad()) {
+                        if (nuevaCantidad > producto.getQuantity()) {
                             JOptionPane.showMessageDialog(null, "No hay suficiente stock disponible para aumentar la cantidad del producto: " + selectedProduct, "Error", JOptionPane.ERROR_MESSAGE);
                             return;
                         }
@@ -313,15 +311,12 @@ public class UIHelpers {
                 double total = 0;
                 for (int i = 0; i < tableModel.getRowCount(); i++) {
                     try {
-                        total += Double.parseDouble(tableModel.getValueAt(i, 3).toString());  // Convertir a Double si es necesario
+                        total += Double.parseDouble(tableModel.getValueAt(i, 3).toString());
                     } catch (ClassCastException | NumberFormatException ex) {
                         JOptionPane.showMessageDialog(null, "Error al leer el total del producto. Verifique los datos.", "Error", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                 }
-
-                // Actualizar el total en la interfaz de usuario
-                /* totalField.setText("Total: $" + FormatterHelpers.formatearMoneda(total) + " Pesos"); */
 
                 // Añadir el producto al carrito de ventas en el productoUserManager
                 productoUserManager.addProductToCart(producto, cantidad);

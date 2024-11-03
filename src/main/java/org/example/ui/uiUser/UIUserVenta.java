@@ -78,6 +78,8 @@ public class UIUserVenta {
         table.setSelectionBackground(Color.CYAN); // Color de selección
         table.setSelectionForeground(Color.BLACK); // Color del texto seleccionado
 
+        tableModel.setRowCount(0);
+
         // Cargar los productos en la tabla y calcular el total inicial
         for (String[] productoDetalles : productos) {
             try {
@@ -284,62 +286,52 @@ public class UIUserVenta {
     public static JButton createConfirmPurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID) {
         JButton confirmarCompraButton = new JButton(CONFIRM_PURCHASE);
 
+
         confirmarCompraButton.addActionListener(e -> {
             try {
-                // Continuar con la confirmación de compra
+
+
                 double total = 0;
-                String ventaID = String.valueOf(System.currentTimeMillis() % 1000)+" "+mesaID;
+                String ventaID = String.valueOf(System.currentTimeMillis() % 1000) + " " + mesaID;
                 LocalDateTime dateTime = LocalDateTime.now();
                 StringBuilder listaProductosEnLinea = new StringBuilder();
 
-                List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
-                if (!productosPrevios.isEmpty()) {
-                    for (String[] productoPrevio : productosPrevios) {
-                        String nombreProducto = productoPrevio[0];
-                        int cantidadPrev = Integer.parseInt(productoPrevio[1].substring(1)); // xCantidad
-                        double precioUnitarioPrev = Double.parseDouble(productoPrevio[2].substring(1)); // $PrecioUnitario
-                        double precioTotalPrev = precioUnitarioPrev * cantidadPrev;
+                // Inicializar mapas vacíos para la venta actual
+                Map<String, Integer> cantidadTotalPorProducto = new HashMap<>();
+                Map<String, Double> precioUnitarioPorProducto = new HashMap<>();
 
-                        listaProductosEnLinea.append(nombreProducto)
-                                .append(" x").append(cantidadPrev)
-                                .append(" $").append(precioUnitarioPrev)
-                                .append(" = ").append(precioTotalPrev).append("\n");
-
-                        total += precioTotalPrev;
-                    }
-                }
-
+                // Procesar productos adicionales en el carrito
                 Map<String, Integer> productosComprados = getProductListWithQuantities();
-                if (productosComprados.isEmpty() && productosPrevios.isEmpty()) {
-                    JOptionPane.showMessageDialog(compraDialog, "No hay productos agregados a la mesa.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
                 for (Map.Entry<String, Integer> entrada : productosComprados.entrySet()) {
                     String nombreProducto = entrada.getKey();
-                    int cantidad = entrada.getValue();
+                    int cantidadAdicional = entrada.getValue();
                     Producto producto = productoUserManager.getProductByName(nombreProducto);
 
-                    if (producto.getCantidad() < cantidad) {
+                    if (producto == null || producto.getQuantity() < cantidadAdicional) {
                         JOptionPane.showMessageDialog(compraDialog, "No hay suficiente stock para " + nombreProducto, "Error de stock", JOptionPane.ERROR_MESSAGE);
                         compraDialog.dispose();
                         return;
                     }
 
-                    boolean productoPrevioExiste = productosPrevios.stream()
-                            .anyMatch(p -> p[0].equalsIgnoreCase(nombreProducto));
+                    // Actualizar la cantidad total del producto
+                    int cantidadTotal = cantidadTotalPorProducto.getOrDefault(nombreProducto, 0) + cantidadAdicional;
+                    cantidadTotalPorProducto.put(nombreProducto, cantidadTotal);
+                    precioUnitarioPorProducto.put(nombreProducto, producto.getPrice());
+                }
 
-                    if (!productoPrevioExiste) {
-                        double precioUnitario = producto.getPrice();
-                        double precioTotal = precioUnitario * cantidad;
+                // Generar resumen de productos y calcular el total
+                for (Map.Entry<String, Integer> entrada : cantidadTotalPorProducto.entrySet()) {
+                    String nombreProducto = entrada.getKey();
+                    int cantidadTotal = entrada.getValue();
+                    double precioUnitario = precioUnitarioPorProducto.get(nombreProducto);
+                    double precioTotal = precioUnitario * cantidadTotal;
 
-                        listaProductosEnLinea.append(nombreProducto)
-                                .append(" x").append(cantidad)
-                                .append(" $").append(precioUnitario)
-                                .append(" = ").append(precioTotal+" ").append("\n");
+                    listaProductosEnLinea.append(nombreProducto)
+                            .append(" x").append(cantidadTotal)
+                            .append(" $").append(precioUnitario)
+                            .append(" = ").append(precioTotal).append("\n");
 
-                        total += precioTotal;
-                    }
+                    total += precioTotal;
                 }
 
                 // Crear íconos redimensionados para los métodos de pago
@@ -501,14 +493,18 @@ public class UIUserVenta {
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-
+            // Limpiar el carrito antes de iniciar el proceso de compra de la mesa actual
+            productoUserManager.limpiarCarrito();
             compraDialog.dispose();
             showMesas();
         });
 
         return confirmarCompraButton;
     }
-
+    public static void clearProductTable(JTable table) {
+        DefaultTableModel model = (DefaultTableModel) table.getModel();
+        model.setRowCount(0);  // Esto elimina todas las filas de la tabla
+    }
 
     public static JButton createSavePurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, String mesaID, JTable productosTable) {
         JButton saveCompraButton = new JButton("Guardar Compra");
@@ -605,7 +601,7 @@ public class UIUserVenta {
                     String nombreProducto = entry.getKey();
                     int cantidadComprada = entry.getValue();
                     Producto producto = productoUserManager.getProductByName(nombreProducto);
-                    if (producto.getCantidad() < cantidadComprada) {
+                    if (producto.getQuantity() < cantidadComprada) {
                         JOptionPane.showMessageDialog(null, "No hay suficiente stock para el producto: " + nombreProducto, "Error", JOptionPane.ERROR_MESSAGE);
                         return; // Salir si no hay suficiente stock
                     }
@@ -625,7 +621,7 @@ public class UIUserVenta {
                             Row row = mesasSheet.getRow(i);
                             if (row != null) {
                                 Cell idCell = row.getCell(0); // Columna A: ID de la mesa
-                                if (idCell != null && idCell.getStringCellValue().equalsIgnoreCase(mesaID)) {
+                                if (idCell != null && idCell.getStringCellValue().trim().equalsIgnoreCase(mesaID.trim())) {
                                     mesaEncontrada = true;
 
                                     Cell estadoCell = row.getCell(1); // Columna B: Estado de la mesa
@@ -653,11 +649,11 @@ public class UIUserVenta {
                                                 .append(" $")
                                                 .append(precioUnitario)
                                                 .append(" = ")
-                                                .append(precioTotal+" ")
+                                                .append(precioTotal)
                                                 .append("\n");
                                     }
 
-                                    productosCell.setCellValue(""+listaProductos.toString());
+                                    productosCell.setCellValue(listaProductos.toString());
 
                                     Cell totalCell = row.getCell(3); // Columna D: Total de la compra
                                     if (totalCell == null) {
@@ -680,6 +676,8 @@ public class UIUserVenta {
                         }
 
                         JOptionPane.showMessageDialog(null, "Compra guardada para la mesa: " + mesaID + ".");
+                        tableModel.setRowCount(0);
+
                         ventaMesaDialog.dispose();
                         showMesas();
 
