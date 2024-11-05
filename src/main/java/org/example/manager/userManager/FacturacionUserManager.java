@@ -263,8 +263,8 @@ public class FacturacionUserManager {
             double porcentajeAgotados = ((double) productosAgotadosCount / totalProductos) * 100;
 
             // Crear el PDF con tamaño de tarjeta
-            float anchoMm = 60;  // Ancho de tarjeta (en mm)
-            float altoMm = 160;  // Alto de tarjeta (en mm)
+            float anchoMm = 100;  // Ancho de tarjeta (en mm)
+            float altoMm = 200;  // Alto de tarjeta (en mm)
             float anchoPuntos = anchoMm * 2.83465f;
             float altoPuntos = altoMm * 2.83465f;
 

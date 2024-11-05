@@ -789,8 +789,9 @@ public class ExcelUserManager {
                         String productos = row.getCell(1).getStringCellValue();
                         double total = row.getCell(2).getNumericCellValue();
                         String fechaHora = row.getCell(3).getStringCellValue();
+                        String formaPago = row.getCell(4).getStringCellValue();
 
-                        Factura factura = new Factura(id, productos, total, fechaHora);
+                        Factura factura = new Factura(id, productos, total, fechaHora, formaPago);
                         facturas.add(factura);
                     }
                 }

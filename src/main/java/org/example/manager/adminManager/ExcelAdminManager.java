@@ -99,8 +99,9 @@ public class ExcelAdminManager {
                         String productos = row.getCell(1).getStringCellValue();
                         double total = row.getCell(2).getNumericCellValue();
                         String fechaHora = row.getCell(3).getStringCellValue();
+                        String tipoPago = row.getCell(4).getStringCellValue();
 
-                        Factura factura = new Factura(id, productos, total, fechaHora);
+                        Factura factura = new Factura(id, productos, total, fechaHora, tipoPago);
                         facturas.add(factura);
                     }
                 }

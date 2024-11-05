@@ -116,60 +116,29 @@ public class UIUserVenta {
 
             @Override
             public void tableChanged(TableModelEvent e) {
-                if (updatingTable) {
-                    return; // Si estamos actualizando la tabla, no ejecutamos el evento de nuevo
-                }
+                if (updatingTable) return;
 
+                updatingTable = true;
                 try {
-                    // Iniciamos el proceso de actualización manual
-                    updatingTable = true;
+                    double nuevoTotalGeneral = 0;
+                    for (int i = 0; i < tableModel.getRowCount(); i++) {
+                        String nombreProducto = (String) tableModel.getValueAt(i, 0);
+                        int cantidad = (int) tableModel.getValueAt(i, 1);
+                        Producto producto = ProductoUserManager.getProductByName(nombreProducto);
 
-                    // Tipo de evento
-                    if (e.getType() == TableModelEvent.UPDATE || e.getType() == TableModelEvent.INSERT) {
-                        double nuevoTotalGeneral = 0;
-
-                        for (int i = 0; i < tableModel.getRowCount(); i++) {
-                            // Obtener el nombre del producto (columna 0)
-                            String nombreProducto = (String) tableModel.getValueAt(i, 0);
-
-                            // Obtener la cantidad (columna 1)
-                            int cantidad = (int) tableModel.getValueAt(i, 1);
-
-                            // Obtener el precio unitario desde el objeto Producto
-                            Producto producto = productoUserManager.getProductByName(nombreProducto);
-                            double precioUnitario;
-
-                            // Verificar si el producto existe
-                            if (producto != null) {
-                                precioUnitario = productoUserManager.getProductByName(nombreProducto).getPrice();
-                            } else {
-                                // Si el producto no se encuentra, asignar un precio por defecto
-                                precioUnitario = 0.0;
-                            }
-
-                            // Calcular el subtotal de cada fila (cantidad * precio unitario)
-                            double subtotal = cantidad * precioUnitario;
-
-                            // Actualizar el subtotal en la columna "Total" (columna 3)
-                            tableModel.setValueAt(subtotal, i, 3);
-
-                            // Sumar el subtotal al total general
-                            nuevoTotalGeneral += subtotal;
-                        }
-
-                        // Actualizar el total general en el campo correspondiente
-                        totalField.setText("Total: $" + FormatterHelpers.formatearMoneda(nuevoTotalGeneral) + " Pesos");
-                        totalField.setVisible(nuevoTotalGeneral > 0); // Mostrar/ocultar según el total acumulado
+                        double precioUnitario = producto != null ? producto.getPrice() : 0.0;
+                        double subtotal = cantidad * precioUnitario;
+                        tableModel.setValueAt(subtotal, i, 3);
+                        nuevoTotalGeneral += subtotal;
                     }
+
+                    totalField.setText("Total: $" + FormatterHelpers.formatearMoneda(nuevoTotalGeneral) + " Pesos");
+                    totalField.setVisible(nuevoTotalGeneral > 0);
                 } finally {
-                    // Finalizamos el proceso de actualización manual
                     updatingTable = false;
                 }
             }
-
-
         });
-
         JScrollPane tableScrollPane = new JScrollPane(table);
         ventaMesaDialog.add(tableScrollPane, BorderLayout.CENTER);
 
@@ -299,6 +268,31 @@ public class UIUserVenta {
                 // Inicializar mapas vacíos para la venta actual
                 Map<String, Integer> cantidadTotalPorProducto = new HashMap<>();
                 Map<String, Double> precioUnitarioPorProducto = new HashMap<>();
+
+
+
+                // Cargar los productos previamente guardados en la mesa desde Excel
+                List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
+
+                // Sumar el total de los productos previamente cargados
+                if (!productosPrevios.isEmpty()) {
+                    for (String[] productoPrevio : productosPrevios) {
+                        String nombreProducto = productoPrevio[0];
+                        int cantidadPrev = Integer.parseInt(productoPrevio[1].substring(1)); // xCantidad
+                        double precioUnitarioPrev = Double.parseDouble(productoPrevio[2].substring(1)); // $PrecioUnitario
+                        double precioTotalPrev = precioUnitarioPrev * cantidadPrev;
+
+                        // Añadir producto a la lista de productos en línea
+                        listaProductosEnLinea.append(nombreProducto)
+                                .append(" x").append(cantidadPrev)
+                                .append(" $").append(precioUnitarioPrev)
+                                .append(" = ").append(precioTotalPrev).append("\n");
+
+                        // Sumar al total general (solo productos previos)
+                        total += precioTotalPrev;
+                    }
+                }
+
 
                 // Procesar productos adicionales en el carrito
                 Map<String, Integer> productosComprados = getProductListWithQuantities();
@@ -517,82 +511,19 @@ public class UIUserVenta {
 
                 // Verificar si la tabla está vacía
                 if (rowCount == 0) {
-                    try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
-                         Workbook workbook = WorkbookFactory.create(fis)) {
-
-                        // Acceder a la hoja de "mesas"
-                        Sheet mesasSheet = workbook.getSheet("mesas");
-                        if (mesasSheet != null) {
-                            boolean mesaEncontrada = false;
-                            for (int i = 1; i <= mesasSheet.getLastRowNum(); i++) {
-                                Row row = mesasSheet.getRow(i);
-                                if (row != null) {
-                                    Cell idCell = row.getCell(0); // Columna A: ID de la mesa
-                                    if (idCell != null && idCell.getStringCellValue().equalsIgnoreCase(mesaID)) {
-                                        mesaEncontrada = true;
-
-                                        // Cambiar el estado a "Libre"
-                                        Cell estadoCell = row.getCell(1); // Columna B: Estado de la mesa
-                                        if (estadoCell == null) {
-                                            estadoCell = row.createCell(1);
-                                        }
-                                        estadoCell.setCellValue("Libre");
-
-                                        // Limpiar la celda de productos (columna C)
-                                        Cell productosCell = row.getCell(2);
-                                        if (productosCell == null) {
-                                            productosCell = row.createCell(2);
-                                        }
-                                        productosCell.setCellValue("");
-
-                                        // Poner el total en 0 en la columna D
-                                        Cell totalCell = row.getCell(3); // Columna D: Total de la compra
-                                        if (totalCell == null) {
-                                            totalCell = row.createCell(3);
-                                        }
-                                        totalCell.setCellValue("");
-
-                                        // Terminar el bucle ya que la mesa fue encontrada
-                                        break;
-                                    }
-                                }
-                            }
-
-                            // Si la mesa no fue encontrada, mostrar un mensaje de error
-                            if (!mesaEncontrada) {
-                                JOptionPane.showMessageDialog(null, "Mesa " + mesaID + " no encontrada en el archivo Excel.", "Error", JOptionPane.ERROR_MESSAGE);
-                                return;
-                            }
-
-                            // Guardar los cambios en el archivo Excel
-                            try (FileOutputStream fos = new FileOutputStream(ExcelUserManager.FILE_PATH)) {
-                                workbook.write(fos); // Sobrescribir el archivo con los cambios
-                            }
-
-                            JOptionPane.showMessageDialog(null, "La mesa " + mesaID + " ha sido limpiada.");
-
-                            // Cerrar el diálogo de la venta
-                            ventaMesaDialog.dispose();
-                            showMesas();
-
-                        } else {
-                            JOptionPane.showMessageDialog(null, "Hoja 'mesas' no encontrada en el archivo Excel.", "Error", JOptionPane.ERROR_MESSAGE);
-                        }
-
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-
+                    limpiarMesaEnExcel(mesaID);  // Limpia la mesa en Excel si no hay productos
+                    productoUserManager.limpiarCarrito();  // Limpia el carrito de esta mesa
+                    JOptionPane.showMessageDialog(null, "La mesa " + mesaID + " ha sido limpiada.");
+                    ventaMesaDialog.dispose();
+                    showMesas();
                     return; // Salir después de limpiar la mesa
                 }
 
-                // Código existente para procesar la compra cuando hay productos en la tabla
+                // Map para almacenar los productos comprados para esta mesa
                 Map<String, Integer> productosComprados = new HashMap<>();
-
                 for (int i = 0; i < rowCount; i++) {
                     String nombreProducto = (String) tableModel.getValueAt(i, 0); // Columna 0: nombre del producto
                     int cantidad = (int) tableModel.getValueAt(i, 1); // Columna 1: cantidad del producto
-
                     productosComprados.put(nombreProducto, cantidad);
                 }
 
@@ -607,8 +538,9 @@ public class UIUserVenta {
                     }
                 }
 
-                double total = productoUserManager.getTotalCartAmount(); // Obtener el total de la compra
-                LocalDateTime dateTime = LocalDateTime.now(); // Fecha y hora actuales
+                // Obtener el total para esta mesa específica
+                double total = productoUserManager.getTotalCartAmount();
+                LocalDateTime dateTime = LocalDateTime.now();
 
                 // Guardar la compra en la pestaña "mesas"
                 try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
@@ -620,17 +552,19 @@ public class UIUserVenta {
                         for (int i = 1; i <= mesasSheet.getLastRowNum(); i++) {
                             Row row = mesasSheet.getRow(i);
                             if (row != null) {
-                                Cell idCell = row.getCell(0); // Columna A: ID de la mesa
+                                Cell idCell = row.getCell(0);
                                 if (idCell != null && idCell.getStringCellValue().trim().equalsIgnoreCase(mesaID.trim())) {
                                     mesaEncontrada = true;
 
-                                    Cell estadoCell = row.getCell(1); // Columna B: Estado de la mesa
+                                    // Cambiar el estado de la mesa a "Ocupada"
+                                    Cell estadoCell = row.getCell(1);
                                     if (estadoCell == null) {
                                         estadoCell = row.createCell(1);
                                     }
                                     estadoCell.setCellValue("Ocupada");
 
-                                    Cell productosCell = row.getCell(2); // Columna C: Productos
+                                    // Almacenar productos comprados
+                                    Cell productosCell = row.getCell(2);
                                     if (productosCell == null) {
                                         productosCell = row.createCell(2);
                                     }
@@ -655,7 +589,8 @@ public class UIUserVenta {
 
                                     productosCell.setCellValue(listaProductos.toString());
 
-                                    Cell totalCell = row.getCell(3); // Columna D: Total de la compra
+                                    // Poner el total en la columna de Total
+                                    Cell totalCell = row.getCell(3);
                                     if (totalCell == null) {
                                         totalCell = row.createCell(3);
                                     }
@@ -671,13 +606,15 @@ public class UIUserVenta {
                             return;
                         }
 
+                        // Guardar cambios en el archivo Excel
                         try (FileOutputStream fos = new FileOutputStream(ExcelUserManager.FILE_PATH)) {
                             workbook.write(fos);
                         }
 
+                        // Mostrar mensaje de confirmación
                         JOptionPane.showMessageDialog(null, "Compra guardada para la mesa: " + mesaID + ".");
-                        tableModel.setRowCount(0);
-
+                        tableModel.setRowCount(0); // Limpiar la tabla
+                        productoUserManager.limpiarCarrito(); // Limpia el carrito de la mesa después de guardar la compra
                         ventaMesaDialog.dispose();
                         showMesas();
 
@@ -697,5 +634,52 @@ public class UIUserVenta {
         return saveCompraButton;
     }
 
+    // Método auxiliar para limpiar la mesa en el archivo Excel cuando no hay productos
+    private static void limpiarMesaEnExcel(String mesaID) {
+        try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
+             Workbook workbook = WorkbookFactory.create(fis)) {
 
+            Sheet mesasSheet = workbook.getSheet("mesas");
+            if (mesasSheet != null) {
+                for (int i = 1; i <= mesasSheet.getLastRowNum(); i++) {
+                    Row row = mesasSheet.getRow(i);
+                    if (row != null) {
+                        Cell idCell = row.getCell(0);
+                        if (idCell != null && idCell.getStringCellValue().equalsIgnoreCase(mesaID)) {
+
+                            Cell estadoCell = row.getCell(1);
+                            if (estadoCell == null) {
+                                estadoCell = row.createCell(1);
+                            }
+                            estadoCell.setCellValue("Libre");
+
+                            Cell productosCell = row.getCell(2);
+                            if (productosCell == null) {
+                                productosCell = row.createCell(2);
+                            }
+                            productosCell.setCellValue("");
+
+                            Cell totalCell = row.getCell(3);
+                            if (totalCell == null) {
+                                totalCell = row.createCell(3);
+                            }
+                            totalCell.setCellValue(0.0);
+
+                            break;
+                        }
+                    }
+                }
+
+                try (FileOutputStream fos = new FileOutputStream(ExcelUserManager.FILE_PATH)) {
+                    workbook.write(fos);
+                }
+
+            } else {
+                JOptionPane.showMessageDialog(null, "Hoja 'mesas' no encontrada en el archivo Excel.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
 }

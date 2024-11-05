@@ -41,8 +41,8 @@ public class UIUserFacturas {
         List<Factura> facturas = facturasUserManager.getFacturas();
 
         // Columnas de la tabla
-        String[] columnNames = {"ID", "Productos", "Total", "Fecha y Hora"};
-        Object[][] data = new Object[facturas.size()][4];
+        String[] columnNames = {"ID", "Productos", "Total", "Fecha y Hora", "Tipo de pago"};
+        Object[][] data = new Object[facturas.size()][5];
 
         // Llenar los datos en la tabla
         for (int i = 0; i < facturas.size(); i++) {
@@ -56,6 +56,8 @@ public class UIUserFacturas {
             // Asegurarse de que el total sea correctamente representado
             data[i][2] = f.getTotal(); // Usar el total directamente sin manipulación adicional
             data[i][3] = f.getFechaHora();
+            data[i][4] = f.getTipoPago();
+
         }
 
         // Crear la tabla con los datos de las facturas
@@ -114,6 +116,8 @@ public class UIUserFacturas {
                 // Convertir la fecha y hora a LocalDateTime
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
                 LocalDateTime fechaHora = LocalDateTime.parse(fechaHoraStr, formatter);
+
+
 
                 // Verificar si la lista de productos no está vacía
                 if (productos.isEmpty()) {

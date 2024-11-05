@@ -35,8 +35,8 @@ public class UIAdminFacturas {
         List<Factura> facturas = facturasAdminManager.getFacturas();
 
         // Columnas de la tabla
-        String[] columnNames = {"ID", "Productos", "Total", "Fecha y Hora"};
-        Object[][] data = new Object[facturas.size()][4];
+        String[] columnNames = {"ID", "Productos", "Total", "Fecha y Hora","Tipo de pago"};
+        Object[][] data = new Object[facturas.size()][5];
 
         // Llenar los datos en la tabla
         for (int i = 0; i < facturas.size(); i++) {
@@ -45,6 +45,8 @@ public class UIAdminFacturas {
             data[i][1] = f.getProductos();
             data[i][2] = f.getTotal();
             data[i][3] = f.getFechaHora();
+            data[i][4] = f.getTipoPago();
+
         }
 
         // Crear la tabla con los datos de las facturas

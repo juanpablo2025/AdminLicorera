@@ -11,7 +11,7 @@ import static org.example.utils.Constants.MINUS_ONE;
 import static org.example.utils.Constants.ZERO;
 
 public class ProductoUserManager {
-    private ExcelUserManager excelUserManager = new ExcelUserManager();
+    private static ExcelUserManager excelUserManager = new ExcelUserManager();
     private static List<Producto> cartProducts = new ArrayList<>();  // Lista para almacenar los productos en el carrito
     private static List<Integer> cartQuantities = new ArrayList<>();
 
@@ -24,7 +24,7 @@ public class ProductoUserManager {
     }
 
     // Obtener un producto por nombre
-    public Producto getProductByName(String name) {
+    public static Producto getProductByName(String name) {
         return excelUserManager.getProductByName(name);
     }
 
