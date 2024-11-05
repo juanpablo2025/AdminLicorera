@@ -290,12 +290,22 @@ public class FacturacionUserManager {
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(10));
 
-            // Mostrar el total de ventas
+            String textoTotal = "REALIZO DEL SISTEMA: $" + formatearMoneda(totalVentas) + " pesos";
+
+            // Añadir el texto al documento PDF
+            document.add(new Paragraph(textoTotal)
+                    .setFont(fontBold)
+                    .setFontSize(12)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setMarginBottom(10));
+
+
+            /* Mostrar el total de ventas
             document.add(new Paragraph("Total en VENTAS: $" + formatearMoneda(totalVentas)+ " pesos")
                     .setFont(fontBold)
                     .setFontSize(8)
                     .setTextAlignment(TextAlignment.LEFT)
-                    .setMarginBottom(5));
+                    .setMarginBottom(5));*/
 
             // Mostrar el total de gastos
             document.add(new Paragraph("Total en GASTOS: $" + formatearMoneda(totalGastos) + " pesos")
@@ -327,14 +337,7 @@ public class FacturacionUserManager {
 
 
 
-            String textoTotal = "REALIZO DEL SISTEMA: $" + formatearMoneda(totalVentas) + " pesos";
 
-            // Añadir el texto al documento PDF
-            document.add(new Paragraph(textoTotal)
-                    .setFont(fontBold)
-                    .setFontSize(12)
-                    .setTextAlignment(TextAlignment.LEFT)
-                    .setMarginBottom(10));
 
             // Mostrar estadísticas de productos agotados
             document.add(new Paragraph("Productos Agotados: " + productosAgotadosCount + " productos (" + String.format("%.2f", porcentajeAgotados) + "%) del inventario")
