@@ -329,11 +329,11 @@ public class UIUserVenta {
                 }
 
                 // Crear íconos redimensionados para los métodos de pago
-                ImageIcon iconoBancolombia = new ImageIcon(new ImageIcon("src/main/resources/icons/bancolombia.png").getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
-                ImageIcon iconoNequi = new ImageIcon(new ImageIcon("src/main/resources/icons/nequi.png").getImage().getScaledInstance(60, 60,Image.SCALE_SMOOTH));
-                ImageIcon iconoEfectivo = new ImageIcon(new ImageIcon("src/main/resources/icons/dinero.png").getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
-                ImageIcon iconoDaviplata = new ImageIcon(new ImageIcon("src/main/resources/icons/Daviplata.png").getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
-                ImageIcon iconoDatafono = new ImageIcon(new ImageIcon("src/main/resources/icons/datafono.png").getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
+                ImageIcon iconoBancolombia = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/bancolombia.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
+                ImageIcon iconoNequi = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/nequi.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
+                ImageIcon iconoEfectivo = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/dinero.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
+                ImageIcon iconoDaviplata = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/Daviplata.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
+                ImageIcon iconoDatafono = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/datafono.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
 
                 // Crear un diálogo modal personalizado
                 JDialog dialogoPago = new JDialog(compraDialog, "Seleccione el método de pago", true);
@@ -369,17 +369,17 @@ public class UIUserVenta {
 
                 // Listener para cada botón de pago y cerrar el diálogo al hacer una selección
                 botonBancolombia.addActionListener(event -> {
-                    tipoPagoSeleccionado[0] = "Transferencia - Bancolombia";
+                    tipoPagoSeleccionado[0] = "Bancolombia - Transferencia";
                     dialogoPago.dispose();
                 });
 
                 botonNequi.addActionListener(event -> {
-                    tipoPagoSeleccionado[0] = "Transferencia - Nequi";
+                    tipoPagoSeleccionado[0] = "Nequi - Transferencia";
                     dialogoPago.dispose();
                 });
 
                 botonDaviplata.addActionListener(event -> {
-                    tipoPagoSeleccionado[0] = "Transferencia - Daviplata";
+                    tipoPagoSeleccionado[0] = "Daviplata - Transferencia";
                     dialogoPago.dispose();
                 });
 
