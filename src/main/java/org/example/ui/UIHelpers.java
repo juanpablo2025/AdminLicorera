@@ -10,9 +10,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import static org.example.utils.Constants.*;
 import static org.example.utils.FormatterHelpers.formatearMoneda;
@@ -155,51 +158,94 @@ public class UIHelpers {
         return inputPanel;
     }
 
-    // Helper method to create a ComboBox with product search functionality
     private static JComboBox<String> createProductComboBox() {
         JComboBox<String> productComboBox = new JComboBox<>();
         productComboBox.setEditable(true);
         productComboBox.setFont(new Font("Arial", Font.BOLD, 18));
         JTextField comboBoxEditor = (JTextField) productComboBox.getEditor().getEditorComponent();
 
-        // Using java.awt.List to load product names
-        List productList = new List();
+        // Usar DefaultListModel para cargar los nombres de los productos
+        DefaultListModel<String> productList = new DefaultListModel<>();
         for (Producto producto : productoUserManager.getProducts()) {
-            productList.add(producto.getName());
+            // Verifica que la cantidad sea mayor que 0 antes de agregarlo
+            if (producto.getQuantity() > 0) {
+                productList.addElement(producto.getName());
+            }
         }
 
-        // Add items to ComboBox
-        updateComboBox(productComboBox, productList);
+        // Ordenar la lista en orden ascendente
+        ArrayList<String> productArrayList = Collections.list(productList.elements());
+        Collections.sort(productArrayList);  // Orden ascendente
+        DefaultListModel<String> sortedProductList = new DefaultListModel<>();
+        for (String product : productArrayList) {
+            sortedProductList.addElement(product);
+        }
 
+        // Inicializar el ComboBox con todos los productos
+        updateComboBox(productComboBox, sortedProductList);
+
+        // Listener para detectar cuando se presiona Enter
         comboBoxEditor.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyReleased(KeyEvent e) {
-                String input = comboBoxEditor.getText();
-                List filteredList = new List();
+            public void keyPressed(KeyEvent e) {
+                // Verifica si la tecla presionada es Enter
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    String input = comboBoxEditor.getText();
+                    DefaultListModel<String> filteredList = new DefaultListModel<>();
 
-                for (int i = 0; i < productList.getItemCount(); i++) {
-                    String item = productList.getItem(i);
-                    if (item.toLowerCase().contains(input.toLowerCase())) {
-                        filteredList.add(item);
+                    // Filtrar la lista de productos si el input no está vacío
+                    if (!input.isEmpty()) {
+                        // Filtra la lista de productos por el texto ingresado (productos que empiezan con el texto)
+                        for (int i = 0; i < sortedProductList.size(); i++) {
+                            String item = sortedProductList.getElementAt(i);
+                            // Comprobar si el nombre del producto empieza con el texto ingresado (case-insensitive)
+                            if (item.toLowerCase().startsWith(input.toLowerCase())) {
+                                filteredList.addElement(item);
+                            }
+                        }
+                    } else {
+                        filteredList = sortedProductList; // Mostrar todos los productos si el campo está vacío
                     }
+
+                    // Actualizar el ComboBox con la lista filtrada
+                    updateComboBox(productComboBox, filteredList);
+
+                    // Mostrar el ComboBox con los resultados filtrados
+                    productComboBox.showPopup();
                 }
-                updateComboBox(productComboBox, filteredList);
-                productComboBox.showPopup();
+            }
+        });
+
+        // Deshabilitar la selección automática
+        productComboBox.setSelectedIndex(-1); // No se selecciona ningún elemento automáticamente
+
+        // Habilitar el comportamiento de selección normal al hacer clic
+        productComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Aquí puedes obtener el ítem seleccionado manualmente, si es necesario
+                String selectedItem = (String) productComboBox.getSelectedItem();
+                if (selectedItem != null && !selectedItem.isEmpty()) {
+                    // Procesar la selección manual
+                    System.out.println("Producto seleccionado: " + selectedItem);
+                }
             }
         });
 
         return productComboBox;
     }
 
+    // Actualiza los elementos del ComboBox basado en los resultados de la búsqueda
+    private static void updateComboBox(JComboBox<String> comboBox, DefaultListModel<String> itemList) {
+        comboBox.removeAllItems(); // Borra todos los elementos antes de agregar nuevos
+        comboBox.addItem(""); // Selección vacía predeterminada
 
-    // Updates ComboBox items based on search results
-    private static void updateComboBox(JComboBox<String> comboBox, List itemList) {
-        comboBox.removeAllItems();
-        comboBox.addItem(""); // Default empty selection
-        for (int i = 0; i < itemList.getItemCount(); i++) {
-            comboBox.addItem(itemList.getItem(i));
+        for (int i = 0; i < itemList.size(); i++) {
+            comboBox.addItem(itemList.getElementAt(i)); // Agrega los productos filtrados
         }
     }
+
+
 
     // Renderer personalizado para formato de moneda
     public static class CurrencyRenderer extends DefaultTableCellRenderer {

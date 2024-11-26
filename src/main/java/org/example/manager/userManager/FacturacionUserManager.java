@@ -30,6 +30,7 @@ import java.util.Locale;
 
 import static org.example.manager.userManager.ExcelUserManager.*;
 import static org.example.manager.userManager.PrintUserManager.abrirPDF;
+import static org.example.manager.userManager.PrintUserManager.imprimirPDF;
 import static org.example.utils.Constants.*;
 import static org.example.utils.FormatterHelpers.formatearMoneda;
 
@@ -209,8 +210,8 @@ public class FacturacionUserManager {
             document.close();
 
             // Método para abrir el PDF después de generarlo
-            abrirPDF(nombreArchivo);
-            //imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
+            //abrirPDF(nombreArchivo);
+            imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -298,7 +299,6 @@ public class FacturacionUserManager {
                     .setFontSize(12)
                     .setTextAlignment(TextAlignment.LEFT)
                     .setMarginBottom(10));
-
 
             /* Mostrar el total de ventas
             document.add(new Paragraph("Total en VENTAS: $" + formatearMoneda(totalVentas)+ " pesos")
@@ -519,8 +519,8 @@ public class FacturacionUserManager {
                     .setTextAlignment(TextAlignment.CENTER));
 
             document.close();
-            abrirPDF(nombreArchivo);
-            //imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
+            //abrirPDF(nombreArchivo);
+            imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
         } catch (IOException e) {
             e.printStackTrace();
         }
