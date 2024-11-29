@@ -366,7 +366,8 @@ public class UIHelpers {
 
                 // Añadir el producto al carrito de ventas en el productoUserManager
                 productoUserManager.addProductToCart(producto, cantidad);
-
+// Reiniciar el valor del spinner a 1
+                cantidadSpinner.setValue(1);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(null, "Cantidad o precio inválido.", "Error", JOptionPane.ERROR_MESSAGE);
             }

@@ -66,6 +66,7 @@ public class ExcelUserManager {
         header.createCell(1).setCellValue(NOMBRE);
         header.createCell(2).setCellValue(CANTIDAD);
         header.createCell(3).setCellValue(PRECIO);
+        header.createCell(4).setCellValue("Cantidad Vendida");
 
         // Crear hoja de compras
         Sheet purchasesSheet = workbook.createSheet(PURCHASES_SHEET_NAME);
@@ -259,16 +260,15 @@ public class ExcelUserManager {
                 Map<String, Integer> productosVendidos = new HashMap<>();
 
                 // Sumar las cantidades vendidas por producto
-                for (int i = 1; i <= purchasesSheet.getLastRowNum(); i++) {  // Suponiendo que la fila 0 es el encabezado
+                for (int i = 1; i <= purchasesSheet.getLastRowNum(); i++) { // Suponiendo que la fila 0 es el encabezado
                     Row row = purchasesSheet.getRow(i);
                     if (row != null) {
-                        Cell nombreProductoCell = row.getCell(0);  // Columna 0: Nombre del producto
-                        Cell cantidadCell = row.getCell(1);  // Columna 1: Cantidad vendida
+                        Cell nombreProductoCell = row.getCell(0); // Columna 0: Nombre del producto
+                        Cell cantidadCell = row.getCell(1); // Columna 1: Cantidad vendida
 
                         if (nombreProductoCell != null && cantidadCell != null) {
-                            String nombreProducto = nombreProductoCell.getStringCellValue();
+                            String nombreProducto = nombreProductoCell.getStringCellValue().trim();
 
-                            // Obtener la cantidad, verificando si es numérico o cadena
                             int cantidadVendida = 0;
                             if (cantidadCell.getCellType() == CellType.NUMERIC) {
                                 cantidadVendida = (int) cantidadCell.getNumericCellValue();
@@ -280,13 +280,14 @@ public class ExcelUserManager {
                                 }
                             }
 
-                            // Acumular las cantidades vendidas para el producto
-                            productosVendidos.put(nombreProducto, productosVendidos.getOrDefault(nombreProducto, 0) + cantidadVendida);
+                            if (cantidadVendida > 0) {
+                                productosVendidos.put(nombreProducto, productosVendidos.getOrDefault(nombreProducto, 0) + cantidadVendida);
+                            }
                         }
                     }
                 }
 
-                // Aquí tienes el Map productosVendidos con la cantidad total vendida de cada producto
+                // Mostrar productos vendidos en consola para verificar
                 for (Map.Entry<String, Integer> entry : productosVendidos.entrySet()) {
                     System.out.println("Producto: " + entry.getKey() + ", Cantidad Vendida: " + entry.getValue());
                 }
@@ -296,7 +297,7 @@ public class ExcelUserManager {
 
                 // Restar los totales de gastos
                 double totalGastos = restarTotalesGastos(gastosSheet);
-                double totalFinal = totalCompra; // Calcular el total final
+                double totalFinal = totalCompra - totalGastos;
 
                 // Copiar la hoja "Compras" y renombrarla, pasando el total de la compra
                 crearArchivoFacturacionYGastos(purchasesSheet, gastosSheet, empleadosSheet, totalCompra, totalGastos);
@@ -581,16 +582,31 @@ public class ExcelUserManager {
         return Integer.parseInt(numeroTexto);
     }
 
-    // Método para actualizar las cantidades en el stock de Excel
+    // Método para actualizar las cantidades en el stock de Excel y registrar las ventas
     public static void actualizarCantidadStockExcel(Map<String, Integer> productosComprados) {
         try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
 
+            // Verificar si existe la columna "Cantidad Vendida", si no, agregarla
+            Row headerRow = sheet.getRow(0);
+            int ventasColIndex = -1;
 
+            for (int colIndex = 0; colIndex < headerRow.getLastCellNum(); colIndex++) {
+                Cell headerCell = headerRow.getCell(colIndex);
+                if (headerCell != null && "Cantidad Vendida".equalsIgnoreCase(headerCell.getStringCellValue())) {
+                    ventasColIndex = colIndex;
+                    break;
+                }
+            }
 
-            // Ahora actualizar las cantidades de los productos nuevos comprados
+            if (ventasColIndex == -1) {
+                ventasColIndex = headerRow.getLastCellNum(); // Nueva columna al final
+                headerRow.createCell(ventasColIndex).setCellValue("Cantidad Vendida");
+            }
+
+            // Ahora actualizar las cantidades de los productos y las ventas
             for (Map.Entry<String, Integer> entry : productosComprados.entrySet()) {
                 String nombreProducto = entry.getKey();
                 int cantidadComprada = entry.getValue();
@@ -600,7 +616,9 @@ public class ExcelUserManager {
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                     Row row = sheet.getRow(i);
                     if (row != null) {
+                        // Verificar si el nombre del producto coincide
                         if (row.getCell(1).getStringCellValue().equalsIgnoreCase(nombreProducto)) {
+                            // Actualizar stock
                             Cell cantidadCell = row.getCell(2);
                             if (cantidadCell != null && cantidadCell.getCellType() == CellType.NUMERIC) {
                                 int cantidadActual = (int) cantidadCell.getNumericCellValue();
@@ -613,6 +631,18 @@ public class ExcelUserManager {
                                     cantidadCell.setCellValue(nuevaCantidad);
                                     productoEncontrado = true;
                                 }
+                            }
+
+                            // Actualizar las ventas totales
+                            Cell ventasCell = row.getCell(ventasColIndex);
+                            if (ventasCell == null) {
+                                ventasCell = row.createCell(ventasColIndex);
+                                ventasCell.setCellValue(0); // Inicializar en 0 si no existe
+                            }
+
+                            if (ventasCell.getCellType() == CellType.NUMERIC) {
+                                int ventasTotales = (int) ventasCell.getNumericCellValue();
+                                ventasCell.setCellValue(ventasTotales + cantidadComprada);
                             }
                             break;
                         }

@@ -18,15 +18,15 @@ import org.example.model.Producto;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.Time;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import static org.example.manager.userManager.ExcelUserManager.*;
 import static org.example.manager.userManager.PrintUserManager.abrirPDF;
@@ -127,7 +127,7 @@ public class FacturacionUserManager {
                     .setFontSize(SIX)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(new String(new char[30]).replace(SLASH_ZERO, "_"))
+            document.add(new Paragraph(new String(new char[28]).replace(SLASH_ZERO, "_"))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
@@ -198,7 +198,7 @@ public class FacturacionUserManager {
 
             document.add(table);
 
-            document.add(new Paragraph(new String(new char[30]).replace(SLASH_ZERO, "_"))
+            document.add(new Paragraph(new String(new char[28]).replace(SLASH_ZERO, "_"))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
@@ -426,6 +426,8 @@ public class FacturacionUserManager {
     }
 
     public static void guardarTotalFacturadoEnArchivo(double totalFacturado) {
+        Map<String, Integer> productosVendidos = obtenerProductosVendidos();
+
         LocalDate fechaActual = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -449,8 +451,15 @@ public class FacturacionUserManager {
             // Dimensiones del papel
             float anchoMm = 48;  // Ancho fijo de 58 mm para impresora POS-58
             float altoMm = 220;  // Puedes ajustar el alto según la longitud del recibo
+            float altoPorProductoMm = 10;  // Espacio adicional por cada producto en mm (ajustable)
+            float altoTotalMm = altoMm + (productosVendidos.size() * altoPorProductoMm);
             float anchoPuntos = anchoMm * 2.83465f;
             float altoPuntos = altoMm * 2.83465f;
+
+            float altoBaseMm = 130;  // Altura base en mm (puedes ajustarlo)
+
+
+
 
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
             PdfWriter writer = new PdfWriter(nombreArchivo);
@@ -470,12 +479,14 @@ public class FacturacionUserManager {
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(10));
 
-            document.add(new Paragraph("Fecha: " + fechaActual.format(formatter))
+            LocalTime horaNueva = LocalTime.now();
+            DateTimeFormatter horaFormateada= DateTimeFormatter.ofPattern("HH:mm:ss");
+            document.add(new Paragraph(fechaActual.format(formatter) + "\n" + horaNueva.format(horaFormateada))
                     .setFont(fontNormal)
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(new String(new char[31]).replace('\0', '_'))
+            document.add(new Paragraph(new String(new char[28]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(8)
                     .setMarginBottom(10));
@@ -489,7 +500,7 @@ public class FacturacionUserManager {
                     .setTextAlignment(TextAlignment.LEFT)
                     .setMarginBottom(10));
 
-            document.add(new Paragraph(new String(new char[31]).replace('\0', '_'))
+            document.add(new Paragraph(new String(new char[28]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(8)
                     .setMarginBottom(10));
@@ -501,25 +512,45 @@ public class FacturacionUserManager {
                     .setTextAlignment(TextAlignment.LEFT)
                     .setMarginBottom(2));
 
-            document.add(new Paragraph("Realiza el cierre de caja en el siguiente espacio:")
+            document.add(new Paragraph("Resumen de las ventas:")
                     .setFont(fontNormal)
                     .setFontSize(8)
                     .setMarginBottom(5));
 
             // Espacios para el cierre de caja
-            document.add(new Paragraph(new String(new char[25]).replace('\0', '_'))
+            document.add(new Paragraph(new String(new char[22]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(10)
                     .setMarginBottom(5));
+            document.add(new Paragraph("Productos Vendidos:")
+                    .setFont(fontBold)
+                    .setFontSize(10)
+                    .setMarginBottom(5));
 
-            document.add(new Paragraph(new String(new char[25]).replace('\0', '_'))
+            if (productosVendidos != null && !productosVendidos.isEmpty()) {
+                for (Map.Entry<String, Integer> entry : productosVendidos.entrySet()) {
+                    String producto = entry.getKey();
+                    int cantidad = entry.getValue();
+
+                    document.add(new Paragraph("- " + producto + ": " + " X"+ cantidad)
+                            .setFont(fontNormal)
+                            .setFontSize(8)
+                            .setMarginBottom(2));
+                }
+            } else {
+                document.add(new Paragraph("No se registraron ventas en este periodo.")
+                        .setFont(fontNormal)
+                        .setFontSize(8)
+                        .setMarginBottom(5));
+            }
+            document.add(new Paragraph(new String(new char[22]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(10)
-                    .setMarginTop(160)
+                    .setMarginTop(5)
                     .setMarginBottom(5));
 
             // Agradecimiento o información adicional
-            document.add(new Paragraph("Sistema Licorera CR La 70")
+            document.add(new Paragraph("Licorera CR La 70")
                     .setFont(fontBold)
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER));
@@ -527,6 +558,7 @@ public class FacturacionUserManager {
             document.close();
             //abrirPDF(nombreArchivo);
             imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
+            limpiarCantidadVendida();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -560,5 +592,111 @@ public class FacturacionUserManager {
         }
     }
 
+    public static Map<String, Integer> obtenerProductosVendidos() {
+        Map<String, Integer> productosVendidos = new HashMap<>();
 
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            // Abre la hoja de productos
+            Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
+
+            if (sheet != null) {
+                // Identificar la columna "Cantidad Vendida" y "Nombre"
+                Row headerRow = sheet.getRow(0);
+                int cantidadVendidaCol = -1;
+                int nombreProductoCol = -1;
+
+                for (int i = 0; i < headerRow.getLastCellNum(); i++) {
+                    Cell headerCell = headerRow.getCell(i);
+                    if (headerCell != null) {
+                        String headerValue = headerCell.getStringCellValue();
+                        if ("Cantidad Vendida".equalsIgnoreCase(headerValue)) {
+                            cantidadVendidaCol = i;
+                        } else if ("Nombre".equalsIgnoreCase(headerValue)) {
+                            nombreProductoCol = i;
+                        }
+                    }
+                }
+
+                // Verifica si las columnas necesarias se encontraron
+                if (cantidadVendidaCol == -1 || nombreProductoCol == -1) {
+                    throw new IllegalStateException("No se encontraron las columnas necesarias ('Cantidad Vendida', 'Nombre').");
+                }
+
+                // Leer filas y extraer productos vendidos
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) { // Salta la fila de encabezados
+                    Row row = sheet.getRow(i);
+                    if (row != null) {
+                        Cell nombreProductoCell = row.getCell(nombreProductoCol);
+                        Cell cantidadVendidaCell = row.getCell(cantidadVendidaCol);
+
+                        if (nombreProductoCell != null && cantidadVendidaCell != null) {
+                            String nombreProducto = nombreProductoCell.getStringCellValue();
+
+                            // Verificar si "Cantidad Vendida" es un número
+                            if (cantidadVendidaCell.getCellType() == CellType.NUMERIC) {
+                                int cantidadVendida = (int) cantidadVendidaCell.getNumericCellValue();
+
+                                // Agregar al mapa solo si la cantidad vendida es mayor a 0
+                                if (cantidadVendida > 0) {
+                                    productosVendidos.put(nombreProducto, cantidadVendida);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return productosVendidos;
+    }
+
+    public static void limpiarCantidadVendida() {
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            // Abrir la hoja de productos
+            Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
+
+            if (sheet != null) {
+                // Identificar la columna "Cantidad Vendida"
+                Row headerRow = sheet.getRow(0);
+                int cantidadVendidaCol = -1;
+
+                for (int i = 0; i < headerRow.getLastCellNum(); i++) {
+                    Cell headerCell = headerRow.getCell(i);
+                    if (headerCell != null && "Cantidad Vendida".equalsIgnoreCase(headerCell.getStringCellValue())) {
+                        cantidadVendidaCol = i;
+                        break;
+                    }
+                }
+
+                if (cantidadVendidaCol == -1) {
+                    throw new IllegalStateException("No se encontró la columna 'Cantidad Vendida'.");
+                }
+
+                // Limpiar la columna "Cantidad Vendida"
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) { // Saltar la fila de encabezado
+                    Row row = sheet.getRow(i);
+                    if (row != null) {
+                        Cell cell = row.getCell(cantidadVendidaCol, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+                        cell.setCellValue(0); // Establecer el valor a 0
+                    }
+                }
+            }
+
+            // Guardar los cambios en el archivo Excel
+            try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
+                workbook.write(fos);
+            }
+
+            System.out.println("Se ha limpiado la columna 'Cantidad Vendida'.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
