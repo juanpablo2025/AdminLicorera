@@ -126,7 +126,7 @@ public class UIUserFacturas {
                 }
 
                 // Llamar a la función para generar el PDF con todos los productos de la factura seleccionada
-                generarFacturadeCompra(facturaId, productos, totalCompra, fechaHora);
+                generarFacturadeCompra(facturaId, productos, totalCompra, fechaHora, " ");
 
             } else {
                 JOptionPane.showMessageDialog(facturasDialog, "Por favor selecciona una factura.", "Advertencia", JOptionPane.WARNING_MESSAGE);

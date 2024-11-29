@@ -471,7 +471,7 @@ public class UIUserVenta {
                 NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
                 if (respuesta == JOptionPane.YES_OPTION) {
                     // Corregimos aquí, enviamos la lista completa y no solo un String.
-                    generarFacturadeCompra(ventaID, Arrays.asList(listaProductosEnLinea.toString().split("\n")), total, dateTime);
+                    generarFacturadeCompra(ventaID, Arrays.asList(listaProductosEnLinea.toString().split("\n")), total, dateTime, tipoPagoSeleccionado[0]);
                 }
 
                 JOptionPane.showMessageDialog(compraDialog, PURCHASE_SUCCEDED + " " + "por un total de: $ " + formatCOP.format(total)+ " Pesos");

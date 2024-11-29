@@ -72,14 +72,14 @@ public class FacturacionUserManager {
 
 
 
-    public static void generarFacturadeCompra(String ventaID, List<String> productos, double totalCompra, LocalDateTime fechaHora) {
+    public static void generarFacturadeCompra(String ventaID, List<String> productos, double totalCompra, LocalDateTime fechaHora, String tipoPago) {
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String fechaFormateada = fechaHora.format(formatter);
 
 
             // Ancho del papel térmico
-            float anchoMm = 55;  // Ancho en mm
+            float anchoMm = 48;  // Ancho en mm
             float anchoPuntos = anchoMm * WIDE_DOTS;  // Conversión de mm a puntos
 
             // Calcular el alto dinámico según el número de productos
@@ -139,6 +139,12 @@ public class FacturacionUserManager {
                     .setTextAlignment(TextAlignment.CENTER));
 
             document.add(new Paragraph(fechaFormateada)
+                    .setFont(fontNormal)
+                    .setFontSize(SIX)
+                    .setMarginBottom(FIVE)
+                    .setTextAlignment(TextAlignment.CENTER));
+
+            document.add(new Paragraph("Tipo de Pago: " + tipoPago)
                     .setFont(fontNormal)
                     .setFontSize(SIX)
                     .setMarginBottom(FIVE)
@@ -441,7 +447,7 @@ public class FacturacionUserManager {
 
         try {
             // Dimensiones del papel
-            float anchoMm = 55;  // Ancho fijo de 58 mm para impresora POS-58
+            float anchoMm = 48;  // Ancho fijo de 58 mm para impresora POS-58
             float altoMm = 220;  // Puedes ajustar el alto según la longitud del recibo
             float anchoPuntos = anchoMm * 2.83465f;
             float altoPuntos = altoMm * 2.83465f;
