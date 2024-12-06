@@ -262,12 +262,7 @@ public class FacturacionUserManager {
             // Calcular totales
             double totalVentas = sumarTotalesCompras(purchasesSheet);
             double totalGastos = restarTotalesGastos(gastosSheet);
-            List<Producto> productosAgotados = obtenerProductosAgotados(productsSheet);
-            int totalProductos = productsSheet.getLastRowNum();  // Total de productos
-            int productosAgotadosCount = productosAgotados.size();  // Total de productos con cantidad 0
 
-            // Calcular porcentaje de productos agotados
-            double porcentajeAgotados = ((double) productosAgotadosCount / totalProductos) * 100;
 
             // Crear el PDF con tamaño de tarjeta
             float anchoMm = 100;  // Ancho de tarjeta (en mm)
@@ -345,28 +340,7 @@ public class FacturacionUserManager {
 
 
 
-            // Mostrar estadísticas de productos agotados
-            document.add(new Paragraph("Productos Agotados: " + productosAgotadosCount + " productos (" + String.format("%.2f", porcentajeAgotados) + "%) del inventario")
-                    .setFont(fontNormal)
-                    .setFontSize(8)
-                    .setTextAlignment(TextAlignment.LEFT)
-                    .setMarginBottom(10));
 
-            // Mostrar lista de productos agotados
-            if (productosAgotados.isEmpty()) {
-                document.add(new Paragraph("No hay productos agotados.")
-                        .setFont(fontItalic)
-                        .setFontSize(8)
-                        .setTextAlignment(TextAlignment.LEFT)
-                        .setMarginBottom(5));
-            } else {
-                for (Producto producto : productosAgotados) {
-                    document.add(new Paragraph("- " + producto.getName())
-                            .setFont(fontNormal)
-                            .setFontSize(7)
-                            .setTextAlignment(TextAlignment.LEFT));
-                }
-            }
 
 
             // Sección de Empleados y Horas de Inicio

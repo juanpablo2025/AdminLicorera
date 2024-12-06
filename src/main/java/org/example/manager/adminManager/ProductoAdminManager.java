@@ -2,12 +2,14 @@ package org.example.manager.adminManager;
 
 import org.example.model.Producto;
 import org.example.ui.UIHelpers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import javax.swing.*;
 import java.util.List;
 
 import static org.example.utils.Constants.*;
-
+@Service
 public class ProductoAdminManager {
     private ExcelAdminManager excelAdminManager = new ExcelAdminManager();
 
@@ -15,6 +17,7 @@ public class ProductoAdminManager {
         excelAdminManager.addProduct(product);
     }
 
+    @Autowired
     public List<Producto> getProducts() {
         return excelAdminManager.getProducts();
     }

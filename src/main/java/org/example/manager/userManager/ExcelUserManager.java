@@ -341,7 +341,7 @@ public class ExcelUserManager {
         CellStyle redStyle = crearEstiloRojo(workbook);
 
         // Agregar una fila extra con el total al final de la hoja "Facturacion"
-        agregarTotal(facturacionSheet, totalCompra, "Total Compra", redStyle);
+        agregarTotal(facturacionSheet, totalCompra, "Total En Ventas", redStyle);
         LocalDateTime fechaHora = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH_mm_ss");
         String fechaFormateada = fechaHora.format(formatter);

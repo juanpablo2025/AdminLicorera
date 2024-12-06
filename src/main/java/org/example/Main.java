@@ -1,15 +1,20 @@
 package org.example;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.google.gson.Gson;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.example.model.UpdateMetaData;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.file.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,6 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static java.awt.Component.CENTER_ALIGNMENT;
+import static javax.xml.transform.OutputKeys.VERSION;
 import static org.example.manager.userManager.ExcelUserManager.hayRegistroDeHoy;
 import static org.example.manager.userManager.ExcelUserManager.registrarDia;
 import static org.example.manager.userManager.MainUserManager.crearDirectorios;
@@ -26,8 +32,15 @@ import static org.example.ui.uiUser.UIUserMain.mainUser;
 
 public class Main {
 
+    private static final String METADATA_URL = "https://drive.google.com/uc?id=14dojyy1B4PEDNUYZLE9Y8-i9ENeBsHug";
+    private static final String LOCAL_DIR = "C:\\Users\\DesktopPC\\Calculadora del Administrador"; // Directorio específico
+    private static final String JAR_NAME = "inventario licorera la 70.jar"; // Nombre fijo del archivo JAR
+    private static final String VERSION_FILE = "version.json"; // Archivo para manejar la versión local
 
     public static void main(String[] args) {
+
+        verificarYActualizar();
+
         crearDirectorios();
 
 
@@ -131,5 +144,103 @@ public class Main {
         });
     }
 
+    private static void verificarYActualizar() {
+        try {
+            System.out.println("Verificando actualizaciones...");
+JOptionPane.showMessageDialog(null, "Verificando actualizaciones" + VERSION);
+            // Leer la versión local
+            String localVersion = leerVersionLocal();
+            if (localVersion == null) {
+                System.out.println("No se encontró versión local, asumiendo versión 0.0.");
+                localVersion = "0.0";
+            }
+            System.out.println("Versión local detectada: " + localVersion);
 
+            // Descargar y parsear el archivo de metadatos
+            String metadataContent = descargarArchivoComoTexto(METADATA_URL);
+            UpdateMetaData metadata = parsearMetadata(metadataContent);
+            System.out.println("metadata version: "+metadata.getVersion());
+            // Comparar versiones
+            if (localVersion.compareTo(metadata.getVersion()) < 0) {
+                System.out.println("Nueva versión disponible: " + metadata.getVersion());
+                System.out.println("Descargando actualización...");
+                JOptionPane.showMessageDialog(null, "Nueva versión disponible: " + metadata.getVersion());
+
+                String tempJarPath = LOCAL_DIR + File.separator + JAR_NAME;
+                descargarArchivo(metadata.getUrl(), tempJarPath);
+
+                System.out.println("Actualización descargada: " + tempJarPath);
+JOptionPane.showMessageDialog(null, "Actualización descargada: " + tempJarPath);
+                // Actualizar la versión local
+                guardarVersionLocal(metadata.getVersion());
+                System.out.println("Versión actualizada a: " + metadata.getVersion());
+
+                // Reiniciar la aplicación
+                System.out.println("Reiniciando la aplicación...");
+                Runtime.getRuntime().exec("java -jar " + tempJarPath);
+
+            } else {
+                System.out.println("La aplicación está actualizada.");
+            }
+        } catch (Exception e) {
+            System.out.println("No se pudo verificar actualizaciones: " + e.getMessage());
+        }
+    }
+
+    private static String leerVersionLocal() {
+        Path versionFilePath = Paths.get(LOCAL_DIR, VERSION_FILE);
+        if (!Files.exists(versionFilePath)) {
+            return null;
+        }
+        try {
+            return Files.readString(versionFilePath).trim();
+        } catch (IOException e) {
+            System.err.println("Error leyendo el archivo de versión local: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private static void guardarVersionLocal(String version) {
+        Path versionFilePath = Paths.get(LOCAL_DIR, VERSION_FILE);
+        try {
+            Files.writeString(versionFilePath, version, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            System.out.println("Versión local guardada en " + VERSION_FILE);
+        } catch (IOException e) {
+            System.err.println("Error guardando el archivo de versión local: " + e.getMessage());
+        }
+    }
+
+    private static String descargarArchivoComoTexto(String url) throws IOException {
+        StringBuilder result = new StringBuilder();
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        connection.setRequestMethod("GET");
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                result.append(line);
+            }
+        }
+        return result.toString();
+    }
+
+    private static void descargarArchivo(String url, String destino) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+        connection.setRequestMethod("GET");
+
+        try (InputStream in = connection.getInputStream();
+             FileOutputStream out = new FileOutputStream(destino)) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+        }
+    }
+
+    private static UpdateMetaData parsearMetadata(String jsonContent) {
+        Gson gson = new Gson();
+        return gson.fromJson(jsonContent, UpdateMetaData.class);
+    }
 }
+
