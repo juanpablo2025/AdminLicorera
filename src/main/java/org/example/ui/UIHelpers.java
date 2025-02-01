@@ -16,6 +16,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import static org.example.utils.Constants.*;
 import static org.example.utils.FormatterHelpers.formatearMoneda;
@@ -159,92 +160,51 @@ public class UIHelpers {
     }
 
     private static JComboBox<String> createProductComboBox() {
+        // Crear JComboBox con modelo editable
         JComboBox<String> productComboBox = new JComboBox<>();
         productComboBox.setEditable(true);
         productComboBox.setFont(new Font("Arial", Font.BOLD, 18));
+
+        // Campo de texto editable
         JTextField comboBoxEditor = (JTextField) productComboBox.getEditor().getEditorComponent();
 
-        // Usar DefaultListModel para cargar los nombres de los productos
-        DefaultListModel<String> productList = new DefaultListModel<>();
-        for (Producto producto : productoUserManager.getProducts()) {
-            // Verifica que la cantidad sea mayor que 0 antes de agregarlo
-            if (producto.getQuantity() > 0) {
-                productList.addElement(producto.getName());
-            }
-        }
+        // Cargar los nombres de los productos en una lista ordenada
+        List<String> productList = productoUserManager.getProducts().stream()
+                .filter(producto -> producto.getQuantity() > 0)
+                .map(Producto::getName)
+                .sorted(String::compareToIgnoreCase)
+                .toList();
 
-        // Ordenar la lista en orden ascendente
-        ArrayList<String> productArrayList = Collections.list(productList.elements());
-        Collections.sort(productArrayList);  // Orden ascendente
-        DefaultListModel<String> sortedProductList = new DefaultListModel<>();
-        for (String product : productArrayList) {
-            sortedProductList.addElement(product);
-        }
+        // Configurar el modelo inicial del JComboBox
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(productList.toArray(new String[0]));
+        productComboBox.setModel(model);
 
-        // Inicializar el ComboBox con todos los productos
-        updateComboBox(productComboBox, sortedProductList);
-
-        // Listener para detectar cuando se presiona Enter
+        // Listener para filtrar los elementos dinámicamente al escribir
         comboBoxEditor.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyPressed(KeyEvent e) {
-                // Verifica si la tecla presionada es Enter
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    String input = comboBoxEditor.getText();
-                    DefaultListModel<String> filteredList = new DefaultListModel<>();
+            public void keyReleased(KeyEvent e) {
+                String input = comboBoxEditor.getText();
+                DefaultComboBoxModel<String> filteredModel = new DefaultComboBoxModel<>();
 
-                    // Filtrar la lista de productos si el input no está vacío
-                    if (!input.isEmpty()) {
-                        // Filtra la lista de productos por el texto ingresado (productos que empiezan con el texto)
-                        for (int i = 0; i < sortedProductList.size(); i++) {
-                            String item = sortedProductList.getElementAt(i);
-                            // Comprobar si el nombre del producto empieza con el texto ingresado (case-insensitive)
-                            if (item.toLowerCase().startsWith(input.toLowerCase())) {
-                                filteredList.addElement(item);
-                            }
-                        }
-                    } else {
-                        filteredList = sortedProductList; // Mostrar todos los productos si el campo está vacío
-                    }
-
-                    // Actualizar el ComboBox con la lista filtrada
-                    updateComboBox(productComboBox, filteredList);
-
-                    // Mostrar el ComboBox con los resultados filtrados
-                    productComboBox.showPopup();
+                if (!input.isEmpty()) {
+                    // Filtrar productos según el texto ingresado (case-insensitive)
+                    productList.stream()
+                            .filter(product -> product.toLowerCase().contains(input.toLowerCase()))
+                            .forEach(filteredModel::addElement);
+                } else {
+                    // Restaurar la lista completa si el campo está vacío
+                    productList.forEach(filteredModel::addElement);
                 }
-            }
-        });
 
-        // Deshabilitar la selección automática
-        productComboBox.setSelectedIndex(-1); // No se selecciona ningún elemento automáticamente
-
-        // Habilitar el comportamiento de selección normal al hacer clic
-        productComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Aquí puedes obtener el ítem seleccionado manualmente, si es necesario
-                String selectedItem = (String) productComboBox.getSelectedItem();
-                if (selectedItem != null && !selectedItem.isEmpty()) {
-                    // Procesar la selección manual
-                    System.out.println("Producto seleccionado: " + selectedItem);
-                }
+                // Actualizar el modelo del ComboBox
+                productComboBox.setModel(filteredModel);
+                comboBoxEditor.setText(input); // Mantener el texto escrito
+                productComboBox.showPopup();  // Asegurar que el popup se muestre
             }
         });
 
         return productComboBox;
     }
-
-    // Actualiza los elementos del ComboBox basado en los resultados de la búsqueda
-    private static void updateComboBox(JComboBox<String> comboBox, DefaultListModel<String> itemList) {
-        comboBox.removeAllItems(); // Borra todos los elementos antes de agregar nuevos
-        comboBox.addItem(""); // Selección vacía predeterminada
-
-        for (int i = 0; i < itemList.size(); i++) {
-            comboBox.addItem(itemList.getElementAt(i)); // Agrega los productos filtrados
-        }
-    }
-
 
 
     // Renderer personalizado para formato de moneda
