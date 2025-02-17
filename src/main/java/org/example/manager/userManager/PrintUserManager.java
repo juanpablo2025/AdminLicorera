@@ -3,6 +3,7 @@ package org.example.manager.userManager;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.printing.PDFPageable;
+import org.example.manager.adminManager.ConfigAdminManager;
 
 import javax.print.*;
 import java.awt.print.PrinterException;
@@ -28,26 +29,37 @@ public class PrintUserManager {
             // Cargar el archivo PDF
             PDDocument document = PDDocument.load(new File(pdfFilePath));
 
-            // Crear un trabajo de impresión
-            PrinterJob printerJob = PrinterJob.getPrinterJob();
+            // Obtener la impresora guardada en config.properties
+            String printerName = ConfigAdminManager.getPrinterName();
+            PrintService selectedPrintService = null;
 
-            // Usar la impresora predeterminada del sistema
-            PrintService defaultPrintService = PrintServiceLookup.lookupDefaultPrintService();
+            // Buscar la impresora en el sistema
+            PrintService[] printServices = PrintServiceLookup.lookupPrintServices(null, null);
+            for (PrintService service : printServices) {
+                if (service.getName().equalsIgnoreCase(printerName)) {
+                    selectedPrintService = service;
+                    break;
+                }
+            }
 
-            if (defaultPrintService != null) {
-                printerJob.setPrintService(defaultPrintService);
-            } else {
-                System.out.println("No hay una impresora predeterminada configurada.");
+            // Si no se encuentra la impresora guardada, usar la predeterminada
+            if (selectedPrintService == null) {
+                selectedPrintService = PrintServiceLookup.lookupDefaultPrintService();
+            }
+
+            // Si no hay impresoras disponibles, mostrar mensaje de error
+            if (selectedPrintService == null) {
+                System.out.println("No hay impresoras disponibles.");
                 return;
             }
 
-            // Configurar el documento PDF para la impresión
+            // Crear un trabajo de impresión sin mostrar cuadro de diálogo
+            PrinterJob printerJob = PrinterJob.getPrinterJob();
+            printerJob.setPrintService(selectedPrintService);
             printerJob.setPageable(new PDFPageable(document));
 
-            // Realizar la impresión
-            if (printerJob.printDialog()) {  // Si deseas mostrar el diálogo de impresión, puedes cambiarlo a true
-                printerJob.print();
-            }
+            // 🚨 IMPRIMIR DIRECTAMENTE (sin diálogo)
+            printerJob.print();
 
             // Cerrar el documento
             document.close();

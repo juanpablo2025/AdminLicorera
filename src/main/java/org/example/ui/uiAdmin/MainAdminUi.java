@@ -145,10 +145,34 @@ public class MainAdminUi {
             });
             facturasButton.setFont(new Font("Arial", Font.BOLD, 18));
 
+
+            ImageIcon originalConfigIcon = new ImageIcon((UIUserMain.class.getResource("/icons/admin/beneficios.png")));
+            // Redimensionar la imagen
+            Image imgconfig = originalConfigIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+            ImageIcon configIcon = new ImageIcon(imgconfig);
+
+            JButton configButton = createButton("Configuracion",configIcon, e -> {
+                UIConfigAdmin.showConfigDialog();
+
+            });
+            configButton.setFont(new Font("Arial", Font.BOLD, 18));
+
+
+
+
+
             // Añadir botones al panel de botones
             buttonPanel.add(reabastecerButton);
             buttonPanel.add(productosButton);
             buttonPanel.add(facturasButton);
+            buttonPanel.add(configButton);
+
+
+
+
+
+
+
 
             // Crear barra lateral con botón "Ventas"
             JPanel sidebarPanel = new JPanel(new BorderLayout());

@@ -14,8 +14,11 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import org.apache.poi.ss.usermodel.*;
+import org.example.manager.adminManager.ConfigAdminManager;
 import org.example.model.Producto;
 
+import javax.print.*;
+import javax.swing.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -77,147 +80,132 @@ public class FacturacionUserManager {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String fechaFormateada = fechaHora.format(formatter);
 
+            // Obtener configuración desde config.properties
+            String paperSize = ConfigAdminManager.getPaperSize();
+            String outputType = ConfigAdminManager.getOutputType();
+            String printerName = ConfigAdminManager.getPrinterName();
 
-            // Ancho del papel térmico
-            float anchoMm = 48;  // Ancho en mm
-            float anchoPuntos = anchoMm * WIDE_DOTS;  // Conversión de mm a puntos
+            // Definir el ancho del papel basado en la configuración
+            float anchoMm = paperSize.equals("58mm") ? 58 : (paperSize.equals("A4") ? 210 : 80);
+            float anchoPuntos = anchoMm * WIDE_DOTS;
 
-            // Calcular el alto dinámico según el número de productos
-            float altoBaseMm = 130;  // Altura base en mm (puedes ajustarlo)
-            float altoPorProductoMm = 10;  // Espacio adicional por cada producto en mm (ajustable)
+            // Calcular la altura dinámica del papel
+            float altoBaseMm = 130;
+            float altoPorProductoMm = 10;
             float altoTotalMm = altoBaseMm + (productos.size() * altoPorProductoMm);
-            float altoPuntos = altoTotalMm * HEIGHT_DOTS;  // Conversión de mm a puntos
+            float altoPuntos = altoTotalMm * HEIGHT_DOTS;
 
-            // Definir el tamaño de la página con el alto dinámico
+            // Definir el tamaño de la página
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
 
-            String nombreArchivo = System.getProperty("user.home") + "\\Calculadora del Administrador\\Facturas\\" + BILL_FILE + ventaID + PDF_FORMAT;
-            File pdfFile = new File(nombreArchivo);
-            PdfWriter writer = new PdfWriter(nombreArchivo);
-            PdfDocument pdfDoc = new PdfDocument(writer);
-            Document document = new Document(pdfDoc, pageSize);
+            // Ruta del archivo PDF
+            String directoryPath = ConfigAdminManager.DIRECTORY_PATH + "\\Facturas";
+            File directory = new File(directoryPath);
+            if (!directory.exists()) {
+                directory.mkdirs(); // Crear carpeta si no existe
+            }
 
-            PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
-            PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            String nombreArchivo = directoryPath + "\\Factura_" + ventaID + ".pdf";
 
-            // Márgenes ajustados
-            document.setMargins(FIVE, FIVE, FIVE, FIVE);
+            // Determinar si se genera un PDF o se imprime directamente
+            if (outputType.equals("PDF")) {
+                PdfWriter writer = new PdfWriter(nombreArchivo);
+                PdfDocument pdfDoc = new PdfDocument(writer);
+                Document document = new Document(pdfDoc, pageSize);
 
-            // Encabezado de la factura
-            document.add(new Paragraph(BILL_TITLE)
-                    .setFont(fontBold)
-                    .setFontSize(TWELVE)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(FIVE));
+                PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+                PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
-            document.add(new Paragraph(LICORERA_NAME)
-                    .setFont(fontBold)
-                    .setFontSize(TEN)
-                    .setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph(NIT)
-                    .setFont(fontNormal)
-                    .setFontSize(SIX)
-                    .setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph(DIRECCION)
-                    .setFont(fontNormal)
-                    .setFontSize(SIX)
-                    .setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph(TELEFONO)
-                    .setFont(fontNormal)
-                    .setFontSize(SIX)
-                    .setTextAlignment(TextAlignment.CENTER));
+                // Márgenes ajustados
+                document.setMargins(5f, 5f, 5f, 5f);
 
-            document.add(new Paragraph(new String(new char[28]).replace(SLASH_ZERO, "_"))
-                    .setFont(fontNormal)
-                    .setFontSize(EIGHT)
-                    .setMarginBottom(FIVE));
+                // Encabezado de la factura
+                document.add(new Paragraph(BILL_TITLE).setFont(fontBold).setFontSize(TWELVE).setTextAlignment(TextAlignment.CENTER).setMarginBottom(FIVE));
+                document.add(new Paragraph(LICORERA_NAME).setFont(fontBold).setFontSize(TEN).setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph(NIT).setFont(fontNormal).setFontSize(SIX).setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph(DIRECCION).setFont(fontNormal).setFontSize(SIX).setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph(TELEFONO).setFont(fontNormal).setFontSize(SIX).setTextAlignment(TextAlignment.CENTER));
 
-            // Detalles de la compra
-            document.add(new Paragraph(BILL_ID +"N°"+ ventaID)
-                    .setFont(fontNormal)
-                    .setFontSize(EIGHT)
-                    .setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph(new String(new char[28]).replace(SLASH_ZERO, "_")).setFont(fontNormal).setFontSize(EIGHT).setMarginBottom(FIVE));
 
-            document.add(new Paragraph(fechaFormateada)
-                    .setFont(fontNormal)
-                    .setFontSize(SIX)
-                    .setMarginBottom(FIVE)
-                    .setTextAlignment(TextAlignment.CENTER));
+                // Detalles de la compra
+                document.add(new Paragraph(BILL_ID + "N°" + ventaID).setFont(fontNormal).setFontSize(EIGHT).setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph(fechaFormateada).setFont(fontNormal).setFontSize(SIX).setMarginBottom(FIVE).setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph("Tipo de Pago: " + tipoPago).setFont(fontNormal).setFontSize(SIX).setMarginBottom(FIVE).setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph(BILL_PRODUCTS).setFont(fontBold).setFontSize(TEN));
 
-            document.add(new Paragraph("Tipo de Pago: " + tipoPago)
-                    .setFont(fontNormal)
-                    .setFontSize(SIX)
-                    .setMarginBottom(FIVE)
-                    .setTextAlignment(TextAlignment.CENTER));
+                // Formato de moneda colombiano
+                NumberFormat formatoColombiano = NumberFormat.getCurrencyInstance(new Locale("es", "CO"));
 
-            document.add(new Paragraph(BILL_PRODUCTS)
-                    .setFont(fontBold)
-                    .setFontSize(TEN));
+                // Agregar productos
+                for (String producto : productos) {
+                    String[] detallesProducto = producto.split(" ");
+                    if (detallesProducto.length >= 3) {
+                        String nombreProducto = detallesProducto[0];
+                        String cantidadStr = detallesProducto[1];
+                        String precioStr = detallesProducto[2];
 
-            // Crear un formateador de moneda para Colombia
-            NumberFormat formatoColombiano = NumberFormat.getCurrencyInstance(new Locale("es", "CO"));
+                        double precioUnitario = Double.parseDouble(precioStr.substring(1));
+                        String formattedPrice = formatoColombiano.format(precioUnitario);
 
-            // Agregar productos con formato de moneda colombiano
-            for (String producto : productos) {
-                // Suponiendo que el formato de cada producto es "nombreProducto xCantidad $precioUnitario"
-                String[] detallesProducto = producto.split(" ");
-                if (detallesProducto.length >= 3) {
-                    // Extraer el nombre del producto y el precio unitario
-                    String nombreProducto = detallesProducto[0];
-                    String cantidadStr = detallesProducto[1]; // Ejemplo: "x2"
-                    String precioStr = detallesProducto[2];   // Ejemplo: "$1000.0"
+                        document.add(new Paragraph(nombreProducto + " " + cantidadStr + " " + formattedPrice).setFont(fontNormal).setFontSize(EIGHT));
+                    }
+                }
 
-                    // Convertir el precio a double (sin el símbolo "$")
-                    double precioUnitario = Double.parseDouble(precioStr.substring(1));
+                // Totales
+                com.itextpdf.layout.element.Table table = new com.itextpdf.layout.element.Table(new float[]{THREE, TWO});
+                table.setWidth(UnitValue.createPercentValue(ONE_HUNDRED));
 
-                    // Formatear el precio en el formato de moneda colombiano (COP)
-                    NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
-                    String formattedPrice = formatCOP.format(precioUnitario);
-                    // Crear el texto del producto con el formato de moneda colombiano
-                    String productoConPrecioFormateado = nombreProducto + " " + cantidadStr + " " + formattedPrice;
+                String formattedPrice = formatoColombiano.format(totalCompra);
+                addTableRow(table, TOTAL_BILL, PESO_SIGN + formattedPrice + PESOS);
+                document.add(table);
 
-                    // Agregar el producto al documento con el nuevo formato de precio
-                    document.add(new Paragraph(productoConPrecioFormateado)
-                            .setFont(fontNormal)
-                            .setFontSize(EIGHT));
-                }}
+                document.add(new Paragraph(new String(new char[28]).replace(SLASH_ZERO, "_")).setFont(fontNormal).setFontSize(EIGHT).setMarginBottom(FIVE));
+                document.add(new Paragraph(THANKS_BILL).setFont(fontNormal).setFontSize(EIGHT).setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph("IVA incluido.").setFont(fontNormal).setFontSize(5).setTextAlignment(TextAlignment.CENTER));
 
-            /*document.add(new Paragraph(new String(new char[30]).replace(SLASH_ZERO, "_"))
-                    .setFont(fontNormal)
-                    .setFontSize(EIGHT)
-                    .setMarginBottom(FIVE));*/
+                document.close();
 
-            // Totales
-            com.itextpdf.layout.element.Table table = new com.itextpdf.layout.element.Table(new float[]{THREE, TWO});
-            table.setWidth(UnitValue.createPercentValue(ONE_HUNDRED));
+                // Imprimir automáticamente el PDF después de generarlo
+                abrirPDF(nombreArchivo);
+            } else if (outputType.equals("IMPRESORA")) {
+                PrintService printService = null;
+                PrintService[] services = PrintServiceLookup.lookupPrintServices(null, null);
+                for (PrintService service : services) {
+                    if (service.getName().equalsIgnoreCase(printerName)) {
+                        printService = service;
+                        break;
+                    }
+                }
 
-            NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
-            String formattedPrice = formatCOP.format(totalCompra);
-            addTableRow(table, TOTAL_BILL, PESO_SIGN + formattedPrice + PESOS);
+                if (printService == null) {
+                    JOptionPane.showMessageDialog(null, "Impresora no encontrada.");
+                    return;
+                }
 
+                StringBuilder factura = new StringBuilder();
+                factura.append("Factura de Compra\n");
+                factura.append("Venta ID: ").append(ventaID).append("\n");
+                factura.append("Fecha: ").append(fechaFormateada).append("\n");
+                factura.append("Tipo de Pago: ").append(tipoPago).append("\n");
+                factura.append("Productos:\n");
 
-            document.add(table);
+                for (String producto : productos) {
+                    factura.append(producto).append("\n");
+                }
 
-            document.add(new Paragraph(new String(new char[28]).replace(SLASH_ZERO, "_"))
-                    .setFont(fontNormal)
-                    .setFontSize(EIGHT)
-                    .setMarginBottom(FIVE));
+                factura.append("Total: ").append(formatearMoneda(totalCompra)).append("\n");
 
-            document.add(new Paragraph(THANKS_BILL)
-                    .setFont(fontNormal)
-                    .setFontSize(EIGHT)
-                    .setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph("IVA incluido.")
-                    .setFont(fontNormal)
-                    .setFontSize(5)
-                    .setTextAlignment(TextAlignment.CENTER));
-
-            // Cerrar el documento
-            document.close();
-
-            // Método para abrir el PDF después de generarlo
-            //abrirPDF(nombreArchivo);
-            imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
+                try {
+                    DocPrintJob job = printService.createPrintJob();
+                    Doc doc = new SimpleDoc(factura.toString().getBytes(), DocFlavor.BYTE_ARRAY.AUTOSENSE, null);
+                    job.print(doc, null);
+                } catch (PrintException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                JOptionPane.showMessageDialog(null, "Opción de impresión no válida en configuración.");
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
