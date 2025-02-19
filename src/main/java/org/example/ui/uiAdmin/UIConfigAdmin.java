@@ -9,7 +9,7 @@ import javax.swing.*;
 public class UIConfigAdmin {
     public static void showConfigDialog() {
         // Opciones de tamaño de papel
-        String[] paperSizeOptions = {"58mm", "80mm", "A4"};
+        String[] paperSizeOptions = {"48mm","58mm", "80mm", "A4"};
         String currentPaperSize = ConfigAdminManager.getPaperSize();
 
         // Opciones de salida

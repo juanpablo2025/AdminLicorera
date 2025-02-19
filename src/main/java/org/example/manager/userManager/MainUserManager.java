@@ -6,7 +6,7 @@ public class MainUserManager {
 
     public static void crearDirectorios() {
         String documentosPath = System.getProperty("user.home") + "\\Calculadora del Administrador";
-        String facturacionPath = documentosPath + "\\Facturacion";
+        String facturacionPath = documentosPath + "\\Facturación";
         String facturasPath = documentosPath + "\\Facturas";
         String realizadoPath = documentosPath + "\\Realizo";
 

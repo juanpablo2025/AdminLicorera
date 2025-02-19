@@ -24,6 +24,9 @@ public class PrintUserManager {
             e.printStackTrace();
         }
     }
+
+
+
     public static void imprimirPDF(String pdfFilePath) {
         try {
             // Cargar el archivo PDF
@@ -58,8 +61,10 @@ public class PrintUserManager {
             printerJob.setPrintService(selectedPrintService);
             printerJob.setPageable(new PDFPageable(document));
 
-            // 🚨 IMPRIMIR DIRECTAMENTE (sin diálogo)
-            printerJob.print();
+            // Realizar la impresión
+           // Si deseas mostrar el diálogo de impresión, puedes cambiarlo a true
+                printerJob.print();
+
 
             // Cerrar el documento
             document.close();
