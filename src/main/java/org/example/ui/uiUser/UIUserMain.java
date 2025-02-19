@@ -8,6 +8,7 @@ import java.awt.*;
 
 import static org.example.manager.userManager.ExcelUserManager.eliminarMesasConIdMayorA10;
 import static org.example.manager.userManager.PrintUserManager.abrirCajaRegistradora;
+import static org.example.ui.uiAdmin.MainAdminUi.adminPassword;
 import static org.example.ui.uiAdmin.MainAdminUi.mainAdmin;
 import static org.example.ui.uiUser.UIUserFacturas.showFacturasDialog;
 import static org.example.ui.uiUser.UIUserGastos.showGastosGeneralesDialog;
@@ -170,7 +171,8 @@ public class UIUserMain {
 
 
             JButton adminButton = createButton("Administrador", AdminIcon, e -> {
-                mainAdmin();  // Abre la nueva ventana de administración
+
+                adminPassword();
                 frame.dispose();  // Cierra la ventana actual
             });
 

@@ -20,7 +20,7 @@ import static java.awt.Component.CENTER_ALIGNMENT;
 import static org.example.manager.userManager.ExcelUserManager.hayRegistroDeHoy;
 import static org.example.manager.userManager.ExcelUserManager.registrarDia;
 import static org.example.manager.userManager.MainUserManager.crearDirectorios;
-import static org.example.ui.uiAdmin.MainAdminUi.mainAdmin;
+import static org.example.ui.uiAdmin.MainAdminUi.*;
 import static org.example.ui.uiUser.UIUserMain.mainUser;
 
 
@@ -122,15 +122,10 @@ public class Main {
 
         // Acción para acceder al administrador
         adminButton.addActionListener(e -> {
-            /*String password = JOptionPane.showInputDialog(frame, "Ingresa la contraseña de administrador:");
-            if ("admin2024".equals(password)) {
-                JOptionPane.showMessageDialog(frame, "Accediendo al administrador...");
-                frame.dispose(); // Cerrar login*/
-                mainAdmin(); // Lanzar el panel de administrador
+            adminPassword();
+            // Lanzar el panel de administrador
             frame.dispose(); // Cerrar login
-           /* } else {
-                JOptionPane.showMessageDialog(frame, "Contraseña incorrecta.");
-            }*/
+
         });
     }
 

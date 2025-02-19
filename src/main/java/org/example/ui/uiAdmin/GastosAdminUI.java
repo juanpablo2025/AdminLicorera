@@ -11,9 +11,13 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.List;
 
+import static org.example.Main.mostrarLogin;
+import static org.example.manager.userManager.ExcelUserManager.hayRegistroDeHoy;
 import static org.example.ui.UIHelpers.createButton;
 import static org.example.ui.UIHelpers.createDialog;
 import static org.example.ui.uiAdmin.MainAdminUi.mainAdmin;
+import static org.example.ui.uiAdmin.MainAdminUi.showAdminPanel;
+import static org.example.ui.uiUser.UIUserMain.mainUser;
 
 public class GastosAdminUI {
     static ProductoAdminManager productoAdminManager = new ProductoAdminManager();
@@ -71,8 +75,50 @@ public class GastosAdminUI {
                 // Mostrar mensaje de éxito
                 JOptionPane.showMessageDialog(null, "Producto reabastecido correctamente.");
 
-                reabastecimientoDialog.dispose();
-                MainAdminUi.mainAdmin(); // Volver a la ventana principal de usuario
+
+
+
+
+
+                    String[] opciones = {"Volver al Menú Principal", "Volver al Menú Admin", "Ingresar Otro Producto"};
+                    int seleccion = JOptionPane.showOptionDialog(
+                            null,
+                            "¿Qué deseas hacer ahora?",
+                            "Selecciona una opción",
+                            JOptionPane.DEFAULT_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            opciones,
+                            opciones[0]
+                    );
+
+                    switch (seleccion) {
+                        case 0 -> {  // Volver al menú principal
+                            reabastecimientoDialog.dispose();
+
+
+                            if (hayRegistroDeHoy()) {
+                                mainUser(); // Si hay registro, abrir el panel de usuario
+                            } else {
+                                mostrarLogin(); // Si no, mostrar el login
+                            }
+                        }
+                        case 1 -> {  // Volver al menú admin
+                            reabastecimientoDialog.dispose();
+
+
+
+                            mainAdmin();
+                        }
+                        case 2 -> {  // Ingresar otro producto
+                            reabastecimientoDialog.dispose();
+                            showReabastecimientoDialog();
+                        }
+                        default -> reabastecimientoDialog.dispose();
+
+
+                    }
+
 
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(reabastecimientoDialog, "Por favor ingresa un precio válido.", "Error", JOptionPane.ERROR_MESSAGE);
