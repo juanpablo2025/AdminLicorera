@@ -80,20 +80,18 @@ public class FacturacionUserManager {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String fechaFormateada = fechaHora.format(formatter);
 
-
             String paperSize = ConfigAdminManager.getPaperSize();
             String outputType = ConfigAdminManager.getOutputType();
-
 
             // Definir el ancho del papel basado en la configuración
             float anchoMm = paperSize.equals("48mm") ? 48 : (paperSize.equals("A4") ? 210 : 80);
             float anchoPuntos = anchoMm * WIDE_DOTS;  // Conversión de mm a puntos
 
             // Calcular el alto dinámico según el número de productos
-            float altoBaseMm = 130;  // Altura base en mm (puedes ajustarlo)
-            float altoPorProductoMm = 10;  // Espacio adicional por cada producto en mm (ajustable)
+            float altoBaseMm = 130;
+            float altoPorProductoMm = 10;
             float altoTotalMm = altoBaseMm + (productos.size() * altoPorProductoMm);
-            float altoPuntos = altoTotalMm * HEIGHT_DOTS;  // Conversión de mm a puntos
+            float altoPuntos = altoTotalMm * HEIGHT_DOTS;
 
             // Definir el tamaño de la página con el alto dinámico
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
@@ -107,8 +105,10 @@ public class FacturacionUserManager {
             PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
             PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
-            // Márgenes ajustados
-            document.setMargins(FIVE, FIVE, FIVE, FIVE);
+            // Ajustar margen izquierdo a 10mm (1cm)
+            float margenIzquierdo = 6 * HEIGHT_DOTS;
+            document.setMargins(FIVE, FIVE, FIVE, margenIzquierdo);
+
 
             // Encabezado de la factura
             document.add(new Paragraph(BILL_TITLE)
@@ -134,7 +134,7 @@ public class FacturacionUserManager {
                     .setFontSize(SIX)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(new String(new char[28]).replace(SLASH_ZERO, "_"))
+            document.add(new Paragraph(new String(new char[25]).replace(SLASH_ZERO, "_"))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
@@ -205,7 +205,7 @@ public class FacturacionUserManager {
 
             document.add(table);
 
-            document.add(new Paragraph(new String(new char[28]).replace(SLASH_ZERO, "_"))
+            document.add(new Paragraph(new String(new char[25]).replace(SLASH_ZERO, "_"))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
@@ -471,22 +471,16 @@ public class FacturacionUserManager {
         }
         LocalTime horaActual = LocalTime.now();
         DateTimeFormatter horaFormatter = DateTimeFormatter.ofPattern("HH-mm-ss");
-        String nombreArchivo = carpetaPath + "\\REALIZO_" + fechaActual.format(formatter) +EMPTY+ horaActual.format(horaFormatter)+".pdf";
+        String nombreArchivo = carpetaPath + "\\REALIZO_" + fechaActual.format(formatter) + EMPTY + horaActual.format(horaFormatter) + ".pdf";
 
         try {
-            //todo
             // Dimensiones del papel
             float anchoMm = 48;  // Ancho fijo de 58 mm para impresora POS-58
             float altoMm = 220;  // Puedes ajustar el alto según la longitud del recibo
-            float altoPorProductoMm = 10;  // Espacio adicional por cada producto en mm (ajustable)
+            float altoPorProductoMm = 10;
             float altoTotalMm = altoMm + (productosVendidos.size() * altoPorProductoMm);
             float anchoPuntos = anchoMm * 2.83465f;
-            float altoPuntos = altoMm * 2.83465f;
-
-            float altoBaseMm = 130;  // Altura base en mm (puedes ajustarlo)
-
-
-
+            float altoPuntos = altoTotalMm * 2.83465f;
 
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
             PdfWriter writer = new PdfWriter(nombreArchivo);
@@ -496,8 +490,10 @@ public class FacturacionUserManager {
             PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
             PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
-            // Márgenes ajustados
-            document.setMargins(5, 5, 5, 5);
+            // Ajustar margen izquierdo a 6mm (1cm equivalente)
+            float margenIzquierdo = 6 * HEIGHT_DOTS;
+            document.setMargins(FIVE, FIVE, FIVE, margenIzquierdo);
+
 
             // Encabezado del PDF
             document.add(new Paragraph("Total Generado Durante el Día")
@@ -513,7 +509,7 @@ public class FacturacionUserManager {
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(new String(new char[28]).replace('\0', '_'))
+            document.add(new Paragraph(new String(new char[25]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(8)
                     .setMarginBottom(10));
@@ -527,7 +523,7 @@ public class FacturacionUserManager {
                     .setTextAlignment(TextAlignment.LEFT)
                     .setMarginBottom(10));
 
-            document.add(new Paragraph(new String(new char[28]).replace('\0', '_'))
+            document.add(new Paragraph(new String(new char[25]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(8)
                     .setMarginBottom(10));
@@ -545,7 +541,7 @@ public class FacturacionUserManager {
                     .setMarginBottom(5));
 
             // Espacios para el cierre de caja
-            document.add(new Paragraph(new String(new char[22]).replace('\0', '_'))
+            document.add(new Paragraph(new String(new char[18]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(10)
                     .setMarginBottom(5));
@@ -570,7 +566,7 @@ public class FacturacionUserManager {
                         .setFontSize(8)
                         .setMarginBottom(5));
             }
-            document.add(new Paragraph(new String(new char[22]).replace('\0', '_'))
+            document.add(new Paragraph(new String(new char[19]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(10)
                     .setMarginTop(5)

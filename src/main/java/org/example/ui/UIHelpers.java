@@ -10,10 +10,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -160,51 +157,61 @@ public class UIHelpers {
     }
 
     private static JComboBox<String> createProductComboBox() {
-        // Crear JComboBox con modelo editable
         JComboBox<String> productComboBox = new JComboBox<>();
         productComboBox.setEditable(true);
         productComboBox.setFont(new Font("Arial", Font.BOLD, 18));
 
-        // Campo de texto editable
         JTextField comboBoxEditor = (JTextField) productComboBox.getEditor().getEditorComponent();
 
-        // Cargar los nombres de los productos en una lista ordenada
+        // Obtener lista de productos disponibles
         List<String> productList = productoUserManager.getProducts().stream()
                 .filter(producto -> producto.getQuantity() > 0)
                 .map(Producto::getName)
                 .sorted(String::compareToIgnoreCase)
                 .toList();
 
-        // Configurar el modelo inicial del JComboBox
-        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>(productList.toArray(new String[0]));
+        // Agregar "Busca un producto" como primer elemento
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        model.addElement("Busca un producto");
+        productList.forEach(model::addElement);
         productComboBox.setModel(model);
+        productComboBox.setSelectedItem("Busca un producto");
 
-        // Listener para filtrar los elementos dinámicamente al escribir
+        comboBoxEditor.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (comboBoxEditor.getText().equals("Busca un producto")) {
+                    comboBoxEditor.setText("");
+                    comboBoxEditor.setForeground(Color.BLACK);
+                }
+            }
+        });
+
         comboBoxEditor.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                String input = comboBoxEditor.getText();
+                String input = comboBoxEditor.getText().trim();
                 DefaultComboBoxModel<String> filteredModel = new DefaultComboBoxModel<>();
 
-                if (!input.isEmpty()) {
-                    // Filtrar productos según el texto ingresado (case-insensitive)
+                if (input.isEmpty()) {
+                    filteredModel.addElement("Busca un producto");
+                    productList.forEach(filteredModel::addElement);
+                } else {
                     productList.stream()
                             .filter(product -> product.toLowerCase().contains(input.toLowerCase()))
                             .forEach(filteredModel::addElement);
-                } else {
-                    // Restaurar la lista completa si el campo está vacío
-                    productList.forEach(filteredModel::addElement);
                 }
 
-                // Actualizar el modelo del ComboBox
                 productComboBox.setModel(filteredModel);
-                comboBoxEditor.setText(input); // Mantener el texto escrito
-                productComboBox.showPopup();  // Asegurar que el popup se muestre
+                productComboBox.setSelectedItem(input.isEmpty() ? "Busca un producto" : input);
+                productComboBox.showPopup();
             }
         });
 
         return productComboBox;
     }
+
+
 
 
     // Renderer personalizado para formato de moneda
