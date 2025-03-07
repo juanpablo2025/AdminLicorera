@@ -106,7 +106,7 @@ public class FacturacionUserManager {
             PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
             // Ajustar margen izquierdo a 10mm (1cm)
-            float margenIzquierdo = 6 * HEIGHT_DOTS;
+            float margenIzquierdo = 10 * HEIGHT_DOTS;
             document.setMargins(FIVE, FIVE, FIVE, margenIzquierdo);
 
 
@@ -491,7 +491,7 @@ public class FacturacionUserManager {
             PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
             // Ajustar margen izquierdo a 6mm (1cm equivalente)
-            float margenIzquierdo = 6 * HEIGHT_DOTS;
+            float margenIzquierdo = 10 * HEIGHT_DOTS;
             document.setMargins(FIVE, FIVE, FIVE, margenIzquierdo);
 
 
