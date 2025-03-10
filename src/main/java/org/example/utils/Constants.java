@@ -47,7 +47,7 @@ public class Constants {
     public static final String REALIZO = "REALIZO:";
     public static final String FACTURACION ="Facturacion_";
     public static final String ID ="Id";
-    public static final String X_BTN = " - 1 ";
+    public static final String X_BTN = "BORRAR";
     public static final String PRODUCT_FIELD = "PRODUCTO:";
     public static final String CANTIDAD_FIELD = "CANTIDAD:";
     public static final String DINERO_RECIBIDO = "Dinero Recibido: ";

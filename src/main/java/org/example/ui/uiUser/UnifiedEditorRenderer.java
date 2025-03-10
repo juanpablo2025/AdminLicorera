@@ -23,8 +23,13 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
     private VentaMesaUserManager ventaMesaUserManager;
 
     public UnifiedEditorRenderer(DefaultTableModel model, VentaMesaUserManager manager) {
-        // Inicializar el botón
+        // Inicializar el botón con estilo personalizado
         button = new JButton(X_BTN);
+        button.setBackground(new Color(201, 79, 79));        button.setForeground(Color.WHITE); // Letras siempre blancas
+        button.setOpaque(true); // Asegura que el fondo rojo se vea
+        button.setBorderPainted(false); // Quita el borde para que se vea más limpio
+        button.setFocusPainted(false); // Quita el borde cuando se selecciona
+        button.setContentAreaFilled(true); // Asegura que el color se aplique en toda el área
         button.addActionListener(this);
 
         // Inicializar el spinner
@@ -61,11 +66,14 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        if (column == FOUR) {  // Botón
+        if (column == FOUR) {  // Botón de eliminación
             JButton renderButton = new JButton(X_BTN);
+            renderButton.setForeground(Color.WHITE); // Letras blancas
+            renderButton.setBackground(new Color(201, 79, 79));
+
             return renderButton;
         } else if (column == ONE) {  // Spinner
-            spinner = new JSpinner(new SpinnerNumberModel(ONE, ONE, ONE_HUNDRED, ONE));  // Valores enteros
+            spinner = new JSpinner(new SpinnerNumberModel(ONE, ONE, ONE_HUNDRED, ONE)); // Valores enteros
             return spinner;
         }
         return null;

@@ -11,6 +11,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.Font;
 import java.awt.event.*;
@@ -131,33 +132,41 @@ public class UIHelpers {
     }
 
     public static JPanel createInputLista(JTable table, VentaMesaUserManager ventaMesaUserManager) {
-        JPanel inputPanel = new JPanel(new GridLayout(3, 2)); // Tres filas, dos columnas
+        JPanel inputPanel = new JPanel(new BorderLayout()); // Mejor distribución
+        inputPanel.setPreferredSize(new Dimension(450, 125)); // Ajuste de tamaño correcto
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); // Pequeño margen
 
-        Font labelFont = new Font("Arial", Font.BOLD, 16);
+        Font labelFont = new Font("Arial", Font.BOLD, 14);
 
-        // First row: Product ComboBox with search functionality
-        JLabel productLabel = new JLabel("Producto");
-        productLabel.setFont(labelFont);
-        inputPanel.add(productLabel);
+        // Panel para los campos de entrada alineados a la izquierda
+        JPanel leftPanel = new JPanel(new GridLayout(3, 1, 5, 5));
+        leftPanel.setPreferredSize(new Dimension(350, 125));
 
+        // ComboBox más pequeño
         JComboBox<String> productComboBox = createProductComboBox();
-        inputPanel.add(productComboBox);
+        productComboBox.setPreferredSize(new Dimension(180, 125));
+        leftPanel.add(productComboBox);
 
-        // Second row: Quantity Spinner
-        JLabel cantidadLabel = new JLabel("Cantidad");
-        cantidadLabel.setFont(labelFont);
-        inputPanel.add(cantidadLabel);
-
+        // Spinner Cantidad
         JSpinner cantidadSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
-        ((JSpinner.DefaultEditor) cantidadSpinner.getEditor()).getTextField().setFont(new Font("Arial", Font.BOLD, 18));
-        inputPanel.add(cantidadSpinner);
+        JComponent editor = cantidadSpinner.getEditor();
+        ((JSpinner.DefaultEditor) editor).getTextField().setFont(new Font("Arial", Font.BOLD, 14));
+        cantidadSpinner.setPreferredSize(new Dimension(80, 125));
+        leftPanel.add(cantidadSpinner);
 
-        // Third row: Spacer and Add Product Button
-        inputPanel.add(new JLabel("")); // Spacer
-
+        // Panel para el botón alineado a la derecha
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setPreferredSize(new Dimension(100, 30));
+
         JButton agregarProductoButton = createAddProductMesaButton(table, productComboBox, cantidadSpinner, ventaMesaUserManager);
+        agregarProductoButton.setFont(new Font("Arial", Font.BOLD, 16));
+        agregarProductoButton.setPreferredSize(new Dimension(430, 100));
+        agregarProductoButton.setBackground(new Color(100, 149, 237));
+        agregarProductoButton.setForeground(Color.WHITE);
         buttonPanel.add(agregarProductoButton);
+
+        // Añadir los paneles al panel principal
+        inputPanel.add(leftPanel, BorderLayout.NORTH);
         inputPanel.add(buttonPanel);
 
         return inputPanel;
@@ -166,28 +175,29 @@ public class UIHelpers {
 
     public static JPanel createInputPanel(JTable table, VentaMesaUserManager ventaMesaUserManager) {
         JPanel inputPanel = new JPanel(new BorderLayout());
-        inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 
-        Font labelFont = new Font("Arial", Font.BOLD, 16);
+        Font labelFont = new Font("Arial", Font.BOLD, 18);
 
         // **Panel de búsqueda con menor espacio**
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 20)); // Reduce espacio
-        JLabel productLabel = new JLabel("Buscar");
+        JLabel productLabel = new JLabel("BUSCAR");
         productLabel.setFont(labelFont);
         searchPanel.add(productLabel);
 
         JTextField searchField = new JTextField();
-        searchField.setFont(new Font("Arial", Font.PLAIN, 12));
-        searchField.setPreferredSize(new Dimension(550, 25));
+        searchField.setFont(new Font("Arial", Font.PLAIN, 18));
+        searchField.setPreferredSize(new Dimension(450, 30));
         searchField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
         searchPanel.add(searchField);
+        searchPanel.setBackground(Color.lightGray);
 
         inputPanel.add(searchPanel, BorderLayout.NORTH);
 
         // **Panel de productos más ajustado**
         JPanel productPanel = new JPanel(new GridLayout(0, 2, 5, 5)); // Reduce separación
         JScrollPane scrollPane = new JScrollPane(productPanel);
-        scrollPane.setPreferredSize(new Dimension(600, 300));
+        scrollPane.setPreferredSize(new Dimension(500, 300));
         inputPanel.add(scrollPane, BorderLayout.CENTER);
 
         // Obtener productos disponibles
@@ -203,7 +213,7 @@ public class UIHelpers {
                     .filter(p -> p.getName().toLowerCase().contains(query))
                     .forEach(product -> {
                         JPanel card = new JPanel(new BorderLayout());
-                        card.setPreferredSize(new Dimension(10, 250)); // Tamaño fijo basado en la imagen
+                        card.setPreferredSize(new Dimension(10, 190)); // Tamaño fijo basado en la imagen
                         card.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
                         JLabel imageLabel = new JLabel();
@@ -215,7 +225,7 @@ public class UIHelpers {
                             @Override
                             protected ImageIcon doInBackground() {
                                 try {
-                                    File imageFile = new File("C:\\Users\\Desktop\\Downloads\\a.jpg");
+                                    File imageFile = new File("a.jpg");
                                     BufferedImage img = ImageIO.read(imageFile);
                                     if (img != null) {
                                         Image scaledImg = img.getScaledInstance(189, 189, Image.SCALE_SMOOTH);
@@ -243,7 +253,7 @@ public class UIHelpers {
                         }.execute();
 
                         JLabel nameLabel = new JLabel(product.getName(), SwingConstants.CENTER);
-                        nameLabel.setFont(new Font("Arial", Font.BOLD, 14));
+                        nameLabel.setFont(new Font("Arial", Font.BOLD, 15));
                         card.add(nameLabel, BorderLayout.NORTH);
 
                         JButton addButton = new JButton("Agregar");
@@ -272,9 +282,37 @@ public class UIHelpers {
 
     }
 
-    private static void agregarProductoATabla(JTable table, Producto product, VentaMesaUserManager ventaMesaUserManager) {
-        // Lógica para agregar el producto seleccionado a la tabla
-        //ventaMesaUserManager.agregarProducto(product);
+    public static void agregarProductoATabla(JTable table, Producto producto, VentaMesaUserManager ventaManager) {
+        DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+        boolean productoExistente = false;
+int cantidad=1;
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            String nombreProducto = (String) tableModel.getValueAt(i, 0);
+            if (nombreProducto.equals(producto.getName())) {
+                int cantidadExistente = (int) tableModel.getValueAt(i, 1);
+                int nuevaCantidad = cantidadExistente + cantidad;
+
+                if (nuevaCantidad > producto.getQuantity()) {
+                    JOptionPane.showMessageDialog(null, "No hay suficiente stock para " + producto.getName(), "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                double precioUnitario = producto.getPrice();
+                double nuevoTotal = nuevaCantidad * precioUnitario;
+                tableModel.setValueAt(nuevaCantidad, i, 1);
+                tableModel.setValueAt(nuevoTotal, i, 3);
+                productoExistente = true;
+                break;
+            }
+        }
+
+        if (!productoExistente) {
+            double precioUnitario = producto.getPrice();
+            double totalProducto = precioUnitario * cantidad;
+            tableModel.addRow(new Object[]{producto.getName(), cantidad, precioUnitario, totalProducto, "X"});
+        }
+
+        ventaManager.addProductToCart(producto, cantidad,producto.getPrice());
     }
 
 
@@ -339,8 +377,12 @@ public class UIHelpers {
 
 
 
-    // Renderer personalizado para formato de moneda
+    // Renderer personalizado para formato de moneda con alineación centrada
     public static class CurrencyRenderer extends DefaultTableCellRenderer {
+        public CurrencyRenderer() {
+            setHorizontalAlignment(SwingConstants.CENTER); // Centrar texto en la celda
+        }
+
         @Override
         protected void setValue(Object value) {
             if (value instanceof Number) {
@@ -351,26 +393,38 @@ public class UIHelpers {
     }
 
     public static JTable createProductTable() {
-        String[] columnNames = {PRODUCTO, CANTIDAD, PRECIO_UNITARIO, TOTALP, "Eliminar una unidad"};
+        String[] columnNames = {PRODUCTO, "Cant.", "Unid. $", "Total $", "Quitar unid."};
 
         tableModel = new DefaultTableModel(columnNames, ZERO) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                // Permitir edición en la columna de cantidad y en la columna del botón (FOUR)
-                return column == FOUR;
+                return column == FOUR; // Solo la columna de quitar unidad es editable
             }
         };
 
         JTable table = new JTable(tableModel);
         UnifiedEditorRenderer editorRenderer = new UnifiedEditorRenderer(tableModel, ventaMesaUserManager);
 
-        // Asignar el renderer de moneda a las columnas de PRECIO_UNITARIO y TOTALP
-        table.getColumnModel().getColumn(TWO).setCellRenderer(new CurrencyRenderer()); // PRECIO_UNITARIO
-        table.getColumnModel().getColumn(THREE).setCellRenderer(new CurrencyRenderer()); // TOTALP
+        // Ajustar tamaño de columnas
+        TableColumnModel columnModel = table.getColumnModel();
+        columnModel.getColumn(0).setPreferredWidth(250); // Producto (Más grande)
+        columnModel.getColumn(1).setPreferredWidth(50);  // Cantidad
+        columnModel.getColumn(2).setPreferredWidth(80);  // Precio Unitario
+        columnModel.getColumn(3).setPreferredWidth(80);  // Total
+        columnModel.getColumn(4).setPreferredWidth(80); // Botón Quitar
 
-        // Asignar el editor y renderer personalizados a la columna del botón
-        table.getColumnModel().getColumn(FOUR).setCellRenderer(editorRenderer);
-        table.getColumnModel().getColumn(FOUR).setCellEditor(editorRenderer);
+        // Centrar texto de las columnas Cantidad, Unid. $, y Total $
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+
+        // Aplicar un CurrencyRenderer centrado a las columnas de precios
+        table.getColumnModel().getColumn(2).setCellRenderer(new CurrencyRenderer()); // PRECIO_UNITARIO
+        table.getColumnModel().getColumn(3).setCellRenderer(new CurrencyRenderer()); // TOTALP
+
+        // Asignar editor y renderer personalizados a la columna del botón
+        table.getColumnModel().getColumn(4).setCellRenderer(editorRenderer);
+        table.getColumnModel().getColumn(4).setCellEditor(editorRenderer);
 
         return table;
     }
@@ -386,7 +440,7 @@ public class UIHelpers {
 
 
     public static JButton createAddProductMesaButton(JTable table, JComboBox<String> productComboBox, JSpinner cantidadSpinner, VentaMesaUserManager ventaManager) {
-        JButton agregarProductoButton = new JButton(AGREGAR_PRODUCTO);
+        JButton agregarProductoButton = new JButton("AGREGAR");
 
         agregarProductoButton.addActionListener(e -> {
             try {

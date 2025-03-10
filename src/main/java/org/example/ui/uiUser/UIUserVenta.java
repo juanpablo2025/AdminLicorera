@@ -43,7 +43,7 @@ public class UIUserVenta {
 
 
     public static void showVentaMesaDialog(List<String[]> productos, String mesaID) {
-        ventaMesaDialog = createDialog("Realizar Venta", 1280, 720, new BorderLayout());
+        ventaMesaDialog = createDialog("Realizar Venta", 1366, 720, new BorderLayout());
         ventaMesaDialog.setResizable(true);
 
         // Añadir un WindowListener para detectar el cierre de la ventana
@@ -144,8 +144,8 @@ public class UIUserVenta {
         JPanel inputLista = createInputLista(table, new VentaMesaUserManager());
 
         JPanel inputPanel = createInputPanel(table, new VentaMesaUserManager());
-        ventaMesaDialog.add(inputPanel, BorderLayout.WEST);
-        //ventaMesaDialog.add(inputLista, BorderLayout.NORTH);
+       //ventaMesaDialog.add(inputPanel, BorderLayout.EAST);
+        ventaMesaDialog.add(inputLista, BorderLayout.EAST);
 
         JPanel buttonPanel = createButtonPanelVentaMesa(table, new VentaMesaUserManager(), ventaMesaDialog, mesaID);
 
