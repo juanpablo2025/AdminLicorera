@@ -5,12 +5,19 @@ import org.example.manager.userManager.VentaMesaUserManager;
 import org.example.model.Producto;
 import org.example.ui.uiUser.UnifiedEditorRenderer;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.Font;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -123,7 +130,7 @@ public class UIHelpers {
         return dialog;
     }
 
-    public static JPanel createInputPanel(JTable table, VentaMesaUserManager ventaMesaUserManager) {
+    public static JPanel createInputLista(JTable table, VentaMesaUserManager ventaMesaUserManager) {
         JPanel inputPanel = new JPanel(new GridLayout(3, 2)); // Tres filas, dos columnas
 
         Font labelFont = new Font("Arial", Font.BOLD, 16);
@@ -155,6 +162,124 @@ public class UIHelpers {
 
         return inputPanel;
     }
+
+
+    public static JPanel createInputPanel(JTable table, VentaMesaUserManager ventaMesaUserManager) {
+        JPanel inputPanel = new JPanel(new BorderLayout());
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        Font labelFont = new Font("Arial", Font.BOLD, 16);
+
+        // **Panel de búsqueda con menor espacio**
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 20)); // Reduce espacio
+        JLabel productLabel = new JLabel("Buscar");
+        productLabel.setFont(labelFont);
+        searchPanel.add(productLabel);
+
+        JTextField searchField = new JTextField();
+        searchField.setFont(new Font("Arial", Font.PLAIN, 12));
+        searchField.setPreferredSize(new Dimension(550, 25));
+        searchField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        searchPanel.add(searchField);
+
+        inputPanel.add(searchPanel, BorderLayout.NORTH);
+
+        // **Panel de productos más ajustado**
+        JPanel productPanel = new JPanel(new GridLayout(0, 2, 5, 5)); // Reduce separación
+        JScrollPane scrollPane = new JScrollPane(productPanel);
+        scrollPane.setPreferredSize(new Dimension(600, 300));
+        inputPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // Obtener productos disponibles
+        List<Producto> productList = productoUserManager.getProducts().stream()
+                .filter(producto -> producto.getQuantity() > 0)
+                .toList();
+
+        // Método para actualizar las tarjetas
+        Runnable updateProducts = () -> {
+            productPanel.removeAll();
+            String query = searchField.getText().toLowerCase();
+            productList.stream()
+                    .filter(p -> p.getName().toLowerCase().contains(query))
+                    .forEach(product -> {
+                        JPanel card = new JPanel(new BorderLayout());
+                        card.setPreferredSize(new Dimension(10, 250)); // Tamaño fijo basado en la imagen
+                        card.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+
+                        JLabel imageLabel = new JLabel();
+                        imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                        card.add(imageLabel, BorderLayout.CENTER);
+
+                        // Cargar imagen en segundo plano
+                        new SwingWorker<>() {
+                            @Override
+                            protected ImageIcon doInBackground() {
+                                try {
+                                    File imageFile = new File("C:\\Users\\Desktop\\Downloads\\a.jpg");
+                                    BufferedImage img = ImageIO.read(imageFile);
+                                    if (img != null) {
+                                        Image scaledImg = img.getScaledInstance(189, 189, Image.SCALE_SMOOTH);
+                                        return new ImageIcon(scaledImg);
+                                    }
+                                } catch (IOException e) {
+                                    System.err.println("No se pudo cargar la imagen: " + e.getMessage());
+                                }
+                                return null;
+                            }
+
+                            @Override
+                            protected void done() {
+                                try {
+                                    ImageIcon icon = (ImageIcon) get();
+                                    if (icon != null) {
+                                        imageLabel.setIcon(icon);
+                                    } else {
+                                        imageLabel.setText("Imagen no disponible");
+                                    }
+                                } catch (Exception e) {
+                                    System.err.println("Error al cargar imagen: " + e.getMessage());
+                                }
+                            }
+                        }.execute();
+
+                        JLabel nameLabel = new JLabel(product.getName(), SwingConstants.CENTER);
+                        nameLabel.setFont(new Font("Arial", Font.BOLD, 14));
+                        card.add(nameLabel, BorderLayout.NORTH);
+
+                        JButton addButton = new JButton("Agregar");
+                        addButton.addActionListener(e -> {
+                            agregarProductoATabla(table, product, ventaMesaUserManager);
+                        });
+                        card.add(addButton, BorderLayout.SOUTH);
+
+                        productPanel.add(card);
+                    });
+            productPanel.revalidate();
+            productPanel.repaint();
+        };
+
+        // Listener para actualizar tarjetas dinámicamente
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { updateProducts.run(); }
+            public void removeUpdate(DocumentEvent e) { updateProducts.run(); }
+            public void changedUpdate(DocumentEvent e) { updateProducts.run(); }
+        });
+
+        // Cargar tarjetas iniciales
+        updateProducts.run();
+
+        return inputPanel;
+
+    }
+
+    private static void agregarProductoATabla(JTable table, Producto product, VentaMesaUserManager ventaMesaUserManager) {
+        // Lógica para agregar el producto seleccionado a la tabla
+        //ventaMesaUserManager.agregarProducto(product);
+    }
+
+
+
+
 
     private static JComboBox<String> createProductComboBox() {
         JComboBox<String> productComboBox = new JComboBox<>();
