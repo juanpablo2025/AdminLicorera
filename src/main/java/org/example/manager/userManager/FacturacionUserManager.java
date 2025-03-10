@@ -134,7 +134,7 @@ public class FacturacionUserManager {
                     .setFontSize(SIX)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(new String(new char[25]).replace(SLASH_ZERO, "_"))
+            document.add(new Paragraph(new String(new char[22]).replace(SLASH_ZERO, "_"))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
@@ -205,7 +205,7 @@ public class FacturacionUserManager {
 
             document.add(table);
 
-            document.add(new Paragraph(new String(new char[25]).replace(SLASH_ZERO, "_"))
+            document.add(new Paragraph(new String(new char[22]).replace(SLASH_ZERO, "_"))
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));
@@ -509,7 +509,7 @@ public class FacturacionUserManager {
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(new String(new char[25]).replace('\0', '_'))
+            document.add(new Paragraph(new String(new char[22]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(8)
                     .setMarginBottom(10));
@@ -523,7 +523,7 @@ public class FacturacionUserManager {
                     .setTextAlignment(TextAlignment.LEFT)
                     .setMarginBottom(10));
 
-            document.add(new Paragraph(new String(new char[25]).replace('\0', '_'))
+            document.add(new Paragraph(new String(new char[22]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(8)
                     .setMarginBottom(10));
@@ -541,7 +541,7 @@ public class FacturacionUserManager {
                     .setMarginBottom(5));
 
             // Espacios para el cierre de caja
-            document.add(new Paragraph(new String(new char[18]).replace('\0', '_'))
+            document.add(new Paragraph(new String(new char[15]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(10)
                     .setMarginBottom(5));
@@ -566,7 +566,7 @@ public class FacturacionUserManager {
                         .setFontSize(8)
                         .setMarginBottom(5));
             }
-            document.add(new Paragraph(new String(new char[19]).replace('\0', '_'))
+            document.add(new Paragraph(new String(new char[15]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(10)
                     .setMarginTop(5)
