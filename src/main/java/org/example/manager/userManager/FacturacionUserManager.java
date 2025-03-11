@@ -17,6 +17,11 @@ import org.apache.poi.ss.usermodel.*;
 import org.example.manager.adminManager.ConfigAdminManager;
 import org.example.model.Producto;
 
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 import javax.print.*;
 import javax.swing.*;
 import java.io.File;
@@ -444,12 +449,59 @@ public class FacturacionUserManager {
             // Cerrar el documento
             document.close();
             System.out.println("Archivo PDF de resumen creado: " + nombreArchivo);
+            FacturacionUserManager EmailSender = new FacturacionUserManager();
+            EmailSender.enviarCorreoConResumen("juanpablo_1810dev@hotmail.com", nombreArchivo);
             //abrirPDF(nombreArchivo);
+
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+
+    public static void enviarCorreoConResumen(String destinatario, String archivoAdjunto) {
+        final String remitente = "tu_correo@example.com";  // Cambia esto con tu cuenta SMTP2GO
+        final String clave = "tu_contraseña";  // Contraseña SMTP2GO
+
+        Properties props = new Properties();
+        props.put("mail.smtp.host", "mail.smtp2go.com");
+        props.put("mail.smtp.port", "587");  // También puedes probar con 2525 o 465
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+
+        Session session = Session.getInstance(props, new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(remitente, clave);
+            }
+        });
+
+        try {
+            Message mensaje = new MimeMessage(session);
+            mensaje.setFrom(new InternetAddress(remitente));
+            mensaje.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
+            mensaje.setSubject("Resumen Diario - Facturación");
+
+            MimeBodyPart mensajeTexto = new MimeBodyPart();
+            mensajeTexto.setText("Adjunto encontrarás el resumen diario en PDF.");
+
+            MimeBodyPart adjunto = new MimeBodyPart();
+            adjunto.attachFile(new File(archivoAdjunto));
+
+            Multipart multipart = new MimeMultipart();
+            multipart.addBodyPart(mensajeTexto);
+            multipart.addBodyPart(adjunto);
+
+            mensaje.setContent(multipart);
+
+            Transport.send(mensaje);
+            System.out.println("Correo enviado exitosamente a " + destinatario);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("Error al enviar el correo.");
+        }
+    }
+
 
     public static void guardarTotalFacturadoEnArchivo(double totalFacturado) {
         Map<String, Integer> productosVendidos = obtenerProductosVendidos();

@@ -7,6 +7,7 @@ import org.example.ui.uiUser.UnifiedEditorRenderer;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -19,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -175,60 +177,100 @@ public class UIHelpers {
 
     public static JPanel createInputPanel(JTable table, VentaMesaUserManager ventaMesaUserManager) {
         JPanel inputPanel = new JPanel(new BorderLayout());
-        inputPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+        inputPanel.setPreferredSize(new Dimension(580, 400));
 
-        Font labelFont = new Font("Arial", Font.BOLD, 18);
+        Font labelFont = new Font("Arial", Font.BOLD, 14);
 
-        // **Panel de búsqueda con menor espacio**
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 20)); // Reduce espacio
+        // Panel de búsqueda
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 10));
         JLabel productLabel = new JLabel("BUSCAR");
         productLabel.setFont(labelFont);
         searchPanel.add(productLabel);
 
         JTextField searchField = new JTextField();
-        searchField.setFont(new Font("Arial", Font.PLAIN, 18));
-        searchField.setPreferredSize(new Dimension(450, 30));
-        searchField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        searchField.setFont(new Font("Arial", Font.PLAIN, 14));
+        searchField.setPreferredSize(new Dimension(400, 30));
         searchPanel.add(searchField);
-        searchPanel.setBackground(Color.lightGray);
+        searchPanel.setBackground(Color.LIGHT_GRAY);
 
         inputPanel.add(searchPanel, BorderLayout.NORTH);
 
-        // **Panel de productos más ajustado**
-        JPanel productPanel = new JPanel(new GridLayout(0, 2, 5, 5)); // Reduce separación
+        // Panel de productos dinámico
+        JPanel productPanel = new JPanel(new GridLayout(0, 2, 10, 10));
         JScrollPane scrollPane = new JScrollPane(productPanel);
         scrollPane.setPreferredSize(new Dimension(500, 300));
         inputPanel.add(scrollPane, BorderLayout.CENTER);
 
-        // Obtener productos disponibles
         List<Producto> productList = productoUserManager.getProducts().stream()
                 .filter(producto -> producto.getQuantity() > 0)
                 .toList();
 
-        // Método para actualizar las tarjetas
+        /*Border defaultBorder = BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        );*/
+
+        /*Border hoverBorder = BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.GRAY, 2),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        );*/
+
         Runnable updateProducts = () -> {
             productPanel.removeAll();
             String query = searchField.getText().toLowerCase();
             productList.stream()
                     .filter(p -> p.getName().toLowerCase().contains(query))
                     .forEach(product -> {
-                        JPanel card = new JPanel(new BorderLayout());
-                        card.setPreferredSize(new Dimension(10, 190)); // Tamaño fijo basado en la imagen
-                        card.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                        JPanel card = new JPanel(new BorderLayout()) {
+                            @Override
+                            protected void paintComponent(Graphics g) {
+                                super.paintComponent(g);
+                                Graphics2D g2 = (Graphics2D) g;
+                                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                                g2.setColor(getBackground());
+                                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                            }
+                        };
+                        card.setPreferredSize(new Dimension(200, 220));
+                        /*card.setBorder(defaultBorder);*/
+                        card.setBackground(Color.WHITE);
+                        card.setOpaque(true);
+                        card.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
                         JLabel imageLabel = new JLabel();
                         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
                         card.add(imageLabel, BorderLayout.CENTER);
 
-                        // Cargar imagen en segundo plano
+                        JPanel namePanel = new JPanel() {
+                            @Override
+                            protected void paintComponent(Graphics g) {
+                                super.paintComponent(g);
+                                Graphics2D g2 = (Graphics2D) g;
+                                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                                g2.setColor(Color.BLACK);
+                                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                            }
+                        };
+                        namePanel.setPreferredSize(new Dimension(200, 30));
+                        namePanel.setOpaque(false);
+                        namePanel.setLayout(new BorderLayout());
+
+                        JLabel nameLabel = new JLabel(product.getName(), SwingConstants.CENTER);
+                        nameLabel.setFont(new Font("Arial", Font.BOLD, 14));
+                        nameLabel.setForeground(Color.WHITE);
+                        namePanel.add(nameLabel, BorderLayout.CENTER);
+
+                        card.add(namePanel, BorderLayout.SOUTH);
+
                         new SwingWorker<>() {
                             @Override
                             protected ImageIcon doInBackground() {
                                 try {
-                                    File imageFile = new File("a.jpg");
+                                    File imageFile = new File("C:\\Users\\Desktop\\Downloads/sinfoto.png");
                                     BufferedImage img = ImageIO.read(imageFile);
                                     if (img != null) {
-                                        Image scaledImg = img.getScaledInstance(189, 189, Image.SCALE_SMOOTH);
+                                        Image scaledImg = img.getScaledInstance(220, 180, Image.SCALE_SMOOTH);
                                         return new ImageIcon(scaledImg);
                                     }
                                 } catch (IOException e) {
@@ -252,15 +294,31 @@ public class UIHelpers {
                             }
                         }.execute();
 
-                        JLabel nameLabel = new JLabel(product.getName(), SwingConstants.CENTER);
-                        nameLabel.setFont(new Font("Arial", Font.BOLD, 15));
-                        card.add(nameLabel, BorderLayout.NORTH);
+                        card.addMouseListener(new MouseAdapter() {
+                            @Override
+                            public void mouseEntered(MouseEvent e) {
+                                /*card.setBorder(hoverBorder);*/
+                                card.setBackground(new Color(252, 212, 215));
 
-                        JButton addButton = new JButton("Agregar");
-                        addButton.addActionListener(e -> {
-                            agregarProductoATabla(table, product, ventaMesaUserManager);
+                            }
+
+                            @Override
+                            public void mouseExited(MouseEvent e) {
+                                /*card.setBorder(defaultBorder);*/
+                                card.setBackground(Color.WHITE);
+                            }
+
+                            @Override
+                            public void mousePressed(MouseEvent e) {
+                                card.setBackground(new Color(252, 150, 170));
+                            }
+
+                            @Override
+                            public void mouseReleased(MouseEvent e) {
+                                card.setBackground(new Color(230, 230, 250));
+                                agregarProductoATabla(table, product, ventaMesaUserManager);
+                            }
                         });
-                        card.add(addButton, BorderLayout.SOUTH);
 
                         productPanel.add(card);
                     });
@@ -268,53 +326,82 @@ public class UIHelpers {
             productPanel.repaint();
         };
 
-        // Listener para actualizar tarjetas dinámicamente
         searchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) { updateProducts.run(); }
+            @Override
             public void removeUpdate(DocumentEvent e) { updateProducts.run(); }
+            @Override
             public void changedUpdate(DocumentEvent e) { updateProducts.run(); }
         });
 
-        // Cargar tarjetas iniciales
         updateProducts.run();
-
         return inputPanel;
-
     }
 
+
+
+
     public static void agregarProductoATabla(JTable table, Producto producto, VentaMesaUserManager ventaManager) {
+        if (producto == null) {
+            JOptionPane.showMessageDialog(null, "Producto no válido.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
         boolean productoExistente = false;
-int cantidad=1;
+        int cantidad = 1;
+
+
+
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             String nombreProducto = (String) tableModel.getValueAt(i, 0);
-            if (nombreProducto.equals(producto.getName())) {
-                int cantidadExistente = (int) tableModel.getValueAt(i, 1);
-                int nuevaCantidad = cantidadExistente + cantidad;
 
-                if (nuevaCantidad > producto.getQuantity()) {
-                    JOptionPane.showMessageDialog(null, "No hay suficiente stock para " + producto.getName(), "Error", JOptionPane.ERROR_MESSAGE);
+            if (nombreProducto.equals(producto.getName())) {
+                try {
+                    int cantidadExistente = Integer.parseInt(tableModel.getValueAt(i, 1).toString());
+                    int nuevaCantidad = cantidadExistente + cantidad;
+
+                    if (nuevaCantidad > producto.getQuantity()) {
+                        JOptionPane.showMessageDialog(null, "No hay suficiente stock para " + producto.getName(), "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    double precioUnitario = producto.getPrice();
+                    double nuevoTotal = nuevaCantidad * precioUnitario;
+
+                    tableModel.setValueAt(nuevaCantidad, i, 1);
+                    tableModel.setValueAt(formatearMoneda(precioUnitario), i, 2);
+                    tableModel.setValueAt((nuevoTotal), i, 3);
+
+                    // Actualizar el producto en el carrito de compra
+                    productoUserManager.addProductToCart(producto, nuevaCantidad);
+
+                    productoExistente = true;
+                    break;
+                } catch (ClassCastException | NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Error en la conversión de cantidad.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-
-                double precioUnitario = producto.getPrice();
-                double nuevoTotal = nuevaCantidad * precioUnitario;
-                tableModel.setValueAt(nuevaCantidad, i, 1);
-                tableModel.setValueAt(nuevoTotal, i, 3);
-                productoExistente = true;
-                break;
             }
         }
 
         if (!productoExistente) {
             double precioUnitario = producto.getPrice();
             double totalProducto = precioUnitario * cantidad;
-            tableModel.addRow(new Object[]{producto.getName(), cantidad, precioUnitario, totalProducto, "X"});
+
+            tableModel.addRow(new Object[]{
+                    producto.getName(),
+                    cantidad,
+                    precioUnitario,
+                    totalProducto,
+                    "X"
+            });
+
+            // Agregar nuevo producto al carrito de compra
+            productoUserManager.addProductToCart(producto, cantidad);
         }
-
-        ventaManager.addProductToCart(producto, cantidad,producto.getPrice());
     }
-
 
 
 
