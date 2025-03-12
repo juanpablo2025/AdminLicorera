@@ -146,9 +146,9 @@ public class UIUserVenta {
         ventaMesaDialog.add(tableScrollPane, BorderLayout.CENTER);
         JPanel inputLista = createInputLista(table, new VentaMesaUserManager());
 
-        JPanel inputPanel = createInputPanel(table, new VentaMesaUserManager());
-       ventaMesaDialog.add(inputPanel, BorderLayout.EAST);
-        //ventaMesaDialog.add(inputLista, BorderLayout.EAST);
+       // JPanel inputPanel = createInputPanel(table, new VentaMesaUserManager());
+       //ventaMesaDialog.add(inputPanel, BorderLayout.EAST);
+        ventaMesaDialog.add(inputLista, BorderLayout.EAST);
 
         JPanel buttonPanel = createButtonPanelVentaMesa(table, new VentaMesaUserManager(), ventaMesaDialog, mesaID);
 
@@ -537,7 +537,7 @@ public class UIUserVenta {
 
 
         saveCompraButton.setFont(new Font("Arial", Font.BOLD, 18));
-        saveCompraButton.setForeground(Color.BLACK);
+        saveCompraButton.setForeground(Color.WHITE);
         saveCompraButton.setBackground(new Color(255, 111, 97));
         saveCompraButton.setOpaque(true);
         saveCompraButton.setBorderPainted(false);

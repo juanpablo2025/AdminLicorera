@@ -180,7 +180,7 @@ public class UIHelpers {
         JButton agregarProductoButton = createAddProductMesaButton(table, productComboBox, cantidadSpinner, ventaMesaUserManager);
         agregarProductoButton.setFont(new Font("Arial", Font.BOLD, 16));
         agregarProductoButton.setPreferredSize(new Dimension(430, 100));
-        agregarProductoButton.setBackground(new Color(100, 149, 237));
+        agregarProductoButton.setBackground(new Color(255, 111, 97));
         agregarProductoButton.setForeground(Color.WHITE);
         buttonPanel.add(agregarProductoButton);
 
@@ -471,7 +471,7 @@ public class UIHelpers {
                 }
 
                 productComboBox.setModel(filteredModel);
-                productComboBox.setSelectedItem(input.isEmpty() ? "Busca un producto" : input);
+                productComboBox.setSelectedItem(input.isEmpty() ? "" : input);
                 productComboBox.showPopup();
             }
         });

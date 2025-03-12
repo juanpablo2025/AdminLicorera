@@ -99,7 +99,7 @@ public class ExcelUserManager {
             headerRow.createCell(3).setCellValue("Total");
 
             // Crear 10 mesas por defecto
-            for (int i = 1; i <= 15; i++) {
+            for (int i = 1; i <= 10; i++) {
                 Row row = mesasSheet.createRow(i);
                 row.createCell(0).setCellValue("Mesa " + i);
                 row.createCell(1).setCellValue("Libre");  // Estado inicial

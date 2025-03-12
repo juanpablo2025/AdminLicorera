@@ -225,10 +225,10 @@ public class UIUserMesas {
         ));
 
         JLabel titleLabel = new JLabel("Mesas", JLabel.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 50));
         titleLabel.setForeground(Color.BLACK);
 
-        JPanel gridMesasPanel = new JPanel(new GridLayout(0, 5, 2, 2)); // Espaciado entre mesas
+        JPanel gridMesasPanel = new JPanel(new GridLayout(0, 5, 4, 4)); // Espaciado entre mesas
         gridMesasPanel.setBackground(new Color(220, 200, 180));
         ArrayList<Mesa> mesas = cargarMesasDesdeExcel();
 
