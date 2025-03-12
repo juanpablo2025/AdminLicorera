@@ -151,6 +151,11 @@ public class UIUserMesas {
 
         return mesaPanel;
     }*/
+
+    private static Color fondoPrincipal = new Color(250, 240, 230);
+
+
+
     public static JPanel crearMesaPanel(Mesa mesa, JFrame mainFrame) {
         JPanel mesaPanel = new JPanel(new BorderLayout());
         mesaPanel.setPreferredSize(new Dimension(100, 100));
@@ -199,13 +204,18 @@ public class UIUserMesas {
                         tituloMesa,
                         TitledBorder.CENTER, TitledBorder.TOP
                 );
+                mesaPanel.setBackground(mesa.isOcupada() ? new Color(255, 60, 60) : new Color(0, 201, 87));
+
                 newBorder.setTitleFont(new Font("Arial", Font.BOLD, 28)); // Cambiar fuente a 28
-                mesaPanel.setBorder(newBorder);
+                mesaPanel.setBorder(newBorder);mesaLabel.setForeground(Color.WHITE);
+                newBorder.setTitleColor(Color.white);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 mesaPanel.setBorder(titledBorder);
+                mesaPanel.setBackground(mesa.isOcupada() ? new Color(255, 111, 97) : new Color(168, 230, 207));
+                mesaLabel.setForeground(Color.DARK_GRAY);
             }
         });
 
@@ -215,7 +225,7 @@ public class UIUserMesas {
 
     public static JPanel showPanelMesas(JFrame mainFrame) {
         JPanel mesasPanel = new JPanel(new BorderLayout());
-        mesasPanel.setBackground(new Color(220, 200, 180));
+        mesasPanel.setBackground(fondoPrincipal);
 
 
         // ✅ Agregar borde y margen al panel completo
@@ -229,7 +239,7 @@ public class UIUserMesas {
         titleLabel.setForeground(Color.BLACK);
 
         JPanel gridMesasPanel = new JPanel(new GridLayout(0, 5, 4, 4)); // Espaciado entre mesas
-        gridMesasPanel.setBackground(new Color(220, 200, 180));
+        gridMesasPanel.setBackground(fondoPrincipal);
         ArrayList<Mesa> mesas = cargarMesasDesdeExcel();
 
         for (int i = 0; i < mesas.size(); i++) {

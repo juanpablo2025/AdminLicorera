@@ -4,9 +4,9 @@ import com.formdev.flatlaf.FlatLightLaf;
 import org.example.manager.userManager.FacturacionUserManager;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-import static org.example.manager.userManager.ExcelUserManager.eliminarMesasConIdMayorA10;
 import static org.example.ui.uiAdmin.MainAdminUi.*;
 import static org.example.ui.uiUser.UIUserFacturas.showFacturasDialog;
 import static org.example.ui.uiUser.UIUserGastos.showGastosGeneralesDialog;
@@ -21,7 +21,7 @@ public class UIUserMain {
 
     private static String nombreEmpleado = "Empleado";
 
-
+    private static Color fondoPrincipal = new Color(250, 240, 230);
 
 
     public static void mainUser() {
@@ -56,18 +56,19 @@ public class UIUserMain {
             // Crear barra lateral con el nombre del empleado y el botón "Opciones" al final
             JPanel sidebarPanel = new JPanel(new BorderLayout());
             sidebarPanel.setPreferredSize(new Dimension(250, 600)); // Ancho fijo para la barra lateral
-            sidebarPanel.setBackground(new Color(220, 200, 180)); // Color gris claro para la barra lateral
+            sidebarPanel.setBackground(fondoPrincipal); // Color gris claro para la barra lateral
 
 // Nombre del empleado en la parte superior de la barra lateral
             JLabel employeeLabel = new JLabel(nombreEmpleado, JLabel.CENTER);
             employeeLabel.setFont(new Font("Arial", Font.BOLD, 40)); // Estilo y tamaño de la fuente
-            employeeLabel.setForeground(Color.BLACK); // Color del texto
+            employeeLabel.setForeground(Color.DARK_GRAY); // Color del texto
             sidebarPanel.add(employeeLabel, BorderLayout.BEFORE_LINE_BEGINS); // Colocar en la parte superior
+            employeeLabel.setBorder(new EmptyBorder(0, 30, 0, 0));// Colocar en la parte superior
 
 // Panel para los botones con BoxLayout en Y_AXIS
             JPanel buttonsPanel = new JPanel();
             buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS)); // Alinear en columna
-            buttonsPanel.setBackground(new Color(220, 200, 180));
+            buttonsPanel.setBackground(fondoPrincipal);
             // Ancho fijo para los botones
 // Crear los botones
 

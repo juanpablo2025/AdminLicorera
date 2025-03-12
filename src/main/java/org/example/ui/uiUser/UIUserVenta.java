@@ -77,8 +77,8 @@ public class UIUserVenta {
 
         // Configuración de borde y colores para la tabla
         table.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-        table.setBackground(new Color(224, 224, 224)); // Fondo de la tabla
-        table.setSelectionBackground(new Color(255, 215, 0)); // Color de selección
+        table.setBackground(new Color(250, 240, 230)); // Fondo de la tabla
+        table.setSelectionBackground(new Color(173, 216, 255)); // Color de selección
         table.setSelectionForeground(Color.BLACK); // Color del texto seleccionado
 
         tableModel.setRowCount(0);
@@ -281,11 +281,11 @@ public class UIUserVenta {
         // Efecto hover: cambiar ligeramente el color al pasar el mouse
         confirmarCompraButton.addMouseListener(new MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                confirmarCompraButton.setBackground(new Color(0, 170, 115));
+                confirmarCompraButton.setBackground(new Color(0, 201, 87));
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                confirmarCompraButton.setBackground(new Color(0, 204, 136));
+                confirmarCompraButton.setBackground(new Color(0, 170, 115));
             }
         });
         confirmarCompraButton.addActionListener(e -> {
@@ -553,7 +553,7 @@ public class UIUserVenta {
         // Efecto hover: cambiar ligeramente el color al pasar el mouse
         saveCompraButton.addMouseListener(new MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                saveCompraButton.setBackground(new Color(255, 111, 97).darker());
+                saveCompraButton.setBackground(new Color(255, 60, 60));
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {

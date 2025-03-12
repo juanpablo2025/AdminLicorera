@@ -77,7 +77,7 @@ public class UIHelpers {
         button.setFont(new Font("Arial", Font.BOLD, 16));
         button.setPreferredSize(new Dimension(180, 140));
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setBackground(new Color(220, 40, 40));
+        button.setBackground(new Color(255, 60, 60));
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
         button.setContentAreaFilled(false);
@@ -110,11 +110,11 @@ public class UIHelpers {
 
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(255, 60, 60));
+                button.setBackground(new Color(220, 40, 40));
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(220, 40, 40));
+                button.setBackground(new Color(255, 60, 60));
             }
         });
 
@@ -178,9 +178,9 @@ public class UIHelpers {
         buttonPanel.setPreferredSize(new Dimension(100, 30));
 
         JButton agregarProductoButton = createAddProductMesaButton(table, productComboBox, cantidadSpinner, ventaMesaUserManager);
-        agregarProductoButton.setFont(new Font("Arial", Font.BOLD, 16));
+        agregarProductoButton.setFont(new Font("Arial", Font.BOLD, 30));
         agregarProductoButton.setPreferredSize(new Dimension(430, 100));
-        agregarProductoButton.setBackground(new Color(255, 111, 97));
+        agregarProductoButton.setBackground(new Color(0, 201, 87));
         agregarProductoButton.setForeground(Color.WHITE);
         buttonPanel.add(agregarProductoButton);
 
