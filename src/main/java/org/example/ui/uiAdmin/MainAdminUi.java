@@ -14,7 +14,7 @@ import static org.example.ui.UIHelpers.createButton;
 import static org.example.ui.uiAdmin.GastosAdminUI.showReabastecimientoDialog;
 import static org.example.ui.uiAdmin.UIAdminProducts.showProductosDialog;
 import static org.example.ui.uiUser.UIUserMain.mainUser;
-import static org.example.ui.uiUser.UIUserMesas.showMesas;
+//import static org.example.ui.uiUser.UIUserMesas.showMesas;
 
 public class MainAdminUi {
 

@@ -3,10 +3,12 @@ package org.example.ui;
 import org.example.manager.userManager.ProductoUserManager;
 import org.example.manager.userManager.VentaMesaUserManager;
 import org.example.model.Producto;
+import org.example.ui.uiUser.UIUserMain;
 import org.example.ui.uiUser.UnifiedEditorRenderer;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.AbstractBorder;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -42,83 +44,99 @@ public class UIHelpers {
     private static Component compraDialog;
 
 
+
+
+    static class RoundedBorder extends AbstractBorder {
+        private final int radius;
+
+        public RoundedBorder(int radius) {
+            this.radius = radius;
+        }
+
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(Color.WHITE);
+            g2.drawRoundRect(x, y, width - 1, height - 1, radius, radius);
+        }
+
+        @Override
+        public Insets getBorderInsets(Component c) {
+            return new Insets(radius, radius, radius, radius);
+        }
+
+        @Override
+        public boolean isBorderOpaque() {
+            return false;
+        }
+    }
+
     public static JButton createButton(String text, Icon icon, ActionListener listener) {
         JButton button = new JButton();
+        button.setFont(new Font("Arial", Font.BOLD, 16));
+        button.setPreferredSize(new Dimension(180, 140));
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setBackground(new Color(220, 40, 40));
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setContentAreaFilled(false);
+        button.setUI(new RoundedButtonUI(70));
         button.addActionListener(listener);
 
-        // Estilo del botón
-        button.setFont(new Font("Arial", Font.BOLD, 18));  // Fuente y tamaño
-        button.setFocusPainted(false);                     // Eliminar borde de foco
-        button.setBackground(Color.WHITE);                 // Fondo blanco
-        button.setForeground(Color.DARK_GRAY);             // Texto color gris oscuro
-        button.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));  // Márgenes del botón más delgados
-
-        // Crear un panel para contener el icono y el texto
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));  // Layout vertical
-        panel.setBackground(Color.WHITE);  // Fondo blanco
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setOpaque(false);
 
-        // Crear una etiqueta para el icono
         JLabel iconLabel = new JLabel(icon);
-        iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);  // Centrar icono
-        iconLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
-        // Crear un separador
+        iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        iconLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+
         JSeparator separator = new JSeparator();
-        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2)); // Ancho máximo
-        separator.setForeground(Color.LIGHT_GRAY); // Color de la línea
+        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 5));
+        separator.setForeground(new Color(200, 170, 100));
 
-        separator.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0)); // Margen superior e inferior
-        // Crear una etiqueta para el texto
         JLabel textLabel = new JLabel(text);
-        textLabel.setAlignmentX(Component.CENTER_ALIGNMENT);  // Centrar texto
-        textLabel.setFont(new Font("Arial", Font.BOLD, 30)); // Asegurar que el texto tenga el mismo estilo
+        textLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        textLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        textLabel.setForeground(Color.WHITE);
 
-        // Establecer un margen superior al texto
-        textLabel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0)); // Margen superior de 10 píxeles
-
-        // Ajustar el tamaño preferido del texto
-        textLabel.setPreferredSize(new Dimension(150, 30)); // Cambia las dimensiones según sea necesario
-
-        // Agregar el icono y el separador al panel
         panel.add(iconLabel);
-        panel.add(separator); // Agregar separador
-        panel.add(textLabel); // Agregar texto
+        panel.add(separator);
+        panel.add(textLabel);
 
-        // Agregar el panel al botón
         button.setLayout(new BorderLayout());
         button.add(panel, BorderLayout.CENTER);
 
-        // Sombra para el botón
-        button.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
-                BorderFactory.createEmptyBorder(5, 10, 5, 10) // Márgenes más delgados
-        ));
-
-        // Efecto de "levantarse" al pasar el mouse
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(230, 230, 230));  // Cambiar a gris claro al pasar el mouse
-                button.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
-                        BorderFactory.createEmptyBorder(3, 7, 3, 7)  // Márgenes más delgados
-                ));
-                button.setBounds(button.getX(), button.getY() - 2, button.getWidth(), button.getHeight() + 2); // Levantar efecto
+                button.setBackground(new Color(255, 60, 60));
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(Color.WHITE);  // Volver al color blanco
-                button.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
-                        BorderFactory.createEmptyBorder(5, 10, 5, 10) // Volver a los márgenes originales
-                ));
-                button.setBounds(button.getX(), button.getY() + 2, button.getWidth(), button.getHeight() - 2); // Volver a la posición original
+                button.setBackground(new Color(220, 40, 40));
             }
         });
 
-        // Establecer tamaño preferido del botón
-        button.setPreferredSize(new Dimension(150, 120));  // Dimensiones personalizadas
-
         return button;
+    }
+
+    static class RoundedButtonUI extends javax.swing.plaf.basic.BasicButtonUI {
+        private final int radius;
+
+        public RoundedButtonUI(int radius) {
+            this.radius = radius;
+        }
+
+        @Override
+        public void paint(Graphics g, JComponent c) {
+            Graphics2D g2 = (Graphics2D) g;
+            JButton button = (JButton) c;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(button.getBackground());
+            g2.fillRoundRect(0, 0, button.getWidth(), button.getHeight(), radius, radius);
+            super.paint(g, c);
+        }
     }
 
     public static JTextField createTextField() {
@@ -132,7 +150,6 @@ public class UIHelpers {
         dialog.setLayout(layout);
         return dialog;
     }
-
     public static JPanel createInputLista(JTable table, VentaMesaUserManager ventaMesaUserManager) {
         JPanel inputPanel = new JPanel(new BorderLayout()); // Mejor distribución
         inputPanel.setPreferredSize(new Dimension(450, 125)); // Ajuste de tamaño correcto
@@ -190,7 +207,7 @@ public class UIHelpers {
 
         JTextField searchField = new JTextField();
         searchField.setFont(new Font("Arial", Font.PLAIN, 14));
-        searchField.setPreferredSize(new Dimension(400, 30));
+        searchField.setPreferredSize(new Dimension(490, 30));
         searchPanel.add(searchField);
         searchPanel.setBackground(Color.LIGHT_GRAY);
 
@@ -262,7 +279,7 @@ public class UIHelpers {
                         namePanel.add(nameLabel, BorderLayout.CENTER);
 
                         card.add(namePanel, BorderLayout.SOUTH);
-
+                        card.setBackground(new Color(255, 215, 0));
                         new SwingWorker<>() {
                             @Override
                             protected ImageIcon doInBackground() {
@@ -298,14 +315,15 @@ public class UIHelpers {
                             @Override
                             public void mouseEntered(MouseEvent e) {
                                 /*card.setBorder(hoverBorder);*/
-                                card.setBackground(new Color(252, 212, 215));
+                                card.setBackground(new Color(255, 111, 97));
 
                             }
 
                             @Override
                             public void mouseExited(MouseEvent e) {
                                 /*card.setBorder(defaultBorder);*/
-                                card.setBackground(Color.WHITE);
+                                card.setBackground(new Color(255, 215, 0));
+
                             }
 
                             @Override

@@ -16,6 +16,7 @@ import com.itextpdf.layout.properties.UnitValue;
 import org.apache.poi.ss.usermodel.*;
 import org.example.manager.adminManager.ConfigAdminManager;
 import org.example.model.Producto;
+import org.example.utils.FormatterHelpers;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -24,10 +25,18 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.print.*;
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.sql.Time;
 import java.text.NumberFormat;
 import java.time.LocalDate;
@@ -35,6 +44,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
 
 import static org.example.manager.userManager.ExcelUserManager.*;
 import static org.example.manager.userManager.PrintUserManager.abrirPDF;
@@ -44,10 +54,10 @@ import static org.example.utils.FormatterHelpers.formatearMoneda;
 
 public class FacturacionUserManager {
 
-    private ExcelUserManager excelUserManager;
+    private static ExcelUserManager excelUserManager = new ExcelUserManager(); // Inicializar directamente
 
-    public FacturacionUserManager() {
-        this.excelUserManager = new ExcelUserManager();
+    public static void setExcelUserManager(ExcelUserManager manager) {
+        excelUserManager = manager;
     }
 
     /**
@@ -56,7 +66,7 @@ public class FacturacionUserManager {
      * @param input Texto ingresado por el usuario.
      * @return true si la palabra es "Facturar", false en caso contrario.
      */
-    public boolean verificarFacturacion(String input) {
+    public static boolean verificarFacturacion(String input) {
         return "Facturar".equals(input);
     }
 
@@ -64,7 +74,7 @@ public class FacturacionUserManager {
      * Realiza la facturación y limpieza de los datos.
      * Luego, termina la ejecución del programa.
      */
-    public void facturarYSalir() {
+    public static void facturarYSalir() {
         excelUserManager.facturarYLimpiar();
         eliminarMesasConIdMayorA10();
         System.exit(ZERO);
@@ -74,7 +84,7 @@ public class FacturacionUserManager {
     /**
      * Muestra un mensaje de error si la palabra ingresada es incorrecta.
      */
-    public void mostrarErrorFacturacion() {
+    public static void mostrarErrorFacturacion() {
         javax.swing.JOptionPane.showMessageDialog(null, ERROR_MENU, ERROR_TITLE, javax.swing.JOptionPane.ERROR_MESSAGE);
     }
 
@@ -450,17 +460,23 @@ public class FacturacionUserManager {
             document.close();
             System.out.println("Archivo PDF de resumen creado: " + nombreArchivo);
             FacturacionUserManager EmailSender = new FacturacionUserManager();
-            EmailSender.enviarCorreoConResumen("juanpablo_1810dev@hotmail.com", nombreArchivo);
+            //EmailSender.enviarCorreoConResumen("juanpablo_1810dev@hotmail.com", nombreArchivo);
             //abrirPDF(nombreArchivo);
-
+            FormatterHelpers.formatearMoneda(totalVentas);
+            String numeroDestino = "+573146704316";  // Número al que quieres enviar el mensaje
+            String mensaje = "¡Hola! [Licorera la 70] ha generado la liquidacíon de hoy, Por un total de: $ " + FormatterHelpers.formatearMoneda(totalVentas)+ " Pesos"+"\n"+ "Puedes ver los detalle en los resumen adjuntos en Google Drive. https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
+            enviarMensaje(numeroDestino,mensaje);
 
         } catch (IOException e) {
             e.printStackTrace();
+
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 
 
-    public static void enviarCorreoConResumen(String destinatario, String archivoAdjunto) {
+   /* public static void enviarCorreoConResumen(String destinatario, String archivoAdjunto) {
         final String remitente = "tu_correo@example.com";  // Cambia esto con tu cuenta SMTP2GO
         final String clave = "tu_contraseña";  // Contraseña SMTP2GO
 
@@ -501,7 +517,7 @@ public class FacturacionUserManager {
             System.out.println("Error al enviar el correo.");
         }
     }
-
+*/
 
     public static void guardarTotalFacturadoEnArchivo(double totalFacturado) {
         Map<String, Integer> productosVendidos = obtenerProductosVendidos();
@@ -778,4 +794,32 @@ public class FacturacionUserManager {
             e.printStackTrace();
         }
     }
+
+
+    private static final String INSTANCE_ID = "instance110095";  // Reemplazar con tu instancia de UltraMsg
+    private static final String TOKEN = "kegfplgxcktgdbya";  // Reemplazar con tu token de UltraMsg
+    private static final String API_URL = "https://api.ultramsg.com/" + INSTANCE_ID + "/messages/chat";
+
+
+
+
+
+
+    public static void enviarMensaje(String numero, String mensaje) throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+        String data = "token=" + TOKEN +
+                "&to=" + URLEncoder.encode("+" + numero, StandardCharsets.UTF_8) +
+                "&body=" + URLEncoder.encode(mensaje, StandardCharsets.UTF_8);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_URL))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(data))
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        System.out.println("Respuesta del servidor: " + response.body());
+    }
 }
+

@@ -10,7 +10,7 @@ import java.awt.event.WindowEvent;
 import static org.example.ui.UIHelpers.createButton;
 import static org.example.ui.UIHelpers.createDialog;
 import static org.example.ui.uiUser.UIUserMain.mainUser;
-import static org.example.ui.uiUser.UIUserMesas.showMesas;
+//import static org.example.ui.uiUser.UIUserMesas.showMesas;
 
 public class UIUserGastos {
 

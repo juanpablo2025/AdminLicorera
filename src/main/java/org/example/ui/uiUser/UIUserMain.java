@@ -7,13 +7,12 @@ import javax.swing.*;
 import java.awt.*;
 
 import static org.example.manager.userManager.ExcelUserManager.eliminarMesasConIdMayorA10;
-import static org.example.manager.userManager.PrintUserManager.abrirCajaRegistradora;
-import static org.example.ui.uiAdmin.MainAdminUi.adminPassword;
-import static org.example.ui.uiAdmin.MainAdminUi.mainAdmin;
+import static org.example.ui.uiAdmin.MainAdminUi.*;
 import static org.example.ui.uiUser.UIUserFacturas.showFacturasDialog;
 import static org.example.ui.uiUser.UIUserGastos.showGastosGeneralesDialog;
 import static org.example.ui.UIHelpers.createButton;
-import static org.example.ui.uiUser.UIUserMesas.showMesas;
+//import static org.example.ui.uiUser.UIUserMesas.showMesas;
+import static org.example.ui.uiUser.UIUserMesas.showPanelMesas;
 import static org.example.ui.uiUser.UIUserProductList.showListProductsDialog;
 
 public class UIUserMain {
@@ -23,24 +22,28 @@ public class UIUserMain {
     private static String nombreEmpleado = "Empleado";
 
 
+
+
     public static void mainUser() {
         try {
             // Aplicar FlatLaf para un estilo moderno
             UIManager.setLookAndFeel(new FlatLightLaf());
 
             // Crear ventana principal
-            JFrame frame = new JFrame("Ventas");
+            JFrame frame = new JFrame("Licorera LA 70");
             frame.setSize(1280, 720); // Tamaño más grande para incluir la barra lateral
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
             // Crear un panel principal con un fondo gris claro
             JPanel mainPanel = new JPanel(new BorderLayout());
             mainPanel.setBackground(new Color(245, 245, 245)); // Fondo gris claro
 
-            // Crear el título estilizado para la parte superior
-            JLabel titleLabel = new JLabel("Ventas", JLabel.CENTER);
-            titleLabel.setFont(new Font("Arial", Font.BOLD, 30)); // Estilo y tamaño de la fuente
-            titleLabel.setForeground(new Color(50, 50, 50)); // Color del texto
+            /*// Crear el título estilizado para la parte superior
+            JLabel titleLabel = new JLabel("Licorera LA 70", JLabel.RIGHT);
+            titleLabel.setFont(new Font("Arial", Font.BOLD, 40)); // Estilo y tamaño de la fuente
+            titleLabel.setForeground(Color.RED); // Color del texto*/
+
 
             // Panel central con botones 2x2
             JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 10, 10)); // Grid 2x2
@@ -48,42 +51,154 @@ public class UIUserMain {
             buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Margen
 
             // Crear y añadir los botones iniciales
-            addInitialButtons(buttonPanel, frame);
+            //addInitialButtons(buttonPanel, frame);
 
             // Crear barra lateral con el nombre del empleado y el botón "Opciones" al final
             JPanel sidebarPanel = new JPanel(new BorderLayout());
             sidebarPanel.setPreferredSize(new Dimension(250, 600)); // Ancho fijo para la barra lateral
-            sidebarPanel.setBackground(new Color(235, 235, 235)); // Color gris claro para la barra lateral
+            sidebarPanel.setBackground(new Color(220, 200, 180)); // Color gris claro para la barra lateral
 
-            // Nombre del empleado en la parte superior de la barra lateral
+// Nombre del empleado en la parte superior de la barra lateral
             JLabel employeeLabel = new JLabel(nombreEmpleado, JLabel.CENTER);
-            employeeLabel.setFont(new Font("Arial", Font.BOLD, 20)); // Estilo y tamaño de la fuente
-            employeeLabel.setForeground(new Color(50, 50, 50)); // Color del texto
-            sidebarPanel.add(employeeLabel, BorderLayout.NORTH); // Colocar en la parte superior
+            employeeLabel.setFont(new Font("Arial", Font.BOLD, 40)); // Estilo y tamaño de la fuente
+            employeeLabel.setForeground(Color.BLACK); // Color del texto
+            sidebarPanel.add(employeeLabel, BorderLayout.BEFORE_LINE_BEGINS); // Colocar en la parte superior
 
-            // Botón "Más Opciones"
+// Panel para los botones con BoxLayout en Y_AXIS
+            JPanel buttonsPanel = new JPanel();
+            buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS)); // Alinear en columna
+            buttonsPanel.setBackground(new Color(220, 200, 180));
+            // Ancho fijo para los botones
+// Crear los botones
+
+            // Cargar la imagen desde la ruta especificada
+            ImageIcon originalIcon = new ImageIcon((UIUserMain.class.getResource("/icons/mesa-redonda.png")));
+            ImageIcon originalProductsIcon = new ImageIcon((UIUserMain.class.getResource("/icons/lista-de_productos.png")));
+            // Redimensionar la imagen
+            Image imgProduct = originalProductsIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+            ImageIcon productsIcon = new ImageIcon(imgProduct);
+
+            // Botón "Lista de Productos" - Abre la lista de productos
+            JButton listaProductosButton = createButton("Lista de Productos", productsIcon, e -> {
+
+
+                showListProductsDialog();
+                frame.dispose();
+            });
+
+            ImageIcon originalGastosIcon = new ImageIcon((UIUserMain.class.getResource("/icons/Gastos.png")));
+            // Redimensionar la imagen
+            Image imgGastos = originalGastosIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+            ImageIcon GastosIcon = new ImageIcon(imgGastos);
+
+            JButton gastosButton = createButton("Gastos",  GastosIcon, e -> {
+                showGastosGeneralesDialog();
+                frame.dispose();
+            });
+
+
+
+            ImageIcon originalFacturarIcon = new ImageIcon((UIUserMain.class.getResource("/icons/Facturar.png")));
+            // Redimensionar la imagen
+            Image imgfacturar = originalFacturarIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+
+            ImageIcon facturarIcon = new ImageIcon(imgfacturar);
+
+            JButton salirButton = createButton("Finalizar Día", facturarIcon, e -> {
+                String input = JOptionPane.showInputDialog(null, "Por favor escribe 'Facturar'", "Confirmar Facturación", JOptionPane.QUESTION_MESSAGE);
+                if (FacturacionUserManager.verificarFacturacion(input)) {
+                    FacturacionUserManager.facturarYSalir();
+
+                } else {
+                    FacturacionUserManager.mostrarErrorFacturacion();
+                }
+            });
+
+
+            ImageIcon originalCajaRegistradoraIcon = new ImageIcon((UIUserMain.class.getResource("/icons/admin/beneficios.png")));
+             //Redimensionar la imagen
+            Image imgCajaRegistradora = originalCajaRegistradoraIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+            ImageIcon cajaRegistradoraIcon = new ImageIcon(imgCajaRegistradora);
+
+            JButton moreOptionsButton =  createButton("Re-imprimir Facturas", cajaRegistradoraIcon, e -> {
+                showFacturasDialog(); // Llamar a la función deseada
+                frame.dispose();
+            });
+
+            ImageIcon originalAdminIcon = new ImageIcon((UIUserMain.class.getResource("/icons/obrero.png")));
+            // Redimensionar la imagen
+            Image imgAdmin = originalAdminIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
+            ImageIcon adminIcon = new ImageIcon(imgAdmin);
+
+            JButton moreOptionsButtons =  createButton("Administrador",adminIcon, e -> {
+                adminPassword(); // Llamar a la función deseada
+                frame.dispose();
+            });
+
+
+// Configuración de fuente y tamaño uniforme para todos los botones
+            Font buttonFont = new Font("Arial", Font.BOLD, 16);
+            Dimension buttonSize = new Dimension(150, 50);
+
+// Función auxiliar para aplicar estilo a los botones
+
+            listaProductosButton.setFont(buttonFont);
+
+
+// Aplicar estilos a todos los botones
+
+
+
+
+
+// Agregar botones al panel
+
+
+            buttonsPanel.add(Box.createVerticalStrut(8));
+            buttonsPanel.add(listaProductosButton);
+            buttonsPanel.add(Box.createVerticalStrut(8));
+            buttonsPanel.add(gastosButton);
+            buttonsPanel.add(Box.createVerticalStrut(8));
+            buttonsPanel.add(moreOptionsButton);
+            buttonsPanel.add(Box.createVerticalStrut(8));
+            buttonsPanel.add(salirButton);
+            buttonsPanel.add(Box.createVerticalStrut(8));
+            buttonsPanel.add(moreOptionsButtons);
+            buttonsPanel.add(Box.createVerticalGlue()); // Espacio flexible
+
+
+
+
+        /*    // Botón "Más Opciones"
 // Crear un nuevo botón "Opciones"
-            JButton moreOptionsButton = new JButton("Opciones");
+            JButton MesasButton = new JButton("Mesas");
 
 // Agregar el ActionListener al botón
-            moreOptionsButton.addActionListener(e -> {
+            MesasButton.addActionListener(e -> {
                 toggleButtonOptions(buttonPanel, frame); // Llamar a la función deseada
-            });            moreOptionsButton.setFont(new Font("Arial", Font.BOLD, 16));
-            moreOptionsButton.setPreferredSize(new Dimension(150, 50));
+            });            MesasButton.setFont(new Font("Arial", Font.BOLD, 16));
+            MesasButton.setPreferredSize(new Dimension(150, 50));
 
             // Colocar el botón "Opciones" en la parte inferior de la barra lateral
-            sidebarPanel.add(moreOptionsButton, BorderLayout.SOUTH);
+            sidebarPanel.add(MesasButton, BorderLayout.NORTH);*/
+
+
 
             // Añadir el panel de botones y la barra lateral al panel principal
-            mainPanel.add(titleLabel, BorderLayout.NORTH);
-            mainPanel.add(buttonPanel, BorderLayout.CENTER); // Panel de botones al centro
+            /*mainPanel.add(titleLabel, BorderLayout.NORTH);*/
+            mainPanel.add(showPanelMesas(frame), BorderLayout.CENTER); // Panel de botones al centro
             mainPanel.add(sidebarPanel, BorderLayout.WEST);  // Barra lateral a la izquierda
+// Agregar el panel de botones al centro de la barra lateral
 
+
+            sidebarPanel.add(buttonsPanel, BorderLayout.SOUTH);
             // Añadir el panel principal a la ventana
             frame.add(mainPanel);
 
             // Centrar la ventana
             frame.setLocationRelativeTo(null);
+
+
 
             // Mostrar la ventana principal
             frame.setVisible(true);
@@ -92,7 +207,7 @@ public class UIUserMain {
         }
     }
 
-    // Método para agregar los botones iniciales
+   /* // Método para agregar los botones iniciales
     private static void addInitialButtons(JPanel buttonPanel, JFrame frame) {
         FacturacionUserManager facturacionUserManager = new FacturacionUserManager(); // Instancia de FacturacionManager
         // Cargar la imagen desde la ruta especificada
@@ -117,7 +232,7 @@ public class UIUserMain {
         // Redimensionar la imagen
         Image img = originalIcon.getImage().getScaledInstance(170, 170, Image.SCALE_SMOOTH); // Cambia 80, 80 a lo que necesites
         ImageIcon mesaIcon = new ImageIcon(img);
-        JButton mesasButton = createButton("Mesas",mesaIcon , e -> { showMesas(); frame.dispose(); });
+        JButton mesasButton = createButton("Mesas",mesaIcon , e -> { mainUser(); frame.dispose(); });
 
         ImageIcon originalFacturarIcon = new ImageIcon((UIUserMain.class.getResource("/icons/Facturar.png")));
 
@@ -204,6 +319,6 @@ public class UIUserMain {
 
         // Actualizar el frame para reflejar los cambios visuales
         frame.repaint();
-    }
+    }*/
 
 }

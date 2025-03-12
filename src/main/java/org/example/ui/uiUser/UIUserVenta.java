@@ -15,6 +15,7 @@ import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.event.MouseAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
@@ -31,7 +32,8 @@ import static org.example.manager.userManager.ExcelUserManager.cargarProductosMe
 import static org.example.manager.userManager.FacturacionUserManager.generarFacturadeCompra;
 import static org.example.manager.userManager.ProductoUserManager.getProductListWithQuantities;
 import static org.example.ui.UIHelpers.*;
-import static org.example.ui.uiUser.UIUserMesas.showMesas;
+//import static org.example.ui.uiUser.UIUserMesas.showMesas;
+import static org.example.ui.uiUser.UIUserMain.mainUser;
 import static org.example.utils.Constants.*;
 import static org.example.utils.Constants.ERROR_TITLE;
 
@@ -50,7 +52,7 @@ public class UIUserVenta {
         ventaMesaDialog.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                showMesas();
+                mainUser(); // Si hay registro, abrir el panel de usuario
             }
         });
 
@@ -59,6 +61,7 @@ public class UIUserVenta {
 
         // Crear la tabla de productos usando createProductTable
         JTable table = createProductTable();
+
         DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
 
         // Establecer la fuente y el tamaño de la tabla
@@ -74,8 +77,8 @@ public class UIUserVenta {
 
         // Configuración de borde y colores para la tabla
         table.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-        table.setBackground(Color.WHITE); // Fondo de la tabla
-        table.setSelectionBackground(Color.CYAN); // Color de selección
+        table.setBackground(new Color(224, 224, 224)); // Fondo de la tabla
+        table.setSelectionBackground(new Color(255, 215, 0)); // Color de selección
         table.setSelectionForeground(Color.BLACK); // Color del texto seleccionado
 
         tableModel.setRowCount(0);
@@ -258,6 +261,33 @@ public class UIUserVenta {
         JButton confirmarCompraButton = new JButton(CONFIRM_PURCHASE);
 
 
+
+
+
+        confirmarCompraButton.setFont(new Font("Arial", Font.BOLD, 18));
+        confirmarCompraButton.setForeground(Color.WHITE);
+        confirmarCompraButton.setBackground(new Color(0, 204, 136));
+        confirmarCompraButton.setOpaque(true);
+        confirmarCompraButton.setBorderPainted(false);
+        confirmarCompraButton.setFocusPainted(false);
+        confirmarCompraButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        confirmarCompraButton.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
+                BorderFactory.createEmptyBorder(10, 20, 10, 20)
+        ));
+
+
+
+        // Efecto hover: cambiar ligeramente el color al pasar el mouse
+        confirmarCompraButton.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                confirmarCompraButton.setBackground(new Color(0, 170, 115));
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                confirmarCompraButton.setBackground(new Color(0, 204, 136));
+            }
+        });
         confirmarCompraButton.addActionListener(e -> {
             try {
 
@@ -492,7 +522,7 @@ public class UIUserVenta {
             // Limpiar el carrito antes de iniciar el proceso de compra de la mesa actual
             productoUserManager.limpiarCarrito();
             compraDialog.dispose();
-            showMesas();
+            mainUser();
         });
 
         return confirmarCompraButton;
@@ -504,6 +534,32 @@ public class UIUserVenta {
 
     public static JButton createSavePurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, String mesaID, JTable productosTable) {
         JButton saveCompraButton = new JButton("Guardar Compra");
+
+
+        saveCompraButton.setFont(new Font("Arial", Font.BOLD, 18));
+        saveCompraButton.setForeground(Color.BLACK);
+        saveCompraButton.setBackground(new Color(255, 111, 97));
+        saveCompraButton.setOpaque(true);
+        saveCompraButton.setBorderPainted(false);
+        saveCompraButton.setFocusPainted(false);
+        saveCompraButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        saveCompraButton.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
+                BorderFactory.createEmptyBorder(10, 20, 10, 20)
+        ));
+
+
+
+        // Efecto hover: cambiar ligeramente el color al pasar el mouse
+        saveCompraButton.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                saveCompraButton.setBackground(new Color(255, 111, 97).darker());
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                saveCompraButton.setBackground(new Color(255, 111, 97));
+            }
+        });
 
         saveCompraButton.addActionListener(e -> {
             try {
@@ -517,7 +573,7 @@ public class UIUserVenta {
                     productoUserManager.limpiarCarrito();  // Limpia el carrito de esta mesa
                     JOptionPane.showMessageDialog(null, "La mesa " + mesaID + " ha sido limpiada.");
                     ventaMesaDialog.dispose();
-                    showMesas();
+                    mainUser();
                     return; // Salir después de limpiar la mesa
                 }
 
@@ -618,7 +674,7 @@ public class UIUserVenta {
                         tableModel.setRowCount(0); // Limpiar la tabla
                         productoUserManager.limpiarCarrito(); // Limpia el carrito de la mesa después de guardar la compra
                         ventaMesaDialog.dispose();
-                        showMesas();
+                        mainUser();
 
                     } else {
                         JOptionPane.showMessageDialog(null, "Hoja 'mesas' no encontrada en el archivo Excel.", "Error", JOptionPane.ERROR_MESSAGE);

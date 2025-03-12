@@ -99,7 +99,7 @@ public class ExcelUserManager {
             headerRow.createCell(3).setCellValue("Total");
 
             // Crear 10 mesas por defecto
-            for (int i = 1; i <= 10; i++) {
+            for (int i = 1; i <= 15; i++) {
                 Row row = mesasSheet.createRow(i);
                 row.createCell(0).setCellValue("Mesa " + i);
                 row.createCell(1).setCellValue("Libre");  // Estado inicial
@@ -774,7 +774,7 @@ public class ExcelUserManager {
                             if (mesaID.startsWith("Mesa ")) {
                                 // Extraer el número después de "Mesa "
                                 int idNumero = Integer.parseInt(mesaID.split(" ")[1]);
-                                if (idNumero > 10) {
+                                if (idNumero > 15) {
                                     mesasSheet.removeRow(row); // Eliminar la fila de la mesa
                                     // Mover el resto de las filas hacia arriba
                                     for (int j = i + 1; j <= mesasSheet.getLastRowNum(); j++) {
