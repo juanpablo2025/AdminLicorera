@@ -193,32 +193,39 @@ public class MainAdminUi {
     }
 
     public static void adminPassword() {
+        JPasswordField passwordField = new JPasswordField();
+        passwordField.setEchoChar('*'); // Oculta la contraseña con '*'
 
-            // Crear un campo de contraseña
-            JPasswordField passwordField = new JPasswordField();
-            passwordField.setEchoChar('*'); // Usar '*' como carácter para ocultar el texto
+        // Mostrar cuadro de diálogo con opciones OK y CANCEL
+        int option = JOptionPane.showConfirmDialog(null, passwordField,
+                "Ingrese la contraseña del Administrador:",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 
-            // Mostrar el cuadro de diálogo personalizado con el campo de contraseña
-            int option = JOptionPane.showConfirmDialog(null, passwordField, "Ingrese la contraseña del Administrador:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+        // Si el usuario presionó "OK"
+        if (option == JOptionPane.OK_OPTION) {
+            String inputPassword = new String(passwordField.getPassword());
 
-            // Obtener la contraseña ingresada
-            if (option == JOptionPane.OK_OPTION) {
-                String inputPassword = new String(passwordField.getPassword());
+            if (inputPassword.equals("admin2024")) {
+                showAdminPanel(); // Abrir panel de administrador si la contraseña es correcta
+            } else {
+                JOptionPane.showMessageDialog(null,
+                        "Contraseña incorrecta. Acceso denegado.",
+                        "Error de Autenticación", JOptionPane.ERROR_MESSAGE);
+                redirigirUsuario();
+            }
+        } else {
+            // Si el usuario presionó "Cancelar", redirigirlo correctamente
+            redirigirUsuario();
+        }
+    }
 
-                // Verificar si la contraseña es correcta
-                if (inputPassword.equals("admin2024")) {
-                    // Si la contraseña es correcta, mostrar el panel de administrador
-                    showAdminPanel();
-                } else {
-                    // Mostrar un mensaje de error si la contraseña es incorrecta
-                    JOptionPane.showMessageDialog(null, "Contraseña incorrecta. Acceso denegado.", "Error de Autenticación", JOptionPane.ERROR_MESSAGE);
-                    if (hayRegistroDeHoy()) {
-                        mainUser(); // Si hay registro, abrir el panel de usuario
-                    } else {
-                        mostrarLogin(); // Si no, mostrar el login
-                    }
-                }} // Lanzar el panel de administrador
-
+    // Método para manejar la redirección después de un intento fallido o cancelación
+    private static void redirigirUsuario() {
+        if (hayRegistroDeHoy()) {
+            mainUser(); // Si hay registro, abrir el panel de usuario
+        } else {
+            mostrarLogin(); // Si no hay registro, mostrar la pantalla de login
+        }
     }
 
 }
