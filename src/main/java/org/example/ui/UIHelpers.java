@@ -564,7 +564,7 @@ public class UIHelpers {
                 }
 
                 Producto producto = productoUserManager.getProductByName(selectedProduct);
-                if (producto.getQuantity() < cantidad) {
+                if ( producto.getQuantity() < cantidad) {
                     JOptionPane.showMessageDialog(null, "No hay suficiente stock para el producto: " + selectedProduct, "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }

@@ -56,7 +56,7 @@ public class ExcelUserManager {
 
 
     // Método para crear el archivo Excel si no existe
-    private static void createExcelFile() {
+    public static void createExcelFile() {
         Workbook workbook = new XSSFWorkbook();
 
         // Crear hoja de productos
@@ -865,11 +865,11 @@ public class ExcelUserManager {
         String horaInicio = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
         String fechaInicio = now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 
-        // Verificar si el archivo existe; si no, crear uno nuevo
+        /* Verificar si el archivo existe; si no, crear uno nuevo
         File file = new File(FILE_PATH);
         if (!file.exists()) {
-            crearArchivoSiNoExiste(); // Llama al método que crea el archivo si no existe
-        }
+            createExcelFile(); // Llama al método que crea el archivo si no existe
+        }*/
 
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {

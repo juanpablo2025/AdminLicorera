@@ -17,8 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static java.awt.Component.CENTER_ALIGNMENT;
-import static org.example.manager.userManager.ExcelUserManager.hayRegistroDeHoy;
-import static org.example.manager.userManager.ExcelUserManager.registrarDia;
+import static org.example.manager.userManager.ExcelUserManager.*;
 import static org.example.manager.userManager.MainUserManager.crearDirectorios;
 import static org.example.ui.uiAdmin.MainAdminUi.*;
 import static org.example.ui.uiUser.UIUserMain.mainUser;
@@ -30,7 +29,11 @@ public class Main {
     public static void main(String[] args) {
         crearDirectorios();
 
-
+// Verificar si el archivo existe; si no, crear uno nuevo
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            createExcelFile();  // Llama al método que crea el archivo si no existe
+        }
         if (hayRegistroDeHoy()) {
             mainUser(); // Si hay registro, abrir el panel de usuario
         } else {
