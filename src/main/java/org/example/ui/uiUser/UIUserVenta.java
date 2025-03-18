@@ -19,6 +19,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -257,7 +258,7 @@ public class UIUserVenta {
     }
 
 
-    public static JButton createConfirmPurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID) {
+    public static JButton createConfirmPurchaseMesaButtons(VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID) {
         JButton confirmarCompraButton = new JButton(CONFIRM_PURCHASE);
 
 
@@ -333,11 +334,11 @@ public class UIUserVenta {
                     int cantidadAdicional = entrada.getValue();
                     Producto producto = productoUserManager.getProductByName(nombreProducto);
 
-                    if (producto == null || producto.getQuantity() < cantidadAdicional) {
+                  /*  if (producto == null || producto.getQuantity() < cantidadAdicional) {
                         JOptionPane.showMessageDialog(compraDialog, "No hay suficiente stock para " + nombreProducto, "Error de stock", JOptionPane.ERROR_MESSAGE);
                         compraDialog.dispose();
                         return;
-                    }
+                    }*/
 
                     // Actualizar la cantidad total del producto
                     int cantidadTotal = cantidadTotalPorProducto.getOrDefault(nombreProducto, 0) + cantidadAdicional;
@@ -509,7 +510,7 @@ public class UIUserVenta {
                 JOptionPane.showMessageDialog(compraDialog, PURCHASE_SUCCEDED + " " + "por un total de: $ " + formatCOP.format(total)+ " Pesos");
 
                 // Actualizar las cantidades en el stock de Excel
-                actualizarCantidadStockExcel(productosComprados);
+               // actualizarCantidadStockExcel(productosComprados, mesaID);
 
 
 
@@ -523,6 +524,249 @@ public class UIUserVenta {
             productoUserManager.limpiarCarrito();
             compraDialog.dispose();
             mainUser();
+        });
+
+        return confirmarCompraButton;
+    }
+
+    public static JButton createConfirmPurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID) {
+        JButton confirmarCompraButton = new JButton(CONFIRM_PURCHASE);
+
+        confirmarCompraButton.setFont(new Font("Arial", Font.BOLD, 18));
+        confirmarCompraButton.setForeground(Color.WHITE);
+        confirmarCompraButton.setBackground(new Color(0, 204, 136));
+        confirmarCompraButton.setOpaque(true);
+        confirmarCompraButton.setBorderPainted(false);
+        confirmarCompraButton.setFocusPainted(false);
+        confirmarCompraButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        confirmarCompraButton.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
+                BorderFactory.createEmptyBorder(10, 20, 10, 20)
+        ));
+
+        confirmarCompraButton.addActionListener(e -> {
+            try {
+                double total = 0;
+                String ventaID = System.currentTimeMillis() % 1000 + " " + mesaID;
+                LocalDateTime dateTime = LocalDateTime.now();
+                StringBuilder listaProductosEnLinea = new StringBuilder();
+                Map<String, Integer> cantidadTotalPorProducto = new HashMap<>();
+                Map<String, Double> precioUnitarioPorProducto = new HashMap<>();
+
+                // Cargar productos previos
+                List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
+                for (String[] productoPrevio : productosPrevios) {
+                    String nombre = productoPrevio[0];
+                    int cantidad = Integer.parseInt(productoPrevio[1].substring(1));
+                    double precioUnitario = Double.parseDouble(productoPrevio[2].substring(1));
+
+                    cantidadTotalPorProducto.put(nombre, cantidad);
+                    precioUnitarioPorProducto.put(nombre, precioUnitario);
+                }
+
+                // Procesar productos adicionales en el carrito
+                Map<String, Integer> productosComprados = getProductListWithQuantities();
+                for (Map.Entry<String, Integer> entrada : productosComprados.entrySet()) {
+                    String nombre = entrada.getKey();
+                    int cantidadAdicional = entrada.getValue();
+                    Producto producto = productoUserManager.getProductByName(nombre);
+                    int nuevaCantidad = cantidadTotalPorProducto.getOrDefault(nombre, 0) + cantidadAdicional;
+
+                    cantidadTotalPorProducto.put(nombre, nuevaCantidad);
+                    precioUnitarioPorProducto.put(nombre, producto.getPrice());
+                }
+
+                // Generar resumen y calcular el total
+                for (Map.Entry<String, Integer> entrada : cantidadTotalPorProducto.entrySet()) {
+                    String nombre = entrada.getKey();
+                    int cantidadTotal = entrada.getValue();
+                    double precioUnitario = precioUnitarioPorProducto.get(nombre);
+                    double precioTotal = precioUnitario * cantidadTotal;
+
+                    listaProductosEnLinea.append(nombre).append(" x").append(cantidadTotal)
+                            .append(" $").append(precioUnitario)
+                            .append(" = ").append(precioTotal).append("\n");
+
+                    total += precioTotal;
+                }
+
+                /* Selección de método de pago
+                String tipoPagoSeleccionado = seleccionarMetodoPago(compraDialog, total);
+                if (tipoPagoSeleccionado == null) return;*/
+
+
+
+                // Crear íconos redimensionados para los métodos de pago
+                ImageIcon iconoBancolombia = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/bancolombia.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
+                ImageIcon iconoNequi = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/nequi.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
+                ImageIcon iconoEfectivo = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/dinero.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
+                ImageIcon iconoDaviplata = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/Daviplata.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
+                ImageIcon iconoDatafono = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/datafono.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
+
+                // Crear un diálogo modal personalizado
+                JDialog dialogoPago = new JDialog(compraDialog, "Seleccione el método de pago", true);
+                dialogoPago.setSize(1300, 150);
+                dialogoPago.setLayout(new BorderLayout());
+                dialogoPago.setResizable(false);
+
+                // Crear panel para el menú de pago
+                JPanel panelPago = new JPanel();
+                panelPago.setLayout(new GridLayout(1, 3, 10, 10));
+
+                // Crear botones de método de pago
+                JButton botonEfectivo = new JButton("Efectivo", iconoEfectivo);
+                JButton botonBancolombia = new JButton("Bancolombia - Transferencia", iconoBancolombia);
+                JButton botonNequi = new JButton("Nequi - Transferencia", iconoNequi);
+                JButton botonDaviplata = new JButton("Daviplata - Transferencia", iconoDaviplata);
+                JButton botonDatafono = new JButton("Datafono", iconoDatafono);
+
+
+
+                // Añadir botones al panel
+                panelPago.add(botonEfectivo);
+                panelPago.add(botonBancolombia);
+                panelPago.add(botonNequi);
+                panelPago.add(botonDaviplata);
+                panelPago.add(botonDatafono);
+
+                dialogoPago.add(panelPago, BorderLayout.CENTER);
+
+                // Variable para guardar el tipo de pago seleccionado
+                final String[] tipoPagoSeleccionado = {null};
+                final double finalTotal = total;
+
+                // Listener para cada botón de pago y cerrar el diálogo al hacer una selección
+                botonBancolombia.addActionListener(event -> {
+                    tipoPagoSeleccionado[0] = "Bancolombia - Transferencia";
+                    dialogoPago.dispose();
+                });
+
+                botonNequi.addActionListener(event -> {
+                    tipoPagoSeleccionado[0] = "Nequi - Transferencia";
+                    dialogoPago.dispose();
+                });
+
+                botonDaviplata.addActionListener(event -> {
+                    tipoPagoSeleccionado[0] = "Daviplata - Transferencia";
+                    dialogoPago.dispose();
+                });
+
+                botonEfectivo.addActionListener(event -> {
+                    tipoPagoSeleccionado[0] = "Efectivo";
+                    String input = JOptionPane.showInputDialog(compraDialog, "Ingrese el dinero recibido:");
+
+                    // Si el usuario presiona "Cancelar" o cierra el diálogo
+                    if (input == null) {
+                        dialogoPago.dispose();  // Continuar el flujo sin calcular el cambio
+                        return;
+                    }
+
+                    try {
+                        double dineroRecibido = Double.parseDouble(input);
+                        if (dineroRecibido < finalTotal) {
+                            JOptionPane.showMessageDialog(compraDialog, "El monto recibido es insuficiente.", "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        double cambio = dineroRecibido - finalTotal;
+                        JOptionPane.showMessageDialog(compraDialog, "Devuelta: $" + FormatterHelpers.formatearMoneda(cambio)+ " Pesos", "Cambio", JOptionPane.INFORMATION_MESSAGE);
+                    } catch (NumberFormatException ex) {
+                        JOptionPane.showMessageDialog(compraDialog, "Monto inválido.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+
+                    dialogoPago.dispose();  // Cerrar el diálogo después de manejar el monto recibido o si el usuario cancela
+                });
+
+                botonDatafono.addActionListener(event -> {
+                    tipoPagoSeleccionado[0] = "Datafono";
+                    dialogoPago.dispose();
+                });
+
+                // Mostrar el diálogo modal y esperar la selección
+                dialogoPago.setLocationRelativeTo(compraDialog);
+                dialogoPago.setVisible(true);
+
+                // Si no se seleccionó ningún tipo de pago, detener el flujo
+                if (tipoPagoSeleccionado[0] == null) {
+                    JOptionPane.showMessageDialog(compraDialog, "No se seleccionó un método de pago.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+
+                }
+
+
+
+
+
+
+
+                // Guardar la compra en Excel
+                ExcelUserManager excelUserManager = new ExcelUserManager();
+                excelUserManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total, dateTime ,tipoPagoSeleccionado[0]);
+                try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
+                     Workbook workbook = WorkbookFactory.create(fis)) {
+
+                    Sheet mesasSheet = workbook.getSheet("mesas");
+                    if (mesasSheet != null) {
+                        for (int i = 1; i <= mesasSheet.getLastRowNum(); i++) {
+                            Row row = mesasSheet.getRow(i);
+                            if (row != null) {
+                                Cell idCell = row.getCell(0);
+                                if (idCell != null && idCell.getStringCellValue().equalsIgnoreCase(mesaID)) {
+                                    Cell estadoCell = row.getCell(1);
+                                    if (estadoCell == null) {
+                                        estadoCell = row.createCell(1);
+                                    }
+                                    estadoCell.setCellValue("Libre");
+
+                                    Cell productosCell = row.getCell(2);
+                                    if (productosCell != null) {
+                                        productosCell.setCellValue("");
+                                    }
+
+                                    Cell totalCell = row.getCell(3);
+                                    if (totalCell != null) {
+                                        totalCell.setCellValue(0.0);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+
+                        try (FileOutputStream fos = new FileOutputStream(ExcelUserManager.FILE_PATH)) {
+                            workbook.write(fos);
+                        }
+                    }
+                } catch (FileNotFoundException ex) {
+                    throw new RuntimeException(ex);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+                // Actualizar la mesa en Excel
+                actualizarCantidadStockExcel(productosComprados,mesaID);
+
+
+
+
+                // Mostramos el dialogo de confirmación
+                int respuesta = JOptionPane.showConfirmDialog(null, PRINT_BILL, COMFIRM_TITLE, JOptionPane.YES_NO_OPTION);
+                NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
+                if (respuesta == JOptionPane.YES_OPTION) {
+                    // Corregimos aquí, enviamos la lista completa y no solo un String.
+                    generarFacturadeCompra(ventaID, Arrays.asList(listaProductosEnLinea.toString().split("\n")), total, dateTime, tipoPagoSeleccionado[0]);
+                }
+
+
+                JOptionPane.showMessageDialog(compraDialog, PURCHASE_SUCCEDED + " por un total de: $ " + NumberFormat.getInstance(new Locale("es", "CO")).format(total) + " Pesos");
+                actualizarCantidadStockExcel(cantidadTotalPorProducto, mesaID);
+                productoUserManager.limpiarCarrito();
+                compraDialog.dispose();
+                mainUser();
+
+
+
+
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(compraDialog, "Monto inválido.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         });
 
         return confirmarCompraButton;
@@ -585,7 +829,7 @@ public class UIUserVenta {
                     productosComprados.put(nombreProducto, cantidad);
                 }
 
-                // Verificar el stock para cada producto
+               /* // Verificar el stock para cada producto
                 for (Map.Entry<String, Integer> entry : productosComprados.entrySet()) {
                     String nombreProducto = entry.getKey();
                     int cantidadComprada = entry.getValue();
@@ -594,7 +838,7 @@ public class UIUserVenta {
                         JOptionPane.showMessageDialog(null, "No hay suficiente stock para el producto: " + nombreProducto, "Error", JOptionPane.ERROR_MESSAGE);
                         return; // Salir si no hay suficiente stock
                     }
-                }
+                }*/
 
                 // Obtener el total para esta mesa específica
                 double total = productoUserManager.getTotalCartAmount();

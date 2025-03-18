@@ -220,7 +220,6 @@ public class UIHelpers {
         inputPanel.add(scrollPane, BorderLayout.CENTER);
 
         List<Producto> productList = productoUserManager.getProducts().stream()
-                .filter(producto -> producto.getQuantity() > 0)
                 .toList();
 
         Runnable updateProducts = () -> {
@@ -362,10 +361,10 @@ public class UIHelpers {
                     int cantidadExistente = Integer.parseInt(tableModel.getValueAt(i, 1).toString());
                     int nuevaCantidad = cantidadExistente + cantidad;
 
-                    if (nuevaCantidad > producto.getQuantity()) {
+                   /* if (nuevaCantidad > producto.getQuantity()) {
                         JOptionPane.showMessageDialog(null, "No hay suficiente stock para " + producto.getName(), "Error", JOptionPane.ERROR_MESSAGE);
                         return;
-                    }
+                    }*/
 
                     double precioUnitario = producto.getPrice();
                     double nuevoTotal = nuevaCantidad * precioUnitario;
@@ -423,10 +422,10 @@ public class UIHelpers {
                     int cantidadExistente = Integer.parseInt(tableModel.getValueAt(i, 1).toString());
                     int nuevaCantidad = cantidadExistente + cantidad;
 
-                    if (nuevaCantidad > producto.getQuantity()) {
+                 /*  if (nuevaCantidad > producto.getQuantity()) {
                         JOptionPane.showMessageDialog(null, "No hay suficiente stock para " + producto.getName(), "Error", JOptionPane.ERROR_MESSAGE);
                         return;
-                    }
+                    }*/
 
                     double precioUnitario = producto.getPrice();
                     double nuevoTotal = nuevaCantidad * precioUnitario;
@@ -520,9 +519,6 @@ public class UIHelpers {
         return productComboBox;
     }
 
-
-
-
     // Renderer personalizado para formato de moneda con alineación centrada
     public static class CurrencyRenderer extends DefaultTableCellRenderer {
         public CurrencyRenderer() {
@@ -605,10 +601,10 @@ public class UIHelpers {
                 }
 
                 Producto producto = productoUserManager.getProductByName(selectedProduct);
-                if ( producto.getQuantity() < cantidad) {
+              /*  if ( producto.getQuantity() < cantidad) {
                     JOptionPane.showMessageDialog(null, "No hay suficiente stock para el producto: " + selectedProduct, "Error", JOptionPane.ERROR_MESSAGE);
                     return;
-                }
+                }*/
 
                 DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
                 boolean productoExistente = false;
@@ -621,11 +617,11 @@ public class UIHelpers {
                         int cantidadExistente = (int) tableModel.getValueAt(i, 1); // Columna 1 es la cantidad
                         int nuevaCantidad = cantidadExistente + cantidad;
 
-                        // Verificar que la nueva cantidad no exceda el stock disponible
+                    /*    // Verificar que la nueva cantidad no exceda el stock disponible
                         if (nuevaCantidad > producto.getQuantity()) {
                             JOptionPane.showMessageDialog(null, "No hay suficiente stock disponible para aumentar la cantidad del producto: " + selectedProduct, "Error", JOptionPane.ERROR_MESSAGE);
                             return;
-                        }
+                        }*/
 
                         // Actualizar la cantidad y el total en la tabla
                         double precioUnitario = producto.getPrice();

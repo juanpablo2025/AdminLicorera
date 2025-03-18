@@ -583,7 +583,7 @@ public class ExcelUserManager {
     }
 
     // Método para actualizar las cantidades en el stock de Excel y registrar las ventas
-    public static void actualizarCantidadStockExcel(Map<String, Integer> productosComprados) {
+    public static void actualizarCantidadStockExcelConStock(Map<String, Integer> productosComprados, String mesaID) {
         try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
@@ -624,13 +624,7 @@ public class ExcelUserManager {
                                 int cantidadActual = (int) cantidadCell.getNumericCellValue();
                                 int nuevaCantidad = cantidadActual - cantidadComprada;
 
-                                if (nuevaCantidad < 0) {
-                                    JOptionPane.showMessageDialog(null, "No hay suficiente stock para el producto '" + nombreProducto + "'.", "Error", JOptionPane.ERROR_MESSAGE);
-                                    return;
-                                } else {
-                                    cantidadCell.setCellValue(nuevaCantidad);
-                                    productoEncontrado = true;
-                                }
+
                             }
 
                             // Actualizar las ventas totales
@@ -644,6 +638,87 @@ public class ExcelUserManager {
                                 int ventasTotales = (int) ventasCell.getNumericCellValue();
                                 ventasCell.setCellValue(ventasTotales + cantidadComprada);
                             }
+                            break;
+                        }
+                    }
+                }
+
+                if (!productoEncontrado) {
+                    JOptionPane.showMessageDialog(null, "Producto '" + nombreProducto + "' no encontrado en stock.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+
+            // Guardar los cambios en el archivo Excel
+            try (FileOutputStream fos = new FileOutputStream(ExcelUserManager.FILE_PATH)) {
+                workbook.write(fos);
+            }
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public static void actualizarCantidadStockExcel(Map<String, Integer> productosComprados, String mesaID) {
+        try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
+
+            // Verificar si existe la columna "Cantidad Vendida", si no, agregarla
+            Row headerRow = sheet.getRow(0);
+            int ventasColIndex = -1;
+
+            for (int colIndex = 0; colIndex < headerRow.getLastCellNum(); colIndex++) {
+                Cell headerCell = headerRow.getCell(colIndex);
+                if (headerCell != null && "Cantidad Vendida".equalsIgnoreCase(headerCell.getStringCellValue())) {
+                    ventasColIndex = colIndex;
+                    break;
+                }
+            }
+
+            if (ventasColIndex == -1) {
+                ventasColIndex = headerRow.getLastCellNum(); // Nueva columna al final
+                headerRow.createCell(ventasColIndex).setCellValue("Cantidad Vendida");
+            }
+
+            // Ahora actualizar las cantidades de los productos y las ventas
+            for (Map.Entry<String, Integer> entry : productosComprados.entrySet()) {
+                String nombreProducto = entry.getKey();
+                int cantidadComprada = entry.getValue();
+                boolean productoEncontrado = false;
+
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                    Row row = sheet.getRow(i);
+                    if (row != null) {
+                        if (row.getCell(1).getStringCellValue().equalsIgnoreCase(nombreProducto)) {
+                            // Actualizar stock **permitiendo valores negativos**
+                            Cell cantidadCell = row.getCell(2);
+                            if (cantidadCell == null) {
+                                cantidadCell = row.createCell(2);
+                                cantidadCell.setCellValue(0);
+                            }
+
+                            if (cantidadCell.getCellType() == CellType.NUMERIC) {
+                                int cantidadActual = (int) cantidadCell.getNumericCellValue();
+                                int nuevaCantidad = cantidadActual - cantidadComprada;
+
+                                // **Aquí está el cambio: permite valores negativos**
+                                cantidadCell.setCellValue(nuevaCantidad);
+                            }
+
+                            // Actualizar las ventas totales
+                            Cell ventasCell = row.getCell(ventasColIndex);
+                            if (ventasCell == null) {
+                                ventasCell = row.createCell(ventasColIndex);
+                                ventasCell.setCellValue(0); // Inicializar en 0 si no existe
+                            }
+
+                            if (ventasCell.getCellType() == CellType.NUMERIC) {
+                                int ventasTotales = (int) ventasCell.getNumericCellValue();
+                                ventasCell.setCellValue(ventasTotales + cantidadComprada);
+                            }
+                            productoEncontrado = true;
                             break;
                         }
                     }
