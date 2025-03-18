@@ -144,11 +144,11 @@ public class UIUserVenta {
         });
         JScrollPane tableScrollPane = new JScrollPane(table);
         ventaMesaDialog.add(tableScrollPane, BorderLayout.CENTER);
-        JPanel inputLista = createInputLista(table, new VentaMesaUserManager());
+        //JPanel inputLista = createInputLista(table, new VentaMesaUserManager());
+        //ventaMesaDialog.add(inputLista, BorderLayout.EAST);
+        JPanel inputPanel = createInputPanel(table, new VentaMesaUserManager());
+        ventaMesaDialog.add(inputPanel, BorderLayout.EAST);
 
-       // JPanel inputPanel = createInputPanel(table, new VentaMesaUserManager());
-       //ventaMesaDialog.add(inputPanel, BorderLayout.EAST);
-        ventaMesaDialog.add(inputLista, BorderLayout.EAST);
 
         JPanel buttonPanel = createButtonPanelVentaMesa(table, new VentaMesaUserManager(), ventaMesaDialog, mesaID);
 

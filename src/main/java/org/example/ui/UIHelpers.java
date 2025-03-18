@@ -223,16 +223,6 @@ public class UIHelpers {
                 .filter(producto -> producto.getQuantity() > 0)
                 .toList();
 
-        /*Border defaultBorder = BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        );*/
-
-        /*Border hoverBorder = BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.GRAY, 2),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        );*/
-
         Runnable updateProducts = () -> {
             productPanel.removeAll();
             String query = searchField.getText().toLowerCase();
@@ -250,7 +240,6 @@ public class UIHelpers {
                             }
                         };
                         card.setPreferredSize(new Dimension(200, 220));
-                        /*card.setBorder(defaultBorder);*/
                         card.setBackground(Color.WHITE);
                         card.setOpaque(true);
                         card.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -280,6 +269,7 @@ public class UIHelpers {
 
                         card.add(namePanel, BorderLayout.SOUTH);
                         card.setBackground(new Color(255, 215, 0));
+
                         new SwingWorker<>() {
                             @Override
                             protected ImageIcon doInBackground() {
@@ -314,27 +304,19 @@ public class UIHelpers {
                         card.addMouseListener(new MouseAdapter() {
                             @Override
                             public void mouseEntered(MouseEvent e) {
-                                /*card.setBorder(hoverBorder);*/
                                 card.setBackground(new Color(255, 111, 97));
-
                             }
 
                             @Override
                             public void mouseExited(MouseEvent e) {
-                                /*card.setBorder(defaultBorder);*/
                                 card.setBackground(new Color(255, 215, 0));
-
                             }
 
                             @Override
-                            public void mousePressed(MouseEvent e) {
-                                card.setBackground(new Color(252, 150, 170));
-                            }
-
-                            @Override
-                            public void mouseReleased(MouseEvent e) {
-                                card.setBackground(new Color(230, 230, 250));
-                                agregarProductoATabla(table, product, ventaMesaUserManager);
+                            public void mouseClicked(MouseEvent e) {
+                                if (SwingUtilities.isLeftMouseButton(e)) {
+                                    AddProductsToTable(table, product, ventaMesaUserManager);
+                                }
                             }
                         });
 
@@ -421,7 +403,66 @@ public class UIHelpers {
         }
     }
 
+    public static void AddProductsToTable(JTable table, Producto producto, VentaMesaUserManager ventaManager) {
+        if (producto == null) {
+            JOptionPane.showMessageDialog(null, "Producto no válido.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
+        DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+        boolean productoExistente = false;
+        int cantidad = 1;
+
+
+
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            String nombreProducto = (String) tableModel.getValueAt(i, 0);
+
+            if (nombreProducto.equals(producto.getName())) {
+                try {
+                    int cantidadExistente = Integer.parseInt(tableModel.getValueAt(i, 1).toString());
+                    int nuevaCantidad = cantidadExistente + cantidad;
+
+                    if (nuevaCantidad > producto.getQuantity()) {
+                        JOptionPane.showMessageDialog(null, "No hay suficiente stock para " + producto.getName(), "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    double precioUnitario = producto.getPrice();
+                    double nuevoTotal = nuevaCantidad * precioUnitario;
+
+                    tableModel.setValueAt(nuevaCantidad, i, 1);
+                    tableModel.setValueAt(formatearMoneda(precioUnitario), i, 2);
+                    tableModel.setValueAt((nuevoTotal), i, 3);
+
+                    // Actualizar el producto en el carrito de compra
+                    productoUserManager.updateProductQuantity(producto, nuevaCantidad);
+
+                    productoExistente = true;
+                    break;
+                } catch (ClassCastException | NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Error en la conversión de cantidad.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+        }
+
+        if (!productoExistente) {
+            double precioUnitario = producto.getPrice();
+            double totalProducto = precioUnitario * cantidad;
+
+            tableModel.addRow(new Object[]{
+                    producto.getName(),
+                    cantidad,
+                    precioUnitario,
+                    totalProducto,
+                    "X"
+            });
+
+            // Agregar nuevo producto al carrito de compra
+            productoUserManager.updateProductQuantity(producto, cantidad);
+        }
+    }
 
 
     private static JComboBox<String> createProductComboBox() {

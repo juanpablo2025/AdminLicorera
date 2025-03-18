@@ -82,6 +82,17 @@ public class ProductoUserManager {
         cartProducts.clear();
         cartQuantities.clear();
     }
+
+    // Método para actualizar la cantidad de un producto en el carrito
+    public void updateProductQuantity(Producto producto, int nuevaCantidad) {
+        int index = cartProducts.indexOf(producto);
+        if (index != MINUS_ONE) {
+            cartQuantities.set(index, nuevaCantidad);  // 🔴 En lugar de sumar, reemplaza la cantidad
+        } else {
+            cartProducts.add(producto);
+            cartQuantities.add(nuevaCantidad);
+        }
+    }
 }
 
 
