@@ -236,7 +236,7 @@ public class UIUserVenta {
         buttonPanel.add(guardarCompra);
 
         // Crear el botón de confirmar compra y asignar el ID de la mesa y el diálogo de compra
-        JButton confirmarCompraButton = createConfirmPurchaseMesaButton(ventaMesaUserManager, compraDialog, mesaID);
+        JButton confirmarCompraButton = createConfirmPurchaseMesaButton(ventaMesaUserManager, compraDialog, mesaID, table);
         confirmarCompraButton.setFont(new java.awt.Font("Arial", Font.BOLD, 18)); // Configuración de fuente
 
         // Verificar si hay productos en Excel para la mesa
@@ -291,6 +291,7 @@ public class UIUserVenta {
         });
         confirmarCompraButton.addActionListener(e -> {
             try {
+
 
 
                 double total = 0;
@@ -528,8 +529,22 @@ public class UIUserVenta {
 
         return confirmarCompraButton;
     }
+    private static Map<String, Integer> actualizarProductosDesdeTabla(JTable productosTable) {
+        Map<String, Integer> productosActualizados = new HashMap<>();
+        DefaultTableModel tableModel = (DefaultTableModel) productosTable.getModel();
 
-    public static JButton createConfirmPurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID) {
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            String nombreProducto = (String) tableModel.getValueAt(i, 0);
+            int cantidad = (int) tableModel.getValueAt(i, 1);
+            productosActualizados.put(nombreProducto, cantidad);
+        }
+
+        return productosActualizados;
+    }
+    public static JButton createConfirmPurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID,JTable productosTable) {
+
+
+
         JButton confirmarCompraButton = new JButton(CONFIRM_PURCHASE);
 
         confirmarCompraButton.setFont(new Font("Arial", Font.BOLD, 18));
@@ -544,46 +559,50 @@ public class UIUserVenta {
                 BorderFactory.createEmptyBorder(10, 20, 10, 20)
         ));
 
+
+
         confirmarCompraButton.addActionListener(e -> {
             try {
+
+                // 🔄 Obtener los productos actualizados desde la tabla antes de confirmar la compra
+                Map<String, Integer> productosComprados = actualizarProductosDesdeTabla(productosTable);
+                
                 double total = 0;
-                String ventaID = System.currentTimeMillis() % 1000 + " " + mesaID;
+                String ventaID = String.valueOf(System.currentTimeMillis() % 1000) + " " + mesaID;
                 LocalDateTime dateTime = LocalDateTime.now();
                 StringBuilder listaProductosEnLinea = new StringBuilder();
+
+                // Inicializar mapas vacíos para la venta actual
                 Map<String, Integer> cantidadTotalPorProducto = new HashMap<>();
                 Map<String, Double> precioUnitarioPorProducto = new HashMap<>();
 
-                // Cargar productos previos
-                List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
-                for (String[] productoPrevio : productosPrevios) {
-                    String nombre = productoPrevio[0];
-                    int cantidad = Integer.parseInt(productoPrevio[1].substring(1));
-                    double precioUnitario = Double.parseDouble(productoPrevio[2].substring(1));
 
-                    cantidadTotalPorProducto.put(nombre, cantidad);
-                    precioUnitarioPorProducto.put(nombre, precioUnitario);
-                }
 
-                // Procesar productos adicionales en el carrito
-                Map<String, Integer> productosComprados = getProductListWithQuantities();
+                // Procesar productos de la tabla actualizada
                 for (Map.Entry<String, Integer> entrada : productosComprados.entrySet()) {
                     String nombre = entrada.getKey();
-                    int cantidadAdicional = entrada.getValue();
+                    int cantidad = entrada.getValue();
                     Producto producto = productoUserManager.getProductByName(nombre);
-                    int nuevaCantidad = cantidadTotalPorProducto.getOrDefault(nombre, 0) + cantidadAdicional;
 
-                    cantidadTotalPorProducto.put(nombre, nuevaCantidad);
+                    cantidadTotalPorProducto.put(nombre, cantidad);
                     precioUnitarioPorProducto.put(nombre, producto.getPrice());
                 }
 
-                // Generar resumen y calcular el total
+                  /*  if (producto == null || producto.getQuantity() < cantidadAdicional) {
+                        JOptionPane.showMessageDialog(compraDialog, "No hay suficiente stock para " + nombreProducto, "Error de stock", JOptionPane.ERROR_MESSAGE);
+                        compraDialog.dispose();
+                        return;
+                    }*/
+
+                // Generar resumen de productos y calcular el total
                 for (Map.Entry<String, Integer> entrada : cantidadTotalPorProducto.entrySet()) {
-                    String nombre = entrada.getKey();
+                    String nombreProducto = entrada.getKey();
                     int cantidadTotal = entrada.getValue();
-                    double precioUnitario = precioUnitarioPorProducto.get(nombre);
+                    double precioUnitario = precioUnitarioPorProducto.get(nombreProducto);
                     double precioTotal = precioUnitario * cantidadTotal;
 
-                    listaProductosEnLinea.append(nombre).append(" x").append(cantidadTotal)
+                    listaProductosEnLinea.append(nombreProducto)
+                            .append(" x").append(cantidadTotal)
                             .append(" $").append(precioUnitario)
                             .append(" = ").append(precioTotal).append("\n");
 
@@ -593,7 +612,6 @@ public class UIUserVenta {
                 /* Selección de método de pago
                 String tipoPagoSeleccionado = seleccionarMetodoPago(compraDialog, total);
                 if (tipoPagoSeleccionado == null) return;*/
-
 
 
                 // Crear íconos redimensionados para los métodos de pago
@@ -740,8 +758,7 @@ public class UIUserVenta {
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
                 }
-                // Actualizar la mesa en Excel
-                actualizarCantidadStockExcel(productosComprados,mesaID);
+
 
 
 
@@ -984,4 +1001,5 @@ public class UIUserVenta {
             ex.printStackTrace();
         }
     }
+
 }
