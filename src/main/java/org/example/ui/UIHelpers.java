@@ -23,6 +23,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -332,29 +333,30 @@ public class UIHelpers {
                                     // Obtener la ruta de la imagen del producto
                                     String imagePath = System.getProperty("user.home") + product.getFoto();
                                     File imageFile = new File(imagePath);
-
-                                    // Si la imagen no existe, cargar imagen de respaldo
+                                    BufferedImage img = null;
+                                    // Si la imagen del producto no existe, usar la imagen de respaldo
                                     if (!imageFile.exists() || !imageFile.isFile()) {
-                                        URL imageUrl = UIUserMain.class.getResource("/icons/sinfoto.png");
-                                        if (imageUrl != null) {
-                                            imageFile = new File(imageUrl.toURI());
+                                        InputStream is = getClass().getResourceAsStream("/icons/sinfoto.png");
+                                        if (is != null) {
+                                            img = ImageIO.read(is);
                                         } else {
                                             System.err.println("No se encontró la imagen de respaldo.");
                                             return null;
                                         }
+                                    } else {
+                                        img = ImageIO.read(imageFile);
                                     }
 
-                                    // Leer la imagen
-                                    BufferedImage img = ImageIO.read(imageFile);
                                     if (img != null) {
                                         Image scaledImg = img.getScaledInstance(220, 185, Image.SCALE_SMOOTH);
-                                        return makeRoundedImage(scaledImg, 220, 185); // Redondear la imagen
+                                        return makeRoundedImage(scaledImg, 220, 185);
                                     }
                                 } catch (Exception e) {
                                     System.err.println("No se pudo cargar la imagen: " + e.getMessage());
                                 }
                                 return null;
                             }
+
 
                             @Override
                             protected void done() {
