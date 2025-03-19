@@ -325,24 +325,32 @@ public class UIHelpers {
                         card.add(namePanel, BorderLayout.SOUTH);
                         card.setBackground(new Color(58, 58, 58));
 
-                        // Modificar el SwingWorker para redondear imágenes
-                        new SwingWorker<>() {
+                        new SwingWorker<ImageIcon, Void>() {
                             @Override
                             protected ImageIcon doInBackground() {
                                 try {
+                                    // Obtener la ruta de la imagen del producto
                                     String imagePath = System.getProperty("user.home") + product.getFoto();
                                     File imageFile = new File(imagePath);
 
+                                    // Si la imagen no existe, cargar imagen de respaldo
                                     if (!imageFile.exists() || !imageFile.isFile()) {
-                                        imageFile = new File("C:\\Users\\Desktop\\Downloads\\sinfoto.png");
+                                        URL imageUrl = UIUserMain.class.getResource("/icons/sinfoto.png");
+                                        if (imageUrl != null) {
+                                            imageFile = new File(imageUrl.toURI());
+                                        } else {
+                                            System.err.println("No se encontró la imagen de respaldo.");
+                                            return null;
+                                        }
                                     }
 
+                                    // Leer la imagen
                                     BufferedImage img = ImageIO.read(imageFile);
                                     if (img != null) {
                                         Image scaledImg = img.getScaledInstance(220, 185, Image.SCALE_SMOOTH);
-                                        return makeRoundedImage(scaledImg, 220, 185); // Redondear la imagen aquí
+                                        return makeRoundedImage(scaledImg, 220, 185); // Redondear la imagen
                                     }
-                                } catch (IOException e) {
+                                } catch (Exception e) {
                                     System.err.println("No se pudo cargar la imagen: " + e.getMessage());
                                 }
                                 return null;
