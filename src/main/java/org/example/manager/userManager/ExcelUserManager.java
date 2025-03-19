@@ -67,6 +67,7 @@ public class ExcelUserManager {
         header.createCell(2).setCellValue(CANTIDAD);
         header.createCell(3).setCellValue(PRECIO);
         header.createCell(4).setCellValue("Cantidad Vendida");
+        header.createCell(5 ).setCellValue("Foto");
 
         // Crear hoja de compras
         Sheet purchasesSheet = workbook.createSheet(PURCHASES_SHEET_NAME);
@@ -143,17 +144,31 @@ public class ExcelUserManager {
             for (int i = ONE; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row != null) {
-                    String name = row.getCell(ONE).getStringCellValue();
-                    int quantity = (int) row.getCell(TWO).getNumericCellValue();
-                    double price = row.getCell(THREE).getNumericCellValue();
+                    String name = getCellValueAsString(row.getCell(ONE));
+                    int quantity = getCellValueAsInt(row.getCell(TWO));
+                    double price = getCellValueAsDouble(row.getCell(THREE));
+                    String foto = getCellValueAsString(row.getCell(5));
 
-                    products.add(new Producto(name, quantity,price));
+                    products.add(new Producto(name, quantity, price, foto));
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return products;
+    }
+
+    // Métodos auxiliares para manejar celdas nulas y tipos de datos
+    private String getCellValueAsString(Cell cell) {
+        return (cell != null) ? cell.toString() : "Desconocido";
+    }
+
+    private int getCellValueAsInt(Cell cell) {
+        return (cell != null && cell.getCellType() == CellType.NUMERIC) ? (int) cell.getNumericCellValue() : 0;
+    }
+
+    private double getCellValueAsDouble(Cell cell) {
+        return (cell != null && cell.getCellType() == CellType.NUMERIC) ? cell.getNumericCellValue() : 0.0;
     }
 
     // Método para obtener un producto por nombre
@@ -527,7 +542,7 @@ public class ExcelUserManager {
                 int quantity = (int) row.getCell(TWO).getNumericCellValue();
 
                 if (quantity == 0) {
-                    productosAgotados.add(new Producto(name, quantity, row.getCell(THREE).getNumericCellValue()));
+                    productosAgotados.add(new Producto(name, quantity, row.getCell(THREE).getNumericCellValue(),row.getCell(5).getStringCellValue()));
                 }
             }
         }

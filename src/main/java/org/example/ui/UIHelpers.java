@@ -12,12 +12,14 @@ import javax.swing.border.AbstractBorder;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.Font;
 import java.awt.event.*;
+import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -222,6 +224,46 @@ public class UIHelpers {
         List<Producto> productList = productoUserManager.getProducts().stream()
                 .toList();
 
+
+
+
+
+
+// ⏩ Aumentar la velocidad del scroll
+        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
+
+// 🎨 Personalizar la apariencia de la barra de desplazamiento
+        scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
+            @Override
+            protected void configureScrollBarColors() {
+                this.thumbColor = new Color(100, 100, 100); // Color del "pulgar"
+                this.trackColor = new Color(200, 200, 200); // Color del fondo de la barra
+            }
+
+            @Override
+            protected JButton createDecreaseButton(int orientation) {
+                return createInvisibleButton();
+            }
+
+            @Override
+            protected JButton createIncreaseButton(int orientation) {
+                return createInvisibleButton();
+            }
+
+            private JButton createInvisibleButton() {
+                JButton button = new JButton();
+                button.setPreferredSize(new Dimension(0, 0)); // Oculta los botones de la barra
+                return button;
+            }
+        });
+
+// 📌 Aumentar el grosor de la barra de desplazamiento
+        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(15, 0));
+
+
+
+
+
         Runnable updateProducts = () -> {
             productPanel.removeAll();
             String query = searchField.getText().toLowerCase();
@@ -234,13 +276,27 @@ public class UIHelpers {
                                 super.paintComponent(g);
                                 Graphics2D g2 = (Graphics2D) g;
                                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                                // Crear un fondo con esquinas redondeadas
                                 g2.setColor(getBackground());
                                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
                             }
+
+                            @Override
+                            protected void paintBorder(Graphics g) {
+                                Graphics2D g2 = (Graphics2D) g;
+                                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                                // Dibujar borde redondeado
+                                g2.setColor(new Color(40, 40, 40)); // Color del borde
+                                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 20, 20);
+                            }
                         };
+
+// 🔹 Ajustar la transparencia del fondo para evitar el color cuadrado
+                        card.setOpaque(false);
+                        card.setBackground(new Color(58, 58, 58)); // Fondo oscuro
                         card.setPreferredSize(new Dimension(200, 220));
-                        card.setBackground(Color.WHITE);
-                        card.setOpaque(true);
                         card.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
                         JLabel imageLabel = new JLabel();
@@ -267,17 +323,24 @@ public class UIHelpers {
                         namePanel.add(nameLabel, BorderLayout.CENTER);
 
                         card.add(namePanel, BorderLayout.SOUTH);
-                        card.setBackground(new Color(255, 215, 0));
+                        card.setBackground(new Color(58, 58, 58));
 
+                        // Modificar el SwingWorker para redondear imágenes
                         new SwingWorker<>() {
                             @Override
                             protected ImageIcon doInBackground() {
                                 try {
-                                    File imageFile = new File("C:\\Users\\Desktop\\Downloads/sinfoto.png");
+                                    String imagePath = System.getProperty("user.home") + product.getFoto();
+                                    File imageFile = new File(imagePath);
+
+                                    if (!imageFile.exists() || !imageFile.isFile()) {
+                                        imageFile = new File("C:\\Users\\Desktop\\Downloads\\sinfoto.png");
+                                    }
+
                                     BufferedImage img = ImageIO.read(imageFile);
                                     if (img != null) {
-                                        Image scaledImg = img.getScaledInstance(220, 180, Image.SCALE_SMOOTH);
-                                        return new ImageIcon(scaledImg);
+                                        Image scaledImg = img.getScaledInstance(220, 185, Image.SCALE_SMOOTH);
+                                        return makeRoundedImage(scaledImg, 220, 185); // Redondear la imagen aquí
                                     }
                                 } catch (IOException e) {
                                     System.err.println("No se pudo cargar la imagen: " + e.getMessage());
@@ -291,8 +354,6 @@ public class UIHelpers {
                                     ImageIcon icon = (ImageIcon) get();
                                     if (icon != null) {
                                         imageLabel.setIcon(icon);
-                                    } else {
-                                        imageLabel.setText("Imagen no disponible");
                                     }
                                 } catch (Exception e) {
                                     System.err.println("Error al cargar imagen: " + e.getMessage());
@@ -300,15 +361,26 @@ public class UIHelpers {
                             }
                         }.execute();
 
+// 🟢 Aplicar efecto de pulsado al botón (Cambio de color temporal)
                         card.addMouseListener(new MouseAdapter() {
                             @Override
                             public void mouseEntered(MouseEvent e) {
-                                card.setBackground(new Color(255, 111, 97));
+                                card.setBackground(new Color(255, 111, 97)); // Color al pasar el mouse
                             }
 
                             @Override
                             public void mouseExited(MouseEvent e) {
-                                card.setBackground(new Color(255, 215, 0));
+                                card.setBackground(new Color(58, 58, 58)); // Volver al color original
+                            }
+
+                            @Override
+                            public void mousePressed(MouseEvent e) {
+                                card.setBackground(new Color(220, 20, 60)); // Color al hacer clic
+                            }
+
+                            @Override
+                            public void mouseReleased(MouseEvent e) {
+                                card.setBackground(new Color(255, 111, 97)); // Volver al color hover
                             }
 
                             @Override
@@ -339,7 +411,19 @@ public class UIHelpers {
     }
 
 
+    // Método para redondear imágenes
+    private static ImageIcon makeRoundedImage(Image img, int width, int height) {
+        BufferedImage roundedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = roundedImage.createGraphics();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
+        // Crear una máscara circular
+        g2.setClip(new RoundRectangle2D.Float(0, 0, width, height, 20, 20));
+        g2.drawImage(img, 0, 0, width, height, null);
+        g2.dispose();
+
+        return new ImageIcon(roundedImage);
+    }
 
     public static void agregarProductoATabla(JTable table, Producto producto, VentaMesaUserManager ventaManager) {
         if (producto == null) {

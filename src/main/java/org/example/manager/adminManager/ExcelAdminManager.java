@@ -62,8 +62,9 @@ public class ExcelAdminManager {
                     String name = row.getCell(ONE).getStringCellValue();
                     int quantity = (int) row.getCell(TWO).getNumericCellValue();
                     double price = row.getCell(THREE).getNumericCellValue();
+                    String foto = row.getCell(FOUR).getStringCellValue();
 
-                    products.add(new Producto(name, quantity, price));
+                    products.add(new Producto(name, quantity, price,foto));
                 }
             }
         } catch (IOException e) {

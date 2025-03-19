@@ -89,6 +89,7 @@ public class UIAdminProducts {
         JTextField quantityField = new JTextField();
         JTextField priceField = new JTextField();
 
+
         addProductPanel.add(new JLabel("Nombre:"));
         addProductPanel.add(nameField);
         addProductPanel.add(new JLabel("Cantidad:"));
@@ -107,9 +108,10 @@ public class UIAdminProducts {
                 String name = nameField.getText();
                 int quantity = Integer.parseInt(quantityField.getText());
                 double price = Double.parseDouble(priceField.getText());
+                String foto = "foto" ;
 
                 // Crear nuevo producto y añadirlo al productoManager
-                Producto newProduct = new Producto(name, quantity, price);
+                Producto newProduct = new Producto(name, quantity, price,foto);
                 productoAdminManager.addProduct(newProduct); // Método que debes tener en productoManager para añadir productos
 
                 // Añadir el nuevo producto a la tabla

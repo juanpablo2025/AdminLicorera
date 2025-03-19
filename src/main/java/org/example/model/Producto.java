@@ -7,13 +7,15 @@ public class Producto {
     private String name;
     private int quantity ;
     private double price;
+    private String foto;
 
-    public Producto(String name, int quantity, double price) {
+    public Producto(String name, int quantity, double price, String foto) {
 
         this.id = nextId++; // Asigna el ID actual y lo incrementa
         this.name = name;
         this.quantity = quantity;
         this.price = price;
+        this.foto = foto;
     }
 
     public int getId() {
@@ -49,5 +51,9 @@ public class Producto {
     @Override
     public int hashCode() {
         return name.toLowerCase().hashCode();
+    }
+
+    public String getFoto() {
+        return foto;
     }
 }

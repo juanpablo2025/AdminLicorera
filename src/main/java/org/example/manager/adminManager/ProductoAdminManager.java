@@ -42,9 +42,10 @@ public class ProductoAdminManager {
 
             // Formateamos el precio con el formato de moneda de Colombia
             double price = Double.parseDouble(priceField.getText());
+            String foto = "foto" ;
 
             // Crear un nuevo producto (guarda el precio original pero puedes mostrar el formateado)
-            Producto product = new Producto( name, quantity, price);
+            Producto product = new Producto( name, quantity, price,foto);
 
             // Añadir el producto a la lista/gestión de productos
             addProduct(product);
