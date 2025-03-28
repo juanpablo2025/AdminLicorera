@@ -11,6 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -235,8 +236,14 @@ public class UIUserMesas {
         ));
 
         JLabel titleLabel = new JLabel("Mesas", JLabel.CENTER);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 50));
         titleLabel.setForeground(Color.BLACK);
+        try {
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/Lobster-Regular.ttf"));
+            customFont = customFont.deriveFont(Font.BOLD, 50); // Ajustar tamaño y peso
+            titleLabel.setFont(customFont);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         JPanel gridMesasPanel = new JPanel(new GridLayout(0, 5, 4, 4)); // Espaciado entre mesas
         gridMesasPanel.setBackground(fondoPrincipal);

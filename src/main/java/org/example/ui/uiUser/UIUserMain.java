@@ -9,6 +9,7 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.io.File;
 
 import static org.example.ui.uiAdmin.MainAdminUi.*;
 import static org.example.ui.uiUser.UIUserFacturas.showFacturasDialog;
@@ -59,9 +60,14 @@ public class UIUserMain {
             JLabel logoLabel = new JLabel(new ImageIcon(imgLogo));
 
             JLabel employeeLabel = new JLabel(nombreEmpleado);
-            employeeLabel.setFont(new Font("Arial", Font.BOLD, 30));
             employeeLabel.setForeground(Color.DARK_GRAY);
-
+            try {
+                Font customFont = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/Pacifico-Regular.ttf"));
+                customFont = customFont.deriveFont(Font.BOLD, 30); // Ajustar tamaño y peso
+                employeeLabel.setFont(customFont);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             headerPanel.add(logoLabel);
             headerPanel.add(employeeLabel);
             JSeparator separator = new JSeparator();

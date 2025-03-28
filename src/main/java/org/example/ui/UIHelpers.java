@@ -101,8 +101,17 @@ public class UIHelpers {
 
         JLabel textLabel = new JLabel(text);
         textLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        textLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        //textLabel.setFont(new Font("Arial", Font.BOLD, 16));
         textLabel.setForeground(Color.WHITE);
+
+        try {
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/Lobster-Regular.ttf"));
+            customFont = customFont.deriveFont(Font.BOLD, 18); // Ajustar tamaño y peso
+            textLabel.setFont(customFont);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         panel.add(iconLabel);
         panel.add(separator);

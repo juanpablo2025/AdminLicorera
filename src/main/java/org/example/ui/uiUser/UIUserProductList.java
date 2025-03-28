@@ -25,7 +25,7 @@ public class UIUserProductList {
 
 
     public static void showListProductsDialog() {
-        JDialog listProductsDialog = createDialog(LISTAR_PRODUCTO, 1280, 720, new BorderLayout());
+        JDialog listProductsDialog = createDialog("Inventario - Licorera CR", 1280, 720, new BorderLayout());
         listProductsDialog.setResizable(true);
         listProductsDialog.addWindowListener(new WindowAdapter() {
             @Override

@@ -2,6 +2,7 @@ package org.example.manager.userManager;
 
 
 
+import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.io.font.constants.StandardFonts;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
@@ -84,9 +85,10 @@ public class FacturacionUserManager {
 
     public static void generarFacturadeCompra(String ventaID, List<String> productos, double totalCompra, LocalDateTime fechaHora, String tipoPago) {
         try {
+            PdfFont lobsterFont = PdfFontFactory.createFont("src/main/resources/Lobster-Regular.ttf", PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
+
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String fechaFormateada = fechaHora.format(formatter);
-
             String paperSize = ConfigAdminManager.getPaperSize();
             String outputType = ConfigAdminManager.getOutputType();
 
@@ -125,7 +127,7 @@ public class FacturacionUserManager {
                     .setMarginBottom(FIVE));
 
             document.add(new Paragraph(LICORERA_NAME)
-                    .setFont(fontBold)
+                    .setFont(lobsterFont)
                     .setFontSize(TEN)
                     .setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph(NIT)
@@ -456,7 +458,8 @@ public class FacturacionUserManager {
             //abrirPDF(nombreArchivo);
             FormatterHelpers.formatearMoneda(totalVentas);
             String numeroDestino = "+573112599560";  //"+573146704316" Número al que quieres enviar el mensaje
-            String mensaje = "¡Hola! [Licorera la 70] ha generado la liquidacíon de hoy, Por un total de: $ " + FormatterHelpers.formatearMoneda(totalVentas)+ " Pesos"+"\n"+ "Puedes ver los detalle en los resumen adjuntos en Google Drive. https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
+            String mensaje = "[Licorera CR] ¡Hola! se ha generado la liquidación del día de hoy por un total de: $ "
+                    + FormatterHelpers.formatearMoneda(totalVentas) + " pesos.\n Puedes consultar los detalles en los resúmenes adjuntos en Google Drive: https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
             enviarMensaje(numeroDestino,mensaje);
 
         } catch (IOException e) {
@@ -512,6 +515,8 @@ public class FacturacionUserManager {
 */
 
     public static void guardarTotalFacturadoEnArchivo(double totalFacturado) {
+
+
         Map<String, Integer> productosVendidos = obtenerProductosVendidos();
 
         LocalDate fechaActual = LocalDate.now();
@@ -633,8 +638,11 @@ public class FacturacionUserManager {
                     .setMarginBottom(5));
 
             // Agradecimiento o información adicional
+
+            PdfFont lobsterFont = PdfFontFactory.createFont("src/main/resources/Lobster-Regular.ttf", PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
+
             document.add(new Paragraph("Licorera CR La 70")
-                    .setFont(fontBold)
+                    .setFont(lobsterFont)
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER));
 
