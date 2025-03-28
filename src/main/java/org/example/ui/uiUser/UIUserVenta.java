@@ -46,7 +46,7 @@ public class UIUserVenta {
 
 
     public static void showVentaMesaDialog(List<String[]> productos, String mesaID) {
-        ventaMesaDialog = createDialog("Realizar Venta", 1366, 720, new BorderLayout());
+        ventaMesaDialog = createDialog("Realizar Venta "+"["+mesaID+"]", 1366, 720, new BorderLayout());
         ventaMesaDialog.setResizable(true);
 
         // Añadir un WindowListener para detectar el cierre de la ventana

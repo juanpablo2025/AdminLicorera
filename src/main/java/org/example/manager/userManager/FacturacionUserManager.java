@@ -18,26 +18,16 @@ import org.example.manager.adminManager.ConfigAdminManager;
 import org.example.model.Producto;
 import org.example.utils.FormatterHelpers;
 
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.print.*;
-import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.sql.Time;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -76,7 +66,9 @@ public class FacturacionUserManager {
      */
     public static void facturarYSalir() {
         excelUserManager.facturarYLimpiar();
-        eliminarMesasConIdMayorA10();
+
+        //TODO: validar que no este ocupada
+        eliminarMesasConIdMayorA15();
         System.exit(ZERO);
         // Salir del programa después de la facturación
     }
@@ -463,7 +455,7 @@ public class FacturacionUserManager {
             //EmailSender.enviarCorreoConResumen("juanpablo_1810dev@hotmail.com", nombreArchivo);
             //abrirPDF(nombreArchivo);
             FormatterHelpers.formatearMoneda(totalVentas);
-            String numeroDestino = "+573146704316";  // Número al que quieres enviar el mensaje
+            String numeroDestino = "+573112599560";  //"+573146704316" Número al que quieres enviar el mensaje
             String mensaje = "¡Hola! [Licorera la 70] ha generado la liquidacíon de hoy, Por un total de: $ " + FormatterHelpers.formatearMoneda(totalVentas)+ " Pesos"+"\n"+ "Puedes ver los detalle en los resumen adjuntos en Google Drive. https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
             enviarMensaje(numeroDestino,mensaje);
 

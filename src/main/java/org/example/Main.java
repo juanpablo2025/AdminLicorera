@@ -6,6 +6,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.example.ui.uiUser.UIUserMain;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,97 +41,110 @@ public class Main {
             mostrarLogin(); // Si no, mostrar el login
         }
     }
-    
 
 
 
-
-    // Mostrar login estilizado
-    public static void mostrarLogin() {
-        try {
-            // Aplicar FlatLaf para estilo moderno
-            UIManager.setLookAndFeel(new FlatLightLaf());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        JFrame frame = new JFrame("Login - Calculadora Administrador");
-        frame.setSize(600, 300);  // Ampliar la ventana para más espacio
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setLayout(new GridBagLayout()); // Usamos GridBagLayout para mejor control
-
-        // Panel principal para alineación
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(245, 245, 245)); // Fondo gris claro
-        panel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30)); // Márgenes
-
-        // Configuración de GridBagConstraints
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); // Espaciado entre componentes
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        // Etiqueta y campo de usuario
-        JLabel userLabel = new JLabel("Empleado");
-        userLabel.setFont(new Font("Arial", Font.PLAIN, 18));
-        JTextField userField = new JTextField(20);  // Hacer el campo de texto más ancho
-
-// Botón para iniciar sesión
-        JButton loginButton = new JButton("Iniciar Día");
-        loginButton.setFont(new Font("Arial", Font.BOLD, 18));
-        loginButton.setBackground(new Color(100, 149, 237)); // Azul claro para el botón
-        loginButton.setForeground(Color.WHITE);
-
-        // Botón para acceder al administrador
-        JButton adminButton = new JButton("Administrador");
-        adminButton.setFont(new Font("Arial", Font.BOLD, 18));
-        adminButton.setBackground(new Color(70, 130, 180)); // Azul oscuro
-        adminButton.setForeground(Color.WHITE);
-        adminButton.setPreferredSize(new Dimension(60, 20));  // Tamaño fijo
-
-        // Añadir componentes al panel
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;  // Ocupa ambas columnas
-        panel.add(userLabel, gbc);  // Etiqueta arriba
-
-        gbc.gridy = 1;
-        panel.add(userField, gbc);  // Campo de texto debajo de la etiqueta
-
-        gbc.gridy = 2;
-        gbc.gridwidth = 1;  // Resetear a una columna
-        gbc.gridx = 0;
-        gbc.gridwidth = 2;
-        panel.add(loginButton, gbc);
-
-        gbc.gridy = 3;
-        panel.add(adminButton, gbc);
-
-        // Añadir panel al frame
-        frame.add(panel);
-        frame.setLocationRelativeTo(null); // Centrar ventana
-        frame.setVisible(true);
-
-        // Acción para iniciar sesión
-        loginButton.addActionListener(e -> {
-            String nombreUsuario = userField.getText();
-            if (!nombreUsuario.isEmpty()) {
-                registrarDia(nombreUsuario);
-                JOptionPane.showMessageDialog(frame, "¡Día iniciado correctamente!");
-                frame.dispose(); // Cerrar login
-                mainUser(); // Abrir el menú de usuario
-            } else {
-                JOptionPane.showMessageDialog(frame, "Por favor ingresa un nombre de usuario.");
+        public static void mostrarLogin() {
+            try {
+                UIManager.setLookAndFeel(new FlatLightLaf());
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
-        });
 
-        // Acción para acceder al administrador
-        adminButton.addActionListener(e -> {
-            adminPassword();
-            // Lanzar el panel de administrador
-            frame.dispose(); // Cerrar login
+            JFrame frame = new JFrame("Bienvenido - Licorera CR");
+            // Cargar el icono desde el classpath
+            ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png"));
 
-        });
+            if (icon.getImage() != null) {
+                // Redimensionar la imagen a 64x64 píxeles (ajusta según necesidad)
+                Image scaledImage = icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+                frame.setIconImage(scaledImage);
+            } else {
+                System.out.println("⚠ Error: No se encontró el icono. Verifica la ruta.");
+            }
+            frame.setSize(400, 650);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setLayout(new GridBagLayout());
+            frame.setResizable(false);
+
+            JPanel panel = new JPanel(new GridBagLayout());
+            panel.setBackground(Color.WHITE);
+            panel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
+
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.insets = new Insets(15, 15, 15, 15);
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+
+            // Logo
+            JLabel logoLabel = new JLabel();
+            ImageIcon logo = new ImageIcon(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png"));
+            Image img = logo.getImage().getScaledInstance(300, 280, Image.SCALE_SMOOTH);
+            logoLabel.setIcon(new ImageIcon(img));
+
+            // Etiqueta y campo de usuario
+            JLabel userLabel = new JLabel("Encargado de caja");
+            userLabel.setFont(new Font("Arial", Font.BOLD, 20));
+            userLabel.setForeground(Color.BLACK);
+
+            JTextField userField = new JTextField(20);
+            userField.setFont(new Font("Arial", Font.PLAIN, 18));
+            userField.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+
+            JButton loginButton = new JButton("Iniciar Día");
+            loginButton.setFont(new Font("Arial", Font.BOLD, 20));
+            loginButton.setBackground(Color.RED);
+            loginButton.setForeground(Color.WHITE);
+            loginButton.setFocusPainted(false);
+            loginButton.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+            JButton adminButton = new JButton("Administrador");
+            adminButton.setFont(new Font("Arial", Font.BOLD, 20));
+            adminButton.setBackground(Color.BLACK);
+            adminButton.setForeground(Color.WHITE);
+            adminButton.setFocusPainted(false);
+            adminButton.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+            // Agregar componentes al panel
+            gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
+            panel.add(logoLabel, gbc);
+
+            gbc.gridy = 1;
+            panel.add(userLabel, gbc);
+
+            gbc.gridy = 2;
+            panel.add(userField, gbc);
+
+            gbc.gridy = 3;
+            panel.add(loginButton, gbc);
+
+            gbc.gridy = 4;
+            panel.add(adminButton, gbc);
+
+            frame.add(panel);
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+
+            loginButton.addActionListener(e -> {
+                String nombreUsuario = userField.getText();
+                if (!nombreUsuario.isEmpty()) {
+                    registrarDia(nombreUsuario);
+                    JOptionPane.showMessageDialog(frame, "¡Bienvenido!");
+                    frame.dispose();
+                    mainUser();
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Por favor ingresa un nombre de usuario.");
+                }
+            });
+
+            adminButton.addActionListener(e -> {
+                adminPassword();
+                frame.dispose();
+            });
+        }
     }
 
 
-}
+
+
+
+

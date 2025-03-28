@@ -21,13 +21,13 @@ import java.util.List;
 import static org.example.manager.userManager.FacturacionUserManager.generarFacturadeCompra;
 import static org.example.manager.userManager.PrintUserManager.abrirPDF;
 import static org.example.manager.userManager.PrintUserManager.imprimirPDF;
+import static org.example.ui.UIHelpers.createDialog;
 import static org.example.ui.uiUser.UIUserMain.mainUser;
 
 public class UIUserFacturas {
     public static void showFacturasDialog() {
-        JDialog facturasDialog = new JDialog();
-        facturasDialog.setTitle("Listado de Facturas");
-        facturasDialog.setSize(1280, 720);
+        JDialog facturasDialog = createDialog("Listado de Facturas", 1280, 720, new BorderLayout());
+        facturasDialog.setResizable(true);
         facturasDialog.setLayout(new BorderLayout());
         facturasDialog.addWindowListener(new WindowAdapter() {
             @Override

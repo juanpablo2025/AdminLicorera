@@ -56,4 +56,10 @@ public class ProductoAdminManager {
             JOptionPane.showMessageDialog(dialog, INVALID_DATA, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    public void clearProducts() {
+
+    }
+
+
 }

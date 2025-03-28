@@ -62,7 +62,7 @@ public class ExcelAdminManager {
                     String name = row.getCell(ONE).getStringCellValue();
                     int quantity = (int) row.getCell(TWO).getNumericCellValue();
                     double price = row.getCell(THREE).getNumericCellValue();
-                    String foto = row.getCell(FOUR).getStringCellValue();
+                    String foto = row.getCell(FIVE).getStringCellValue();
 
                     products.add(new Producto(name, quantity, price,foto));
                 }
@@ -235,6 +235,52 @@ public class ExcelAdminManager {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public static void updateProducts(List<Producto> existingProducts) {
+        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
+            int lastRowNum = sheet.getLastRowNum(); // Última fila con datos
+
+            for (Producto producto : existingProducts) {
+                boolean exists = false;
+
+                // Verifica si el producto ya existe en la hoja
+                for (int i = 1; i <= lastRowNum; i++) {
+                    Row row = sheet.getRow(i);
+                    if (row != null) {
+                        String name = row.getCell(ONE).getStringCellValue();
+
+                        if (name.equalsIgnoreCase(producto.getName())) {
+                            // Producto encontrado, actualizar cantidad y precio
+                            row.getCell(TWO).setCellValue(producto.getQuantity());
+                            row.getCell(THREE).setCellValue(producto.getPrice());
+                            exists = true;
+                            break;
+                        }
+                    }
+                }
+
+                // Si el producto no existe, lo añadimos en una nueva fila
+                if (!exists) {
+                    Row newRow = sheet.createRow(++lastRowNum);
+                    newRow.createCell(ONE).setCellValue(producto.getName());
+                    newRow.createCell(TWO).setCellValue(producto.getQuantity());
+                    newRow.createCell(THREE).setCellValue(producto.getPrice());
+                    newRow.createCell(FIVE).setCellValue(producto.getFoto());
+                }
+            }
+
+            // Guardar cambios
+            try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH.toString())) {
+                workbook.write(fileOut);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

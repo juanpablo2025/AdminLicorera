@@ -847,7 +847,7 @@ public class ExcelUserManager {
         }
     }
     // Método para eliminar mesas con ID mayor a 10
-    public static void eliminarMesasConIdMayorA10() {
+    public static void eliminarMesasConIdMayorA15() {
         try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
              Workbook workbook = WorkbookFactory.create(fis)) {
 
@@ -992,6 +992,33 @@ public class ExcelUserManager {
         }
     }
 
+    public static String obtenerUltimoEmpleado() {
+         String EMPLEADOS_SHEET_NAME = "Empleados";
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            Sheet empleadosSheet = workbook.getSheet(EMPLEADOS_SHEET_NAME);
+            if (empleadosSheet == null) return "No hay empleados registrados";
+
+            int lastRowIndex = empleadosSheet.getLastRowNum();
+            while (lastRowIndex >= 0) {
+                Row row = empleadosSheet.getRow(lastRowIndex);
+                if (row != null) {
+                    Cell cell = row.getCell(0); // Suponiendo que los nombres están en la columna A (índice 0)
+                    if (cell != null && cell.getCellType() == CellType.STRING) {
+                        return cell.getStringCellValue();
+                    }
+                }
+                lastRowIndex--;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "No se encontró un nombre de empleado";
+    }
+
+
+
     // Crea el archivo y la hoja si no existe
     public static void crearArchivoSiNoExiste() {
         File file = new File(FILE_PATH);
@@ -1015,7 +1042,7 @@ public class ExcelUserManager {
         } else {
             System.out.println("El archivo ya existe: " + FILE_PATH);
         }
-    }
+    }}
 
-}
+
 

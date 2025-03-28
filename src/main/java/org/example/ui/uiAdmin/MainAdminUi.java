@@ -75,7 +75,7 @@ public class MainAdminUi {
             // Panel central con botones 2x2
             JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 10, 10)); // Grid 2x2
             buttonPanel.setBackground(new Color(245, 245, 245)); // Fondo igual al principal
-            buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Márgenes
+            buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 10, 50)); // Márgenes
 
 
             ImageIcon originalreabastecerIcon = new ImageIcon((UIUserMain.class.getResource("/icons/admin/transaccion.png")));
@@ -86,7 +86,7 @@ public class MainAdminUi {
 
 
             // Crear botones estilizados
-            JButton reabastecerButton = createButton("Reabastecer",reabastecerIcon, e -> {
+            JButton reabastecerButton = createButton("Reabastecer",reabastecerIcon,  e -> {
                 showReabastecimientoDialog();
                 frame.dispose();
             });

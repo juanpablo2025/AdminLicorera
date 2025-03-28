@@ -1,8 +1,10 @@
 package org.example.ui.uiAdmin;
 
+import org.example.manager.adminManager.ExcelAdminManager;
 import org.example.model.Producto;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
@@ -21,127 +23,172 @@ import static org.example.utils.Constants.LISTAR_PRODUCTO;
 
 public class UIAdminProducts {
     static void showProductosDialog() {
-
         // Crear el diálogo
         JDialog listProductsDialog = createDialog(LISTAR_PRODUCTO, 1280, 720, new BorderLayout());
-        listProductsDialog.setResizable(true); // Permitir que la ventana sea redimensionable
+        listProductsDialog.setResizable(true);
         listProductsDialog.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                // Cuando se cierra la ventana de venta, mostrar la ventana de mesas
-                mainAdmin() ; // Llamada a showMesas cuando se cierra la ventana
+                mainAdmin();
             }
         });
+
         // Obtener la lista de productos
         List<Producto> products = productoAdminManager.getProducts();
         String[] columnNames = {"Nombre", "Cantidad", "Precio"};
         Object[][] data = new Object[products.size()][3];
 
-        // Llenar los datos en la matriz
+// Llenar los datos en la matriz
+        NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
         for (int i = 0; i < products.size(); i++) {
-            NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
             Producto p = products.get(i);
-            double precio = p.getPrice();
-            data[i][0] = p.getName(); // Nombre
-            data[i][1] = p.getQuantity(); // Cantidad
-            data[i][2] = formatCOP.format(precio); // Precio formateado
+            data[i][0] = p.getName();
+            data[i][1] = p.getQuantity(); // La cantidad se manejará con JComboBox
+            data[i][2] = formatCOP.format(p.getPrice());
         }
 
-        // Crear un DefaultTableModel personalizado que haga que las celdas no sean editables
+// Modelo de tabla personalizado
         DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Hacer todas las celdas no editables
+                return column == 0 || column == 1 || column == 2; // ✅ Ahora se pueden editar Nombre, Cantidad y Precio
+            }
+
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                return (columnIndex == 1) ? Integer.class : String.class;
             }
         };
 
-        // Crear el JTable usando el modelo personalizado
+        // Crear la tabla
         JTable productTable = new JTable(tableModel);
-        productTable.setFillsViewportHeight(true);
-        productTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); // Ajustar automáticamente el tamaño de las columnas
-
-        // Establecer la fuente y el tamaño
-        Font font = new Font("Arial", Font.PLAIN, 18); // Cambiar el tipo y tamaño de fuente
-        productTable.setFont(font);
-        productTable.setRowHeight(30); // Aumentar la altura de las filas
-
-        // Establecer la fuente para el encabezado
-        JTableHeader header = productTable.getTableHeader();
-        header.setFont(new Font("Arial", Font.BOLD, 20)); // Fuente más grande para el encabezado
-        header.setBackground(Color.LIGHT_GRAY); // Fondo para el encabezado
-        header.setForeground(Color.BLACK); // Color del texto del encabezado
-
-        // Configuración de borde para mejorar la visibilidad
-        productTable.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-        productTable.setBackground(Color.WHITE); // Fondo de la tabla
-        productTable.setSelectionBackground(Color.CYAN); // Color de selección
-        productTable.setSelectionForeground(Color.BLACK); // Color del texto seleccionado
-
-        // Añadir el JTable dentro de un JScrollPane
-        JScrollPane scrollPane = new JScrollPane(productTable);
-        listProductsDialog.add(scrollPane, BorderLayout.CENTER);
-
-        // Panel para añadir nuevos productos
-        JPanel addProductPanel = new JPanel(new GridLayout(1, 6, 10, 10)); // Panel con GridLayout para campos de entrada
-        addProductPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Añadir márgenes
-
-        JTextField nameField = new JTextField();
-        JTextField quantityField = new JTextField();
-        JTextField priceField = new JTextField();
+// Centrar las cantidades en la celda
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        productTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
 
 
-        addProductPanel.add(new JLabel("Nombre:"));
-        addProductPanel.add(nameField);
-        addProductPanel.add(new JLabel("Cantidad:"));
-        addProductPanel.add(quantityField);
-        addProductPanel.add(new JLabel("Precio:"));
-        addProductPanel.add(priceField);
+        // Editor para la columna Cantidad
+        JComboBox<Integer> quantityCombo = new JComboBox<>();
+        for (int i = 0; i <= 100; i++) quantityCombo.addItem(i);
+        productTable.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(quantityCombo));
 
-        listProductsDialog.add(addProductPanel, BorderLayout.NORTH);
-
-        // Botón para añadir productos
-        JButton addProductButton = new JButton("Añadir Producto");
-
-// Agregar el ActionListener al botón
-        addProductButton.addActionListener(e -> {
-            try {
-                String name = nameField.getText();
-                int quantity = Integer.parseInt(quantityField.getText());
-                double price = Double.parseDouble(priceField.getText());
-                String foto = "foto" ;
-
-                // Crear nuevo producto y añadirlo al productoManager
-                Producto newProduct = new Producto(name, quantity, price,foto);
-                productoAdminManager.addProduct(newProduct); // Método que debes tener en productoManager para añadir productos
-
-                // Añadir el nuevo producto a la tabla
-                tableModel.addRow(new Object[]{
-                        name,
-                        quantity,
-                        NumberFormat.getInstance(new Locale("es", "CO")).format(price)
-                });
-
-                // Limpiar los campos de entrada
-                nameField.setText("");
-                quantityField.setText("");
-                priceField.setText("");
-
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(listProductsDialog, "Error al agregar el producto. Asegúrate de ingresar datos válidos.", "Error", JOptionPane.ERROR_MESSAGE);
+        // Editor para la columna Precio con validación
+        productTable.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(new JTextField()) {
+            @Override
+            public boolean stopCellEditing() {
+                try {
+                    String value = (String) getCellEditorValue();
+                    String cleanValue = value.replace(".", "").replace(",", "");
+                    Double.parseDouble(cleanValue);
+                    return super.stopCellEditing();
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(productTable, "Formato de precio inválido", "Error", JOptionPane.ERROR_MESSAGE);
+                    return false;
+                }
             }
         });
 
+        // Estilos de la tabla
+        productTable.setFont(new Font("Arial", Font.PLAIN, 18));
+        productTable.setRowHeight(30);
+        JTableHeader header = productTable.getTableHeader();
+        header.setFont(new Font("Arial", Font.BOLD, 20));
+        header.setBackground(Color.LIGHT_GRAY);
+        header.setForeground(Color.BLACK);
+        productTable.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        productTable.setSelectionBackground(Color.CYAN);
+        productTable.setSelectionForeground(Color.BLACK);
+// Aplicar renderizador solo a la columna de cantidad
+        // Aplicar renderizador a toda la fila si la cantidad es menor a 0
+        productTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-        // Panel para los botones
+                try {
+                    int cantidad = (int) table.getValueAt(row, 1); // Obtener cantidad de la fila
+                    if (cantidad < 0) {
+                        cell.setBackground(new Color(255, 102, 102)); // Rojo sutil para toda la fila
+                    } else {
+                        cell.setBackground(isSelected ? table.getSelectionBackground() : Color.WHITE);
+                    }
+                } catch (Exception e) {
+                    cell.setBackground(Color.WHITE); // En caso de error, mantener el color normal
+                }
+
+                return cell;
+            }
+        });
+        // Panel principal
+        JScrollPane scrollPane = new JScrollPane(productTable);
+        listProductsDialog.add(scrollPane, BorderLayout.CENTER);
+
+        // Panel de botones
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.add(addProductButton);
 
+        // Botón para añadir fila
+        JButton addButton = new JButton("Añadir Producto");
+        addButton.addActionListener(e -> {
+            tableModel.addRow(new Object[]{"Nuevo_Producto", 0, "0"});
+            productTable.scrollRectToVisible(productTable.getCellRect(productTable.getRowCount() - 1, 0, true));
+        });
 
+        // Botón para guardar cambios
+        JButton saveButton = new JButton("Guardar Cambios");
+        saveButton.addActionListener(e -> {
+            try {
+                List<Producto> existingProducts = productoAdminManager.getProducts();
+
+                for (int i = 0; i < tableModel.getRowCount(); i++) {
+                    String nombre = ((String) tableModel.getValueAt(i, 0))
+                            .toUpperCase()        // Convertir a mayúsculas
+                            .replace(" ", "_");
+                    int cantidad = (Integer) tableModel.getValueAt(i, 1);
+
+                    // Validar y formatear el precio
+                    String precioStr = ((String) tableModel.getValueAt(i, 2)).replace(".", "").replace(",", "");
+                    double precio = Double.parseDouble(precioStr);
+
+                    String rutaFoto = "\\\\Calculadora del Administrador\\\\Fotos\\\\" + nombre + ".png";
+
+                    // Buscar si el producto ya existe
+                    Producto productoExistente = existingProducts.stream()
+                            .filter(p -> p.getName().equalsIgnoreCase(nombre))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (productoExistente != null) {
+                        // ✅ Actualizar cantidad y precio si el producto ya existe
+                        productoExistente.setCantidad(cantidad);
+                        productoExistente.setPrecio(precio);
+                    } else {
+                        // ✅ Crear nuevo producto y agregarlo a la lista
+                        Producto nuevoProducto = new Producto(nombre, cantidad, precio, rutaFoto);
+                        existingProducts.add(nuevoProducto);
+                    }
+                }
+
+                // ✅ Guardar la lista actualizada
+                ExcelAdminManager.updateProducts(existingProducts);
+
+                // ✅ Recargar la tabla con los productos actualizados
+                tableModel.setRowCount(0); // Limpiar la tabla antes de actualizar
+                for (Producto p : existingProducts) {
+                    tableModel.addRow(new Object[]{p.getName(), p.getQuantity(), formatCOP.format(p.getPrice())});
+                }
+
+                JOptionPane.showMessageDialog(listProductsDialog, "Cambios guardados exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(listProductsDialog, "Error al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Agregar botones al panel
+        buttonPanel.add(addButton);
+        buttonPanel.add(saveButton);
         listProductsDialog.add(buttonPanel, BorderLayout.SOUTH);
 
-
-        // Mostrar el diálogo
+        // Hacer visible el diálogo
         listProductsDialog.setVisible(true);
-        listProductsDialog.setLocationRelativeTo(null);
-    }
-}
+    }}

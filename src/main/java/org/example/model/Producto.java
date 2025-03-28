@@ -56,4 +56,8 @@ public class Producto {
     public String getFoto() {
         return foto;
     }
+
+    public void setPrecio(double precio) {
+        this.price = precio;
+    }
 }

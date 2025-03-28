@@ -78,7 +78,7 @@ public class UIHelpers {
     public static JButton createButton(String text, Icon icon, ActionListener listener) {
         JButton button = new JButton();
         button.setFont(new Font("Arial", Font.BOLD, 16));
-        button.setPreferredSize(new Dimension(180, 140));
+        button.setPreferredSize(new Dimension(180, 10));
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setBackground(new Color(255, 60, 60));
         button.setForeground(Color.WHITE);
@@ -93,7 +93,7 @@ public class UIHelpers {
 
         JLabel iconLabel = new JLabel(icon);
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        iconLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        iconLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 8, 0));
 
         JSeparator separator = new JSeparator();
         separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 5));
@@ -145,12 +145,34 @@ public class UIHelpers {
     public static JTextField createTextField() {
         return new JTextField();
     }
+    private static JFrame mainFrame; // Agregar referencia al JFrame principal
 
+    public static void setMainFrame(JFrame frame) {
+        mainFrame = frame;
+    }
     public static JDialog createDialog(String title, int width, int height, LayoutManager layout) {
-        JDialog dialog = new JDialog();
-        dialog.setTitle(title);
+        JDialog dialog = new JDialog((Frame) null, title, Dialog.ModalityType.MODELESS);
         dialog.setSize(width, height);
         dialog.setLayout(layout);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        // Aplicar el mismo icono que la ventana principal si existe
+        if (mainFrame != null && mainFrame.getIconImage() != null) {
+            dialog.setIconImage(mainFrame.getIconImage());
+        } else {
+            // Cargar el icono manualmente si no está asignado en mainFrame
+            ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png"));
+            if (icon.getImage() != null) {
+                Image scaledImage = icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
+                dialog.setIconImage(scaledImage);
+            } else {
+                System.out.println("⚠ Error: No se encontró el icono. Verifica la ruta.");
+            }
+        }
+
+        // Centrar el diálogo en la pantalla
+        dialog.setLocationRelativeTo(null);
+
         return dialog;
     }
     public static JPanel createInputLista(JTable table, VentaMesaUserManager ventaMesaUserManager) {

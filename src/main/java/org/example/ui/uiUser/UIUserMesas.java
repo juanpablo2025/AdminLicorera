@@ -249,7 +249,51 @@ public class UIUserMesas {
             gridMesasPanel.add(mesaPanel);
         }
 
-        JButton addMesaButton = new JButton("Añadir Mesa");
+        JButton addMesaButton = new JButton("Nueva Mesa") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                // Sombra del botón
+                g2.setColor(new Color(0, 0, 0, 30));
+                g2.fillRoundRect(2, 4, getWidth() - 4, getHeight() - 4, 40, 40);
+
+                // Color de fondo normal
+                if (getModel().isPressed()) {
+                    g2.setColor(new Color(255, 193, 7)); // Amarillo oscuro al presionar
+                } else {
+                    g2.setColor(new Color(255, 215, 0)); // Amarillo Material Design
+                }
+
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
+                super.paintComponent(g);
+            }
+        };
+
+        // Estilos del botón
+        addMesaButton.setPreferredSize(new Dimension(150, 40)); // Más grande
+        addMesaButton.setFont(new Font("Arial", Font.BOLD, 18)); // Fuente grande
+        addMesaButton.setForeground(Color.BLACK); // Texto negro
+        addMesaButton.setFocusPainted(false);
+        addMesaButton.setContentAreaFilled(false);
+        addMesaButton.setBorderPainted(false);
+        addMesaButton.setOpaque(false);
+
+        // Efecto hover (cambia color al pasar el cursor)
+        addMesaButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                addMesaButton.setForeground(Color.DARK_GRAY);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                addMesaButton.setForeground(Color.BLACK);
+            }
+        });
+
+// Acción al presionar el botón
         addMesaButton.addActionListener(e -> {
             String nuevoID = String.valueOf(mesas.size() + 1);
             Mesa nuevaMesa = new Mesa(nuevoID);
