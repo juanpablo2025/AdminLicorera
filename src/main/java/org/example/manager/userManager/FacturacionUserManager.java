@@ -19,10 +19,7 @@ import org.example.manager.adminManager.ConfigAdminManager;
 import org.example.model.Producto;
 import org.example.utils.FormatterHelpers;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -85,8 +82,10 @@ public class FacturacionUserManager {
 
     public static void generarFacturadeCompra(String ventaID, List<String> productos, double totalCompra, LocalDateTime fechaHora, String tipoPago) {
         try {
-            PdfFont lobsterFont = PdfFontFactory.createFont("src/main/resources/Lobster-Regular.ttf", PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
-
+            InputStream fontStream = FacturacionUserManager.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
+            // Leer la fuente desde el InputStream
+            byte[] fontBytes = fontStream.readAllBytes();
+            PdfFont lobsterFont = PdfFontFactory.createFont(fontBytes, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String fechaFormateada = fechaHora.format(formatter);
             String paperSize = ConfigAdminManager.getPaperSize();
@@ -639,8 +638,10 @@ public class FacturacionUserManager {
 
             // Agradecimiento o información adicional
 
-            PdfFont lobsterFont = PdfFontFactory.createFont("src/main/resources/Lobster-Regular.ttf", PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
-
+            InputStream fontStream = FacturacionUserManager.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
+            // Leer la fuente desde el InputStream
+            byte[] fontBytes = fontStream.readAllBytes();
+            PdfFont lobsterFont = PdfFontFactory.createFont(fontBytes, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
             document.add(new Paragraph("Licorera CR La 70")
                     .setFont(lobsterFont)
                     .setFontSize(10)

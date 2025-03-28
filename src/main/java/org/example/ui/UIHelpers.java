@@ -93,10 +93,10 @@ public class UIHelpers {
 
         JLabel iconLabel = new JLabel(icon);
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        iconLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 8, 0));
+        iconLabel.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
 
         JSeparator separator = new JSeparator();
-        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 5));
+        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 3));
         separator.setForeground(new Color(200, 170, 100));
 
         JLabel textLabel = new JLabel(text);
@@ -105,9 +105,20 @@ public class UIHelpers {
         textLabel.setForeground(Color.WHITE);
 
         try {
-            Font customFont = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/Lobster-Regular.ttf"));
-            customFont = customFont.deriveFont(Font.BOLD, 18); // Ajustar tamaño y peso
+            // Cargar la fuente desde el classpath dentro del JAR
+            InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream("Pacifico-Regular.ttf");
+
+            if (fontStream == null) {
+                throw new IOException("No se pudo encontrar la fuente en los recursos.");
+            }
+
+            // Crear la fuente desde el InputStream
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+            customFont = customFont.deriveFont(Font.ITALIC, 16); // Ajustar tamaño
+
+            // Aplicar la fuente al JLabel
             textLabel.setFont(customFont);
+
         } catch (Exception e) {
             e.printStackTrace();
         }

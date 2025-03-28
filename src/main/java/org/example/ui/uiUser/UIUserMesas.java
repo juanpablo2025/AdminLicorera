@@ -12,6 +12,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -238,7 +239,14 @@ public class UIUserMesas {
         JLabel titleLabel = new JLabel("Mesas", JLabel.CENTER);
         titleLabel.setForeground(Color.BLACK);
         try {
-            Font customFont = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/Lobster-Regular.ttf"));
+
+
+            // Cargar la fuente desde los recursos dentro del JAR
+            InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
+
+
+            // Crear la fuente desde el InputStream
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
             customFont = customFont.deriveFont(Font.BOLD, 50); // Ajustar tamaño y peso
             titleLabel.setFont(customFont);
         } catch (Exception e) {

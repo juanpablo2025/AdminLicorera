@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
+import java.io.InputStream;
 
 import static org.example.ui.uiAdmin.MainAdminUi.*;
 import static org.example.ui.uiUser.UIUserFacturas.showFacturasDialog;
@@ -62,9 +63,16 @@ public class UIUserMain {
             JLabel employeeLabel = new JLabel(nombreEmpleado);
             employeeLabel.setForeground(Color.DARK_GRAY);
             try {
-                Font customFont = Font.createFont(Font.TRUETYPE_FONT, new File("src/main/resources/Pacifico-Regular.ttf"));
-                customFont = customFont.deriveFont(Font.BOLD, 30); // Ajustar tamaño y peso
+                // Cargar la fuente desde el classpath dentro del JAR
+                InputStream fontStream = UIUserMain.class.getClassLoader().getResourceAsStream("Pacifico-Regular.ttf");
+
+                // Crear la fuente desde el InputStream
+                Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+                customFont = customFont.deriveFont(Font.PLAIN, 30); // Ajustar tamaño
+
+                // Aplicar la fuente al JLabel
                 employeeLabel.setFont(customFont);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
