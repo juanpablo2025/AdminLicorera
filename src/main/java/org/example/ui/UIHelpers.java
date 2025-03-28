@@ -332,16 +332,20 @@ public class UIHelpers {
                                 super.paintComponent(g);
                                 Graphics2D g2 = (Graphics2D) g;
                                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                                g2.setColor(Color.BLACK);
+                                g2.setColor(new Color(186, 27, 26));
                                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
                             }
                         };
-                        namePanel.setPreferredSize(new Dimension(200, 30));
+                        namePanel.setPreferredSize(new Dimension(220, 30));
                         namePanel.setOpaque(false);
                         namePanel.setLayout(new BorderLayout());
 
-                        JLabel nameLabel = new JLabel(product.getName(), SwingConstants.CENTER);
-                        nameLabel.setFont(new Font("Arial", Font.BOLD, 14));
+                        String formattedName = product.getName().replace("_", " "); // Reemplaza _ con espacio
+                        formattedName = formattedName.toLowerCase(); // Convierte todo a minúsculas
+                        formattedName = Character.toUpperCase(formattedName.charAt(0)) + formattedName.substring(1); // Primera letra en mayúscula
+
+                        JLabel nameLabel = new JLabel(formattedName, SwingConstants.CENTER);
+                        nameLabel.setFont(new Font("Arial", Font.BOLD, 17));
                         nameLabel.setForeground(Color.WHITE);
                         namePanel.add(nameLabel, BorderLayout.CENTER);
 

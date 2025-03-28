@@ -43,7 +43,21 @@ public class UIUserProductList {
 
         for (int i = 0; i < products.size(); i++) {
             Producto p = products.get(i);
-            data[i][0] = p.getName();
+
+            // **Transformar el nombre del producto**
+            String formattedName = p.getName().replace("_", " ").toLowerCase();
+            String[] words = formattedName.split(" ");
+            StringBuilder capitalizedName = new StringBuilder();
+            for (String word : words) {
+                if (!word.isEmpty()) {
+                    capitalizedName.append(Character.toUpperCase(word.charAt(0)))
+                            .append(word.substring(1))
+                            .append(" ");
+                }
+            }
+            formattedName = capitalizedName.toString().trim(); // Elimina espacio extra al final
+
+            data[i][0] = formattedName; // Nombre formateado
             data[i][1] = p.getQuantity();
             data[i][2] = formatCOP.format(p.getPrice());
         }
