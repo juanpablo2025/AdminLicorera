@@ -49,7 +49,7 @@ public class UIUserMain {
             mainPanel.setBackground(new Color(245, 245, 245));
 
             JPanel sidebarPanel = new JPanel(new BorderLayout());
-            sidebarPanel.setPreferredSize(new Dimension(260, frame.getHeight()));
+            sidebarPanel.setPreferredSize(new Dimension(240, frame.getHeight()));
             sidebarPanel.setBackground(fondoPrincipal);
 // Panel dinámico para cambiar vistas
             JPanel contentPanel = new JPanel(new CardLayout());
@@ -94,7 +94,7 @@ public class UIUserMain {
             employeeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             try {
                 InputStream fontStream = UIUserMain.class.getClassLoader().getResourceAsStream("Pacifico-Regular.ttf");
-                Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 30);
+                Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 32);
                 employeeLabel.setFont(customFont);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -119,7 +119,7 @@ public class UIUserMain {
                     int panelWidth = sidebarPanel.getWidth();
                     int panelHeight = sidebarPanel.getHeight();
 
-                    int buttonWidth = (int) (panelWidth * 0.8);  // 90% del ancho del sidebar
+                    int buttonWidth = (int) (panelWidth * 0.9);  // 90% del ancho del sidebar
                     int buttonHeight = (int) (panelHeight * 0.14); // 12% del alto del sidebar
 
                     Dimension buttonSize = new Dimension(buttonWidth, buttonHeight);
@@ -201,7 +201,7 @@ public class UIUserMain {
 
     private static ImageIcon resizeIcon(String path) {
         ImageIcon icon = new ImageIcon(UIUserMain.class.getResource(path));
-        Image img = icon.getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+        Image img = icon.getImage().getScaledInstance(100, 60, Image.SCALE_SMOOTH);
         return new ImageIcon(img);
     }
 }

@@ -550,8 +550,7 @@ public class UIUserVenta {
 
         confirmarCompraButton.setFont(new Font("Arial", Font.BOLD, 18));
         confirmarCompraButton.setForeground(Color.WHITE);
-        confirmarCompraButton.setBackground(new Color(0, 204, 136));
-        confirmarCompraButton.setOpaque(true);
+        confirmarCompraButton.setBackground(new Color(168, 230, 207));
         confirmarCompraButton.setBorderPainted(false);
         confirmarCompraButton.setFocusPainted(false);
         confirmarCompraButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -559,6 +558,20 @@ public class UIUserVenta {
                 BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
                 BorderFactory.createEmptyBorder(10, 20, 10, 20)
         ));
+// Efecto hover: cambiar color al pasar el mouse
+        confirmarCompraButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                confirmarCompraButton.setBackground(new Color(0, 201, 87)); // Cambia a color más oscuro
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                confirmarCompraButton.setBackground(new Color(168, 230, 207)); // Vuelve al color original
+            }
+        });
+
+
 
 
 
@@ -821,7 +834,7 @@ public class UIUserVenta {
         // Efecto hover: cambiar ligeramente el color al pasar el mouse
         saveCompraButton.addMouseListener(new MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                saveCompraButton.setBackground(new Color(255, 60, 60));
+                saveCompraButton.setBackground(new Color(201, 41, 41));
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {

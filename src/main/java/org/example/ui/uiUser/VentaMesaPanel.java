@@ -16,10 +16,12 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+
 
 import static org.example.manager.userManager.ExcelUserManager.cargarProductosMesaDesdeExcel;
 import static org.example.ui.UIHelpers.*;
@@ -46,7 +48,7 @@ public class VentaMesaPanel extends JPanel {
 
 
         JLabel titleLabel = new JLabel("Venta "+mesaID, JLabel.CENTER);
-        titleLabel.setForeground(Color.BLACK);
+        titleLabel.setForeground(new Color(28,28,28));
         try {
 
 
@@ -64,6 +66,8 @@ public class VentaMesaPanel extends JPanel {
 
         // Crear la tabla de productos usando createProductTable
         JTable table = createProductTable();
+        table.getColumnModel().getColumn(2).setCellRenderer(new UIHelpers.CurrencyRenderer());
+
 
         DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
 
@@ -75,15 +79,28 @@ public class VentaMesaPanel extends JPanel {
         // Establecer la fuente para el encabezado
         JTableHeader header = table.getTableHeader();
         header.setFont(new Font("Arial", Font.BOLD, 20)); // Fuente más grande para el encabezado
-        header.setBackground(Color.LIGHT_GRAY); // Fondo para el encabezado
-        header.setForeground(Color.BLACK); // Color del texto del encabezado
+        header.setBackground(new Color(28,28,28)); // Fondo para el encabezado
+        header.setForeground(new Color(201, 41, 41)); // Color del texto del encabezado
 
         // Configuración de borde y colores para la tabla
         table.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
         table.setBackground(new Color(250, 240, 230)); // Fondo de la tabla
         table.setSelectionBackground(new Color(173, 216, 255)); // Color de selección
         table.setSelectionForeground(Color.BLACK); // Color del texto seleccionado
+        try (InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf")) {
+            if (fontStream == null) {
+                throw new IOException("No se pudo encontrar la fuente 'Lobster-Regular.ttf' en los recursos.");
+            }
 
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.ITALIC, 26);
+
+            header.setFont(customFont);
+            header.setForeground(new Color(201, 41, 41));
+
+        } catch (FontFormatException | IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al cargar la fuente personalizada: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
         tableModel.setRowCount(0);
 
         // Cargar los productos en la tabla y calcular el total inicial
@@ -104,12 +121,32 @@ public class VentaMesaPanel extends JPanel {
 
         // Campo para mostrar el total
         JTextField totalField = new JTextField("Total: $" + FormatterHelpers.formatearMoneda(sumaTotal.get()) + " Pesos");
-        totalField.setFont(new Font("Arial", Font.BOLD, 24));
+        totalField.setFont(new Font("Arial", Font.BOLD, 26));
         totalField.setForeground(Color.RED);
         totalField.setEditable(false);
         totalField.setHorizontalAlignment(JTextField.RIGHT);
         totalField.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         totalField.setVisible(sumaTotal.get() > 0);
+        totalField.setBackground(new Color(250, 240, 230)); // Fondo del campo total
+        try {
+            // Cargar la fuente desde los recursos
+            InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
+
+            if (fontStream == null) {
+                throw new IOException("No se pudo encontrar la fuente en los recursos.");
+            }
+
+            // Crear la fuente y derivar un tamaño adecuado
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 26);
+
+            // Aplicar el texto formateado
+            totalField.setText("Total: $ " + FormatterHelpers.formatearMoneda(sumaTotal.get()) + " Pesos");
+
+            // Aplicar la fuente al JTextField
+            totalField.setFont(customFont);
+        } catch (Exception e) {
+            e.printStackTrace(); // Mostrar error en caso de fallo al cargar la fuente
+        }
 
 // Panel del total
         JPanel totalPanel = createTotalPanel();
@@ -138,8 +175,29 @@ public class VentaMesaPanel extends JPanel {
                         nuevoTotalGeneral += subtotal;
                     }
 
-                    totalField.setText("Total: $" + FormatterHelpers.formatearMoneda(nuevoTotalGeneral) + " Pesos");
+                    totalField.setText("Total: $ " + FormatterHelpers.formatearMoneda(nuevoTotalGeneral) + " Pesos");
                     totalField.setVisible(nuevoTotalGeneral > 0);
+
+                    try {
+                        // Cargar la fuente desde los recursos
+                        InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
+
+                        if (fontStream == null) {
+                            throw new IOException("No se pudo encontrar la fuente en los recursos.");
+                        }
+
+                        // Crear la fuente y derivar un tamaño adecuado
+                        Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 26);
+
+                        // Aplicar el texto formateado
+                        totalField.setText("Total: $ " + FormatterHelpers.formatearMoneda(nuevoTotalGeneral) + " Pesos");
+
+                        // Aplicar la fuente al JTextField
+                        totalField.setFont(customFont);
+                    } catch (FontFormatException | IOException ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Error al cargar la fuente personalizada: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    }
                 } finally {
                     updatingTable = false;
                 }
@@ -158,7 +216,7 @@ public class VentaMesaPanel extends JPanel {
         openSubMenuButton.setFont(new Font("Arial", Font.BOLD, 18));
         openSubMenuButton.addActionListener(e -> createProductSubMenu(table, ProductoUserManager.getProducts(), mainPanel));
 
-
+        totalPanel.setBackground((new Color(250, 240, 230)));
         JPanel buttonPanel = createButtonPanel(table, new VentaMesaUserManager(), (JDialog) compraDialog, mesaID, mainPanel, frame);
         JPanel southPanel = new JPanel(new BorderLayout());
         southPanel.add(totalPanel, BorderLayout.NORTH);
@@ -235,8 +293,27 @@ public class VentaMesaPanel extends JPanel {
         }
 
         JTextField totalField = (JTextField) ((JPanel) mainPanel.getComponent(2)).getComponent(0);
-        totalField.setText("Total: $" + FormatterHelpers.formatearMoneda(nuevoTotal) + " Pesos");
+        totalField.setText("Total: $ " + FormatterHelpers.formatearMoneda(nuevoTotal) + " Pesos");
         totalField.setVisible(nuevoTotal > 0);
+        try {
+            // Cargar la fuente desde los recursos
+            InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
+
+            if (fontStream == null) {
+                throw new IOException("No se pudo encontrar la fuente en los recursos.");
+            }
+
+            // Crear la fuente y derivar un tamaño adecuado
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 26);
+
+            // Aplicar el texto formateado
+            totalField.setText("Total: $ " + FormatterHelpers.formatearMoneda(nuevoTotal) + " Pesos");
+
+            // Aplicar la fuente al JTextField
+            totalField.setFont(customFont);
+        } catch (Exception e) {
+            e.printStackTrace(); // Mostrar error en caso de fallo al cargar la fuente
+        }
     }
 
 

@@ -162,7 +162,7 @@ public class UIUserMesas {
 
 
         JLabel titleLabel = new JLabel("Mesa " + idMesa, JLabel.CENTER);
-        titleLabel.setForeground(new Color(36, 36, 36));
+        titleLabel.setForeground(new Color(28, 28, 28));
         try {
 
 
@@ -228,7 +228,7 @@ public class UIUserMesas {
                 );
                 mesaPanel.setBackground(mesa.isOcupada() ? new Color(255, 60, 60) : new Color(0, 201, 87));
 
-                newBorder.setTitleFont(new Font("Arial", Font.BOLD, 28)); // Cambiar fuente a 28
+                newBorder.setTitleFont(new Font("Arial", Font.BOLD, 20)); // Cambiar fuente a 28
                 mesaPanel.setBorder(newBorder);
                 mesaLabel.setForeground(Color.WHITE);
                 newBorder.setTitleColor(Color.white);
@@ -256,7 +256,7 @@ public class UIUserMesas {
         ));
 
         JLabel titleLabel = new JLabel("Mesas", JLabel.CENTER);
-        titleLabel.setForeground(Color.BLACK);
+        titleLabel.setForeground(new Color (28, 28, 28));
         try {
             InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 50);

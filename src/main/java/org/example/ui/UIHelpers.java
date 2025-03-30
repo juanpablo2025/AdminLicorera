@@ -80,7 +80,7 @@ public class UIHelpers {
         button.setFont(new Font("Arial", Font.BOLD, 16));
         button.setPreferredSize(new Dimension(180, 10));
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setBackground(new Color(255, 60, 60));
+        button.setBackground(new Color(186, 27, 26));
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
         button.setContentAreaFilled(false);
@@ -93,7 +93,7 @@ public class UIHelpers {
 
         JLabel iconLabel = new JLabel(icon);
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        iconLabel.setBorder(BorderFactory.createEmptyBorder(3, 0, 3, 0));
+        iconLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
 
         JSeparator separator = new JSeparator();
         separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 3));
@@ -114,7 +114,7 @@ public class UIHelpers {
 
             // Crear la fuente desde el InputStream
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            customFont = customFont.deriveFont(Font.ITALIC, 18); // Ajustar tamaño
+            customFont = customFont.deriveFont(Font.ITALIC, 20); // Ajustar tamaño
 
             // Aplicar la fuente al JLabel
             textLabel.setFont(customFont);
@@ -137,7 +137,7 @@ public class UIHelpers {
             }
 
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(new Color(255, 60, 60));
+                button.setBackground(new Color(186, 27, 26));
             }
         });
 
@@ -253,7 +253,7 @@ public class UIHelpers {
         searchField.setFont(new Font("Arial", Font.PLAIN, 16));
         searchField.setPreferredSize(new Dimension(470, 30));
         searchPanel.add(searchField);
-        searchPanel.setBackground(Color.LIGHT_GRAY);
+        searchPanel.setBackground(new Color(28,28,28));
 
         inputPanel.add(searchPanel, BorderLayout.NORTH);
 
@@ -278,7 +278,7 @@ public class UIHelpers {
         scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
             @Override
             protected void configureScrollBarColors() {
-                this.thumbColor = new Color(100, 100, 100); // Color del "pulgar"
+                this.thumbColor = new Color(28,28,28); // Color del "pulgar"
                 this.trackColor = new Color(200, 200, 200); // Color del fondo de la barra
             }
 
@@ -420,7 +420,7 @@ public class UIHelpers {
                         card.addMouseListener(new MouseAdapter() {
                             @Override
                             public void mouseEntered(MouseEvent e) {
-                                card.setBackground(new Color(255, 111, 97)); // Color al pasar el mouse
+                                card.setBackground(new Color(186, 27, 26)); // Color al pasar el mouse
                             }
 
                             @Override
@@ -435,7 +435,7 @@ public class UIHelpers {
 
                             @Override
                             public void mouseReleased(MouseEvent e) {
-                                card.setBackground(new Color(255, 111, 97)); // Volver al color hover
+                                card.setBackground(new Color(186, 27, 26)); // Volver al color hover
                             }
 
                             @Override
@@ -675,6 +675,9 @@ public class UIHelpers {
 
     public static JTable createProductTable() {
         String[] columnNames = {PRODUCTO, "Cant.", "Unid. $", "Total $", "Quitar unid."};
+
+
+
 
         tableModel = new DefaultTableModel(columnNames, ZERO) {
             @Override
