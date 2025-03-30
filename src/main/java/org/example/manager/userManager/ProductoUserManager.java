@@ -19,7 +19,7 @@ public class ProductoUserManager {
     private static final double ZERO = 0.0;
 
     // Obtener todos los productos
-    public List<Producto> getProducts() {
+    public static List<Producto> getProducts() {
         return excelUserManager.getProducts();
     }
 

@@ -118,16 +118,16 @@ public class FacturacionUserManager {
             document.setMargins(FIVE, FIVE, FIVE, margenIzquierdo);
 
 
-            // Encabezado de la factura
+            /*/ Encabezado de la factura
             document.add(new Paragraph(BILL_TITLE)
                     .setFont(fontBold)
                     .setFontSize(TWELVE)
                     .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(FIVE));
+                    .setMarginBottom(FIVE));*/
 
             document.add(new Paragraph(LICORERA_NAME)
                     .setFont(lobsterFont)
-                    .setFontSize(TEN)
+                    .setFontSize(13)
                     .setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph(NIT)
                     .setFont(fontNormal)
@@ -167,7 +167,7 @@ public class FacturacionUserManager {
 
             document.add(new Paragraph(BILL_PRODUCTS)
                     .setFont(fontBold)
-                    .setFontSize(TEN));
+                    .setFontSize(8));
 
             // Crear un formateador de moneda para Colombia
             NumberFormat formatoColombiano = NumberFormat.getCurrencyInstance(new Locale("es", "CO"));

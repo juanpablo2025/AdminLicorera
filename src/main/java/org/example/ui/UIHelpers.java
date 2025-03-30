@@ -37,14 +37,14 @@ import static org.example.utils.FormatterHelpers.formatearMoneda;
 public class UIHelpers {
 
     private static ProductoUserManager productoUserManager = new ProductoUserManager();
-    private static VentaMesaUserManager ventaMesaUserManager = new VentaMesaUserManager();
+    public static VentaMesaUserManager ventaMesaUserManager = new VentaMesaUserManager();
 
     private static JComboBox<String> productComboBox;
     private static JSpinner cantidadSpinner;
     private static JLabel totalLabel;
     private static JLabel totalCompraLabel;
     private static DefaultTableModel tableModel;
-    private static Component compraDialog;
+    public static Component compraDialog;
 
 
 
@@ -106,7 +106,7 @@ public class UIHelpers {
 
         try {
             // Cargar la fuente desde el classpath dentro del JAR
-            InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream("Pacifico-Regular.ttf");
+            InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
 
             if (fontStream == null) {
                 throw new IOException("No se pudo encontrar la fuente en los recursos.");
@@ -114,7 +114,7 @@ public class UIHelpers {
 
             // Crear la fuente desde el InputStream
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            customFont = customFont.deriveFont(Font.ITALIC, 16); // Ajustar tamaño
+            customFont = customFont.deriveFont(Font.ITALIC, 18); // Ajustar tamaño
 
             // Aplicar la fuente al JLabel
             textLabel.setFont(customFont);
@@ -240,19 +240,18 @@ public class UIHelpers {
     public static JPanel createInputPanel(JTable table, VentaMesaUserManager ventaMesaUserManager) {
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-        inputPanel.setPreferredSize(new Dimension(580, 400));
+        inputPanel.setPreferredSize(new Dimension(500, 400));
 
         Font labelFont = new Font("Arial", Font.BOLD, 14);
 
         // Panel de búsqueda
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 10));
-        JLabel productLabel = new JLabel("BUSCAR");
-        productLabel.setFont(labelFont);
-        searchPanel.add(productLabel);
+
+
 
         JTextField searchField = new JTextField();
-        searchField.setFont(new Font("Arial", Font.PLAIN, 14));
-        searchField.setPreferredSize(new Dimension(490, 30));
+        searchField.setFont(new Font("Arial", Font.PLAIN, 16));
+        searchField.setPreferredSize(new Dimension(470, 30));
         searchPanel.add(searchField);
         searchPanel.setBackground(Color.LIGHT_GRAY);
 

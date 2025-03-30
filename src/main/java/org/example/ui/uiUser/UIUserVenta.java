@@ -8,6 +8,7 @@ import org.example.model.Producto;
 import org.example.utils.FormatterHelpers;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -15,9 +16,7 @@ import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.event.MouseAdapter;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -28,12 +27,14 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.apache.poi.ss.util.ImageUtils.setPreferredSize;
 import static org.example.manager.userManager.ExcelUserManager.actualizarCantidadStockExcel;
 import static org.example.manager.userManager.ExcelUserManager.cargarProductosMesaDesdeExcel;
 import static org.example.manager.userManager.FacturacionUserManager.generarFacturadeCompra;
 import static org.example.manager.userManager.ProductoUserManager.getProductListWithQuantities;
 import static org.example.ui.UIHelpers.*;
 //import static org.example.ui.uiUser.UIUserMesas.showMesas;
+import static org.example.ui.UIHelpers.compraDialog;
 import static org.example.ui.uiUser.UIUserMain.mainUser;
 import static org.example.utils.Constants.*;
 import static org.example.utils.Constants.ERROR_TITLE;
@@ -45,7 +46,7 @@ public class UIUserVenta {
 
 
 
-    public static void showVentaMesaDialog(List<String[]> productos, String mesaID) {
+    public static void showVentaMesaDialog(List<String[]> productos, String mesaID, JFrame frame) {
         ventaMesaDialog = createDialog("Realizar Venta "+"["+mesaID+"]", 1366, 720, new BorderLayout());
         ventaMesaDialog.setResizable(true);
 
@@ -151,7 +152,7 @@ public class UIUserVenta {
         ventaMesaDialog.add(inputPanel, BorderLayout.EAST);
 
 
-        JPanel buttonPanel = createButtonPanelVentaMesa(table, new VentaMesaUserManager(), ventaMesaDialog, mesaID);
+        JPanel buttonPanel = createButtonPanelVentaMesa(table, new VentaMesaUserManager(), ventaMesaDialog, mesaID,frame);
 
         // Botón independiente para abrir el submenú de productos
         JButton openSubMenuButton = new JButton("Abrir Submenú de Productos");
@@ -227,16 +228,16 @@ public class UIUserVenta {
 
 
     // Método modificado para crear el panel de botones de la mesa
-    public static JPanel createButtonPanelVentaMesa(JTable table, VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID) {
+    public static JPanel createButtonPanelVentaMesa(JTable table, VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID, JFrame frame) {
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
 
         // Crear el botón de guardar compra y asignar el ID de la mesa y la tabla
-        JButton guardarCompra = createSavePurchaseMesaButton(ventaMesaUserManager, mesaID, table);
+        JButton guardarCompra = createSavePurchaseMesaButton(ventaMesaUserManager, mesaID, table,frame);
         guardarCompra.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 18)); // Configuración de fuente
         buttonPanel.add(guardarCompra);
 
-        // Crear el botón de confirmar compra y asignar el ID de la mesa y el diálogo de compra
-        JButton confirmarCompraButton = createConfirmPurchaseMesaButton(ventaMesaUserManager, compraDialog, mesaID, table);
+       /* // Crear el botón de confirmar compra y asignar el ID de la mesa y el diálogo de compra
+       JButton confirmarCompraButton = createConfirmPurchaseMesaButtons(ventaMesaUserManager, compraDialog, mesaID, table);
         confirmarCompraButton.setFont(new java.awt.Font("Arial", Font.BOLD, 18)); // Configuración de fuente
 
         // Verificar si hay productos en Excel para la mesa
@@ -253,7 +254,7 @@ public class UIUserVenta {
 
         // Añadir el botón de confirmación al panel
         buttonPanel.add(confirmarCompraButton);
-
+*/
         return buttonPanel;
     }
 
@@ -541,7 +542,7 @@ public class UIUserVenta {
 
         return productosActualizados;
     }
-    public static JButton createConfirmPurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID,JTable productosTable) {
+    public static JButton createConfirmPurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID,JTable productosTable,JFrame frame) {
 
 
 
@@ -775,9 +776,15 @@ public class UIUserVenta {
                 JOptionPane.showMessageDialog(compraDialog, PURCHASE_SUCCEDED + " por un total de: $ " + NumberFormat.getInstance(new Locale("es", "CO")).format(total) + " Pesos");
                 actualizarCantidadStockExcel(cantidadTotalPorProducto, mesaID);
                 productoUserManager.limpiarCarrito();
-                compraDialog.dispose();
-                mainUser();
-
+                // Cerrar la ventana actual (si es un JDialog)
+                SwingUtilities.invokeLater(() -> {
+                    Window window = SwingUtilities.getWindowAncestor(confirmarCompraButton);
+                    if (window != null) {
+                        window.setVisible(false); // Ocultar antes de cerrar
+                        window.dispose();
+                    }
+                    mainUser();
+                });
 
 
 
@@ -793,7 +800,7 @@ public class UIUserVenta {
         model.setRowCount(0);  // Esto elimina todas las filas de la tabla
     }
 
-    public static JButton createSavePurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, String mesaID, JTable productosTable) {
+    public static JButton createSavePurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, String mesaID, JTable productosTable,JFrame frame) {
         JButton saveCompraButton = new JButton("Guardar Compra");
 
 
@@ -833,8 +840,14 @@ public class UIUserVenta {
                     limpiarMesaEnExcel(mesaID);  // Limpia la mesa en Excel si no hay productos
                     productoUserManager.limpiarCarrito();  // Limpia el carrito de esta mesa
                     JOptionPane.showMessageDialog(null, "La mesa " + mesaID + " ha sido limpiada.");
-                    ventaMesaDialog.dispose();
-                    mainUser();
+                    SwingUtilities.invokeLater(() -> {
+                        Window window = SwingUtilities.getWindowAncestor(saveCompraButton);
+                        if (window != null) {
+                            window.dispose();
+                        }
+                        mainUser();
+                    });
+
                     return; // Salir después de limpiar la mesa
                 }
 
@@ -934,8 +947,16 @@ public class UIUserVenta {
                         JOptionPane.showMessageDialog(null, "Compra guardada para la mesa: " + mesaID + ".");
                         tableModel.setRowCount(0); // Limpiar la tabla
                         productoUserManager.limpiarCarrito(); // Limpia el carrito de la mesa después de guardar la compra
-                        ventaMesaDialog.dispose();
-                        mainUser();
+                        //ventaMesaDialog.dispose();
+                        //mainUser();
+
+                        SwingUtilities.invokeLater(() -> {
+                            Window window = SwingUtilities.getWindowAncestor(saveCompraButton);
+                            if (window != null) {
+                                window.dispose();
+                            }
+                            mainUser();
+                        });
 
                     } else {
                         JOptionPane.showMessageDialog(null, "Hoja 'mesas' no encontrada en el archivo Excel.", "Error", JOptionPane.ERROR_MESSAGE);

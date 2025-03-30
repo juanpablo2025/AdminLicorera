@@ -9,10 +9,13 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.InputStream;
 
 import static org.example.ui.uiAdmin.MainAdminUi.*;
+import static org.example.ui.uiUser.UIUserFacturas.getFacturasPanel;
 import static org.example.ui.uiUser.UIUserFacturas.showFacturasDialog;
 import static org.example.ui.uiUser.UIUserGastos.showGastosGeneralesDialog;
 import static org.example.ui.UIHelpers.createButton;
@@ -23,19 +26,15 @@ import static org.example.ui.uiUser.UIUserProductList.showListProductsDialog;
 public class UIUserMain {
     private static boolean showingMoreOptions = false;
     private static String nombreEmpleado = ExcelUserManager.obtenerUltimoEmpleado().toUpperCase();
-    private static Color fondoPrincipal = new Color(250, 240, 230);
-    private static JFrame mainFrame; // Almacenar el frame principal
+        private static Color fondoPrincipal = new Color(250, 240, 230);
 
     public static void mainUser() {
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
 
             JFrame frame = new JFrame("Ventas - Licorera CR");
-            // Cargar el icono desde un archivo (Asegúrate de que la ruta es correcta)
-// Cargar el icono desde el classpath (Asegúrate de que el archivo está en /resources/icons/)
             ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png"));
             if (icon.getImage() != null) {
-                // Redimensionar la imagen a 64x64 píxeles (ajusta según necesidad)
                 Image scaledImage = icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
                 frame.setIconImage(scaledImage);
             } else {
@@ -52,36 +51,62 @@ public class UIUserMain {
             JPanel sidebarPanel = new JPanel(new BorderLayout());
             sidebarPanel.setPreferredSize(new Dimension(260, frame.getHeight()));
             sidebarPanel.setBackground(fondoPrincipal);
+// Panel dinámico para cambiar vistas
+            JPanel contentPanel = new JPanel(new CardLayout());
+            contentPanel.add(showPanelMesas(frame,contentPanel), "mesas");
+            contentPanel.add(UIUserProductList.getProductListPanel(), "productos");
+            contentPanel.add(getFacturasPanel(), "Facturas");
+            // Panel superior con logo y nombre del empleado centrados
+            JPanel logoPanel = new JPanel();
+            logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.Y_AXIS));
+            logoPanel.setBackground(fondoPrincipal);
 
-            JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-            headerPanel.setBackground(fondoPrincipal);
-
-            ImageIcon logoIcon = new ImageIcon((UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png")));
-            Image imgLogo = logoIcon.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
+            ImageIcon logoIcon = new ImageIcon(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png"));
+            Image imgLogo = logoIcon.getImage().getScaledInstance(130, 130, Image.SCALE_SMOOTH);
             JLabel logoLabel = new JLabel(new ImageIcon(imgLogo));
+            logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            // **Añadir efectos al pasar el mouse**
+            logoLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    // **Obtener el CardLayout y mostrar el panel "mesas"**
+                    CardLayout layout = (CardLayout) contentPanel.getLayout();
+                    layout.show(contentPanel, "mesas");
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    logoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Cambia el cursor a "mano"
+                    logoLabel.setBorder(BorderFactory.createLineBorder(new Color(250, 240, 230), 1)); // Borde amarillo al pasar el mouse
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    logoLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); // Restaurar cursor normal
+                    logoLabel.setBorder(null); // Eliminar borde al salir
+                }
+            });
+
 
             JLabel employeeLabel = new JLabel(nombreEmpleado);
             employeeLabel.setForeground(Color.DARK_GRAY);
+            employeeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             try {
-                // Cargar la fuente desde el classpath dentro del JAR
                 InputStream fontStream = UIUserMain.class.getClassLoader().getResourceAsStream("Pacifico-Regular.ttf");
-
-                // Crear la fuente desde el InputStream
-                Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-                customFont = customFont.deriveFont(Font.PLAIN, 30); // Ajustar tamaño
-
-                // Aplicar la fuente al JLabel
+                Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 30);
                 employeeLabel.setFont(customFont);
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            headerPanel.add(logoLabel);
-            headerPanel.add(employeeLabel);
-            JSeparator separator = new JSeparator();
-            separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 5));
-            separator.setForeground(new Color(200, 170, 100));
-            sidebarPanel.add(headerPanel, BorderLayout.NORTH);
+
+            logoPanel.add(Box.createVerticalStrut(1)); // Espaciado superior
+            logoPanel.add(logoLabel);
+            logoPanel.add(Box.createVerticalStrut(1));
+            logoPanel.add(employeeLabel);
+            logoPanel.add(Box.createVerticalStrut(1));
+
+            sidebarPanel.add(logoPanel, BorderLayout.NORTH);
 
             JPanel buttonsPanel = new JPanel();
             buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
@@ -94,8 +119,8 @@ public class UIUserMain {
                     int panelWidth = sidebarPanel.getWidth();
                     int panelHeight = sidebarPanel.getHeight();
 
-                    int buttonWidth = (int) (panelWidth * 0.9);  // 90% del ancho del sidebar
-                    int buttonHeight = (int) (panelHeight * 0.15); // 12% del alto del sidebar
+                    int buttonWidth = (int) (panelWidth * 0.8);  // 90% del ancho del sidebar
+                    int buttonHeight = (int) (panelHeight * 0.14); // 12% del alto del sidebar
 
                     Dimension buttonSize = new Dimension(buttonWidth, buttonHeight);
 
@@ -117,10 +142,9 @@ public class UIUserMain {
             Dimension buttonSize = new Dimension(200, 70);
 
             JButton listaProductosButton = createButton("Lista de Productos", resizeIcon("/icons/lista-de_productos.png"), e -> {
-                showListProductsDialog();
-                frame.dispose();
+                CardLayout cl = (CardLayout) contentPanel.getLayout();
+                cl.show(contentPanel, "productos");
             });
-            listaProductosButton.setMaximumSize(buttonSize);
 
             JButton gastosButton = createButton("Gastos", resizeIcon("/icons/Gastos.png"), e -> {
                 showGastosGeneralesDialog();
@@ -138,9 +162,9 @@ public class UIUserMain {
             });
             salirButton.setMaximumSize(buttonSize);
 
-            JButton moreOptionsButton = createButton("Ventas Realizadas", resizeIcon("/icons/admin/beneficios.png"), e -> {
-                showFacturasDialog();
-                frame.dispose();
+            JButton moreOptionsButton =  createButton("Ventas Realizadas", resizeIcon("/icons/admin/beneficios.png"), e -> {
+                CardLayout cl = (CardLayout) contentPanel.getLayout();
+                cl.show(contentPanel, "Facturas");
             });
             moreOptionsButton.setMaximumSize(buttonSize);
 
@@ -164,7 +188,7 @@ public class UIUserMain {
 
             sidebarPanel.add(buttonsPanel, BorderLayout.CENTER);
             mainPanel.add(sidebarPanel, BorderLayout.WEST);
-            mainPanel.add(showPanelMesas(frame), BorderLayout.CENTER);
+            mainPanel.add(contentPanel, BorderLayout.CENTER);
 
             frame.add(mainPanel);
             frame.setLocationRelativeTo(null);
@@ -173,6 +197,7 @@ public class UIUserMain {
             ex.printStackTrace();
         }
     }
+
 
     private static ImageIcon resizeIcon(String path) {
         ImageIcon icon = new ImageIcon(UIUserMain.class.getResource(path));
