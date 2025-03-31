@@ -257,7 +257,7 @@ public class UIUserProductList {
                 if (getModel().isPressed()) {
                     g2.setColor(new Color(255, 193, 7)); // Amarillo oscuro al presionar
                 } else {
-                    g2.setColor(new Color(255, 215, 0)); // Amarillo Material Design
+                    g2.setColor(new Color(228, 185, 42)); // Amarillo Material Design
                 }
 
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
@@ -267,8 +267,8 @@ public class UIUserProductList {
 
         // Estilos del botón
         closeButton.setPreferredSize(new Dimension(150, 40)); // Más grande
-        closeButton.setFont(new Font("Arial", Font.BOLD, 18)); // Fuente grande
-        closeButton.setForeground(Color.BLACK); // Texto negro
+        closeButton.setFont(new Font("Arial", Font.BOLD, 22)); // Fuente grande
+        closeButton.setForeground(Color.WHITE); // Texto negro
         closeButton.setFocusPainted(false);
         closeButton.setContentAreaFilled(false);
         closeButton.setBorderPainted(false);
@@ -284,6 +284,7 @@ public class UIUserProductList {
         // **Panel de botón con margen**
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBorder(new EmptyBorder(10, 0, 10, 0)); // Margen arriba
+        buttonPanel.setBackground(new Color(250, 240, 230)); // Fondo igual al panel
         buttonPanel.add(closeButton);
         productListPanel.add(titleLabel, BorderLayout.NORTH);
         productListPanel.add(scrollPane, BorderLayout.CENTER);

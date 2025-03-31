@@ -306,8 +306,8 @@ public class UIUserFacturas {
         });
         // **Estilizar el botón**
         reprintButton.setPreferredSize(new Dimension(150, 40));
-        reprintButton.setFont(new Font("Arial", Font.BOLD, 18));
-        reprintButton.setForeground(Color.BLACK);
+        reprintButton.setFont(new Font("Arial", Font.BOLD, 22));
+        reprintButton.setForeground(Color.WHITE);
         reprintButton.setFocusPainted(false);
         reprintButton.setContentAreaFilled(false);
         reprintButton.setBorderPainted(false);
@@ -329,7 +329,7 @@ public class UIUserFacturas {
                 if (getModel().isPressed()) {
                     g2.setColor(new Color(255, 193, 7)); // Amarillo oscuro al presionar
                 } else {
-                    g2.setColor(new Color(255, 215, 0)); // Amarillo brillante
+                    g2.setColor(new Color(228, 185, 42)); // Amarillo brillante
                 }
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
@@ -338,8 +338,9 @@ public class UIUserFacturas {
 
         // **Estilizar el botón**
         closeButton.setPreferredSize(new Dimension(150, 40));
-        closeButton.setFont(new Font("Arial", Font.BOLD, 18));
-        closeButton.setForeground(Color.BLACK);
+        closeButton.setFont(new Font("Arial", Font.BOLD, 22));
+        closeButton.setForeground(Color.WHITE);
+
         closeButton.setFocusPainted(false);
         closeButton.setContentAreaFilled(false);
         closeButton.setBorderPainted(false);
@@ -347,6 +348,7 @@ public class UIUserFacturas {
 
         // Crear un panel para el botón de reimprimir
         JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(new Color(250, 240, 230));
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.add(closeButton);
 

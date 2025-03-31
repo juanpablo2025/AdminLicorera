@@ -93,10 +93,10 @@ public class UIHelpers {
 
         JLabel iconLabel = new JLabel(icon);
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        iconLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 2, 0));
+        iconLabel.setBorder(BorderFactory.createEmptyBorder(4, 0, 2, 0));
 
         JSeparator separator = new JSeparator();
-        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 3));
+        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
         separator.setForeground(new Color(200, 170, 100));
 
         JLabel textLabel = new JLabel(text);
@@ -114,7 +114,7 @@ public class UIHelpers {
 
             // Crear la fuente desde el InputStream
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            customFont = customFont.deriveFont(Font.ITALIC, 20); // Ajustar tamaño
+            customFont = customFont.deriveFont(Font.ITALIC, 22); // Ajustar tamaño
 
             // Aplicar la fuente al JLabel
             textLabel.setFont(customFont);
@@ -258,10 +258,11 @@ public class UIHelpers {
         inputPanel.add(searchPanel, BorderLayout.NORTH);
 
         // Panel de productos dinámico
-        JPanel productPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+        JPanel productPanel = new JPanel(new GridLayout(0, 2, 2, 5));
         JScrollPane scrollPane = new JScrollPane(productPanel);
         scrollPane.setPreferredSize(new Dimension(500, 300));
         inputPanel.add(scrollPane, BorderLayout.CENTER);
+        productPanel.setBackground(new Color(28,28,28));
 
         List<Producto> productList = productoUserManager.getProducts().stream()
                 .toList();
@@ -330,7 +331,7 @@ public class UIHelpers {
                                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
                                 // Dibujar borde redondeado
-                                g2.setColor(new Color(40, 40, 40)); // Color del borde
+                                g2.setColor(new Color(74, 50, 28)); // Color del borde
                                 g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 20, 20);
                             }
                         };
@@ -369,7 +370,7 @@ public class UIHelpers {
                         namePanel.add(nameLabel, BorderLayout.CENTER);
 
                         card.add(namePanel, BorderLayout.SOUTH);
-                        card.setBackground(new Color(58, 58, 58));
+                        card.setBackground(new Color(147, 89, 49));
 
                         new SwingWorker<ImageIcon, Void>() {
                             @Override
@@ -425,7 +426,7 @@ public class UIHelpers {
 
                             @Override
                             public void mouseExited(MouseEvent e) {
-                                card.setBackground(new Color(58, 58, 58)); // Volver al color original
+                                card.setBackground(new Color(147, 89, 49)); // Volver al color original
                             }
 
                             @Override

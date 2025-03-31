@@ -49,6 +49,8 @@ public class VentaMesaPanel extends JPanel {
 
         JLabel titleLabel = new JLabel("Venta "+mesaID, JLabel.CENTER);
         titleLabel.setForeground(new Color(28,28,28));
+        titleLabel.setOpaque(true);
+        titleLabel.setBackground(new Color(250, 240, 230));
         try {
 
 
@@ -275,6 +277,7 @@ public class VentaMesaPanel extends JPanel {
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         bottomPanel.add(volverButton);
 
+
         // 📌 Agregar todo al panel principal
         subMenuPanel.add(scrollPane, BorderLayout.CENTER);
         subMenuPanel.add(bottomPanel, BorderLayout.SOUTH);
@@ -413,10 +416,11 @@ public class VentaMesaPanel extends JPanel {
         JPanel topButtonsPanel = new JPanel(new GridLayout(1, 2, 0, 10)); // 1 fila, 2 columnas, separación de 20px
 
         JButton guardarCompra = createSavePurchaseMesaButton(ventaMesaUserManager, mesaID, table, frame);
-        guardarCompra.setFont(new Font("Arial", Font.BOLD, 18));
+        guardarCompra.setFont(new Font("Arial", Font.BOLD, 22));
 
         JButton confirmarCompraButton = createConfirmPurchaseMesaButton(ventaMesaUserManager, compraDialog, mesaID, table, frame);
-        confirmarCompraButton.setFont(new Font("Arial", Font.BOLD, 18));
+        confirmarCompraButton.setFont(new Font("Arial", Font.BOLD, 22));
+
 
         List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
         boolean productosEnExcel = !productosPrevios.isEmpty();
@@ -429,9 +433,10 @@ public class VentaMesaPanel extends JPanel {
         // 🔹 Asegurar que los botones cubran todo el ancho
         guardarCompra.setPreferredSize(new Dimension(0, 50)); // Altura fija, ancho automático
         confirmarCompraButton.setPreferredSize(new Dimension(0, 50));
-
+//confirmarCompraButton.setBackground(new Color(250, 240, 230));
         topButtonsPanel.add(guardarCompra);
         topButtonsPanel.add(confirmarCompraButton);
+
 
         buttonPanel.add(topButtonsPanel, BorderLayout.CENTER); // 🔹 Agregar los botones de compra en el centro
 
@@ -441,17 +446,18 @@ public class VentaMesaPanel extends JPanel {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(0, 0, 0, 30));
+                g2.setColor(Color.BLACK);
                 g2.fillRoundRect(2, 4, getWidth() - 4, getHeight() - 4, 40, 40);
-                g2.setColor(getModel().isPressed() ? new Color(255, 193, 7) : new Color(255, 215, 0));
+                g2.setColor(getModel().isPressed() ? new Color(255, 193, 7) : new Color(228, 185, 42));
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
             }
         };
 
         closeButton.setPreferredSize(new Dimension(150, 40));
-        closeButton.setFont(new Font("Arial", Font.BOLD, 18));
-        closeButton.setForeground(Color.BLACK);
+        closeButton.setFont(new Font("Arial", Font.BOLD, 22));
+        closeButton.setForeground(Color.WHITE);
+        closeButton.setBackground(new Color(250, 240, 230));
         closeButton.setFocusPainted(false);
         closeButton.setContentAreaFilled(false);
         closeButton.setBorderPainted(false);
@@ -467,7 +473,7 @@ public class VentaMesaPanel extends JPanel {
         bottomPanel.add(closeButton);
 
         buttonPanel.add(bottomPanel, BorderLayout.SOUTH); // 🔹 Botón "Volver" centrado en la parte inferior
-
+        bottomPanel.setBackground( new Color(250, 240, 230));
         return buttonPanel;
     }
 

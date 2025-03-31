@@ -231,6 +231,7 @@ public class UIUserVenta {
     public static JPanel createButtonPanelVentaMesa(JTable table, VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID, JFrame frame) {
         JPanel buttonPanel = new JPanel(new GridLayout(1, 2));
 
+
         // Crear el botón de guardar compra y asignar el ID de la mesa y la tabla
         JButton guardarCompra = createSavePurchaseMesaButton(ventaMesaUserManager, mesaID, table,frame);
         guardarCompra.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 18)); // Configuración de fuente
@@ -548,7 +549,7 @@ public class UIUserVenta {
 
         JButton confirmarCompraButton = new JButton(CONFIRM_PURCHASE);
 
-        confirmarCompraButton.setFont(new Font("Arial", Font.BOLD, 18));
+        confirmarCompraButton.setFont(new Font("Arial", Font.BOLD, 22));
         confirmarCompraButton.setForeground(Color.WHITE);
         confirmarCompraButton.setBackground(new Color(168, 230, 207));
         confirmarCompraButton.setBorderPainted(false);
@@ -817,7 +818,7 @@ public class UIUserVenta {
         JButton saveCompraButton = new JButton("Guardar Compra");
 
 
-        saveCompraButton.setFont(new Font("Arial", Font.BOLD, 18));
+        saveCompraButton.setFont(new Font("Arial", Font.BOLD, 22));
         saveCompraButton.setForeground(Color.WHITE);
         saveCompraButton.setBackground(new Color(255, 111, 97));
         saveCompraButton.setOpaque(true);

@@ -19,6 +19,7 @@ import org.example.manager.adminManager.ConfigAdminManager;
 import org.example.model.Producto;
 import org.example.utils.FormatterHelpers;
 
+import javax.swing.*;
 import java.io.*;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -67,6 +68,7 @@ public class FacturacionUserManager {
 
         //TODO: validar que no este ocupada
         eliminarMesasConIdMayorA15();
+
         System.exit(ZERO);
         // Salir del programa después de la facturación
     }
@@ -302,7 +304,6 @@ public class FacturacionUserManager {
             float anchoMm = paperSize.equals("58mm") ? 58 : (paperSize.equals("A4") ? 210 : 80);
 
 
-
             // Crear el PDF con tamaño de tarjeta
             //float anchoMm = 100;  // Ancho de tarjeta (en mm)
             float altoMm = 200;  // Alto de tarjeta (en mm)
@@ -325,7 +326,7 @@ public class FacturacionUserManager {
             DateTimeFormatter horaResumenFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
 
             // Encabezado del PDF
-            document.add(new Paragraph("Resumen Diario \n"+ fechaActual.format(formatter) + " " + horaResumen.format(horaResumenFormatter))
+            document.add(new Paragraph("Resumen Diario \n" + fechaActual.format(formatter) + " " + horaResumen.format(horaResumenFormatter))
                     .setFont(fontBold)
                     .setFontSize(10)
                     .setTextAlignment(TextAlignment.CENTER)
@@ -374,9 +375,6 @@ public class FacturacionUserManager {
                             .setTextAlignment(TextAlignment.LEFT));
                 }
             }
-
-
-
 
 
             // Mostrar estadísticas de productos agotados
@@ -430,7 +428,7 @@ public class FacturacionUserManager {
                     .setTextAlignment(TextAlignment.LEFT)
                     .setMarginBottom(5));
             LocalDateTime horasActual = LocalDateTime.now();
-            document.add(new Paragraph(horasActual.format(formatter)+ " " + horaResumen.format(horaResumenFormatter))
+            document.add(new Paragraph(horasActual.format(formatter) + " " + horaResumen.format(horaResumenFormatter))
                     .setFont(fontNormal)
                     .setFontSize(7)
                     .setTextAlignment(TextAlignment.LEFT));

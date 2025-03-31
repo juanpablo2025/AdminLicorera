@@ -317,7 +317,7 @@ public class ExcelUserManager {
                 // Copiar la hoja "Compras" y renombrarla, pasando el total de la compra
                 crearArchivoFacturacionYGastos(purchasesSheet, gastosSheet, empleadosSheet, totalCompra, totalGastos);
                 generarResumenDiarioEstilizadoPDF();
-
+                String nombreEmpleado = obtenerUltimoEmpleado();
                 // Limpiar la hoja "Compras"
                 limpiarHojaCompras(purchasesSheet);
                 limpiarHojaCompras(gastosSheet);
@@ -331,6 +331,10 @@ public class ExcelUserManager {
 
                 // Borrar el contenido de la carpeta Facturas
                 limpiarFacturas();
+                String nombreCapitalizado = nombreEmpleado.substring(0, 1).toUpperCase() + nombreEmpleado.substring(1).toLowerCase();
+
+                JOptionPane.showMessageDialog(null, "Muchas gracias por tu ayuda "+nombreCapitalizado+ ".", "Día finalizado correctamente.", JOptionPane.INFORMATION_MESSAGE);
+
             }
         } catch (IOException e) {
             e.printStackTrace();

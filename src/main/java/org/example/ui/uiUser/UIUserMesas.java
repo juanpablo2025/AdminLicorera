@@ -290,7 +290,7 @@ public class UIUserMesas {
                 if (getModel().isPressed()) {
                     g2.setColor(new Color(255, 193, 7)); // Amarillo oscuro al presionar
                 } else {
-                    g2.setColor(new Color(255, 215, 0)); // Amarillo Material Design
+                    g2.setColor(new Color(228, 185, 42)); // Amarillo Material Design
                 }
 
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
@@ -299,9 +299,9 @@ public class UIUserMesas {
         };
 
         // Estilos del botón
-        addMesaButton.setPreferredSize(new Dimension(150, 40)); // Más grande
-        addMesaButton.setFont(new Font("Arial", Font.BOLD, 18)); // Fuente grande
-        addMesaButton.setForeground(Color.BLACK); // Texto negro
+        addMesaButton.setPreferredSize(new Dimension(160, 40)); // Más grande
+        addMesaButton.setFont(new Font("Arial", Font.BOLD, 22)); // Fuente grande
+        addMesaButton.setForeground(Color.WHITE); // Texto negro
         addMesaButton.setFocusPainted(false);
         addMesaButton.setContentAreaFilled(false);
         addMesaButton.setBorderPainted(false);
@@ -320,7 +320,7 @@ public class UIUserMesas {
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(addMesaButton);
-
+        bottomPanel.setBackground(new Color(250, 240, 230));// Color de fondo amarillo
         mesasPanel.add(titleLabel, BorderLayout.NORTH);
         mesasPanel.add(gridMesasPanel, BorderLayout.CENTER);
         mesasPanel.add(bottomPanel, BorderLayout.SOUTH);
