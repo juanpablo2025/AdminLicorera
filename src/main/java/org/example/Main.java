@@ -68,7 +68,7 @@ public class Main {
             frame.setResizable(false);
 
             JPanel panel = new JPanel(new GridBagLayout());
-            panel.setBackground(Color.WHITE);
+            panel.setBackground(new Color(250, 240, 230));
             panel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
 
             GridBagConstraints gbc = new GridBagConstraints();
