@@ -97,14 +97,20 @@ public class FacturacionUserManager {
             float anchoMm = paperSize.equals("48mm") ? 48 : (paperSize.equals("A4") ? 210 : 80);
             float anchoPuntos = anchoMm * WIDE_DOTS;  // Conversión de mm a puntos
 
-            // Calcular el alto dinámico según el número de productos
-            float altoBaseMm = 130;
-            float altoPorProductoMm = 10;
-            float altoTotalMm = altoBaseMm + (productos.size() * altoPorProductoMm);
-            float altoPuntos = altoTotalMm * HEIGHT_DOTS;
+            // Definir el alto dinámico según el número de productos
+            float altoBaseMm = 130;   // Base mínima de la factura
+            float altoPorProductoMm = 10;  // Espacio por cada producto
+            float extraSpaceMm = 50;   // Espacio extra para el total y otras secciones
+            float altoMinimoMm = 150;  // Mínimo para evitar recortes
 
-            // Definir el tamaño de la página con el alto dinámico
+// Calcular la altura total garantizando un mínimo suficiente
+            float altoTotalMm = Math.max(altoBaseMm + (productos.size() * altoPorProductoMm) + extraSpaceMm, altoMinimoMm);
+            float altoPuntos = altoTotalMm * HEIGHT_DOTS; // Conversión a puntos
+
+// Definir el tamaño de la página con el alto corregido
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
+
+
 
             String nombreArchivo = System.getProperty("user.home") + "\\Calculadora del Administrador\\Facturas\\" + BILL_FILE + ventaID + PDF_FORMAT;
             File pdfFile = new File(nombreArchivo);
@@ -537,13 +543,17 @@ public class FacturacionUserManager {
 
         try {
             // Dimensiones del papel
-            float anchoMm = 48;  // Ancho fijo de 58 mm para impresora POS-58
-            float altoMm = 220;  // Puedes ajustar el alto según la longitud del recibo
-            float altoPorProductoMm = 10;
-            float altoTotalMm = altoMm + (productosVendidos.size() * altoPorProductoMm);
-            float anchoPuntos = anchoMm * 2.83465f;
-            float altoPuntos = altoTotalMm * 2.83465f;
+            float anchoMm = 48;  // Ancho fijo para impresora POS-58
+            float altoBaseMm = 250;  // Altura base mínima del documento
+            float altoPorProductoMm = 12;  // Altura por cada producto
+            float altoFooterMm = 40;  // Espacio extra para el footer y firma
 
+// Calcular la altura total (considerando todos los productos + footer)
+            float altoTotalMm = Math.max(altoBaseMm, productosVendidos.size() * altoPorProductoMm + altoFooterMm);
+            float anchoPuntos = anchoMm * 2.83465f;
+            float altoPuntos = altoTotalMm * 2.93465f;
+
+// Crear el PDF con la altura ajustada dinámicamente
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
             PdfWriter writer = new PdfWriter(nombreArchivo);
             PdfDocument pdfDoc = new PdfDocument(writer);
