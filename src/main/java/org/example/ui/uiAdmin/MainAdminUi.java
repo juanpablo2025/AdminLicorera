@@ -14,8 +14,10 @@ import static org.example.Main.mostrarLogin;
 import static org.example.manager.userManager.ExcelUserManager.hayRegistroDeHoy;
 import static org.example.ui.UIHelpers.createButton;
 import static org.example.ui.uiAdmin.GastosAdminUI.showReabastecimientoDialog;
+import static org.example.ui.uiAdmin.UIAdminFacturas.getAdminBillsPanel;
 import static org.example.ui.uiAdmin.UIAdminProducts.getAdminProductListPanel;
 import static org.example.ui.uiAdmin.UIAdminProducts.showProductosDialog;
+import static org.example.ui.uiAdmin.UIConfigAdmin.showConfigDialog;
 import static org.example.ui.uiUser.UIUserFacturas.getFacturasPanel;
 import static org.example.ui.uiUser.UIUserMain.*;
 import static org.example.ui.uiUser.UIUserMesas.showPanelMesas;
@@ -75,9 +77,9 @@ public class MainAdminUi {
             sidebarPanel.setBackground(new Color(200, 200, 200));
 
             JPanel contentPanel = new JPanel(new CardLayout());
-            contentPanel.add(getAdminProductListPanel(), "Inventario");
-            contentPanel.add(getAdminProductListPanel(), "Facturas");
-            contentPanel.add(getAdminProductListPanel(), "Configuracion");
+            contentPanel.add(getAdminProductListPanel(), "productos");
+            contentPanel.add(getAdminBillsPanel(), "facturas");
+            //contentPanel.add(getAdminProductListPanel(), "configuracion");
 
             JLabel titleLabel = new JLabel("Panel de Administración", JLabel.CENTER);
             titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
@@ -166,8 +168,7 @@ public class MainAdminUi {
                 cl.show(contentPanel, "facturas");
             });
             JButton configButton = createButton("Configuracion", resizeIcon("/icons/lista-de_productos.png"), e -> {
-                CardLayout cl = (CardLayout) contentPanel.getLayout();
-                cl.show(contentPanel, "configuracion");
+                showConfigDialog();
             });
 
             JButton moreOptionsButton = createButton("Ventas", resizeIcon("/icons/lista-de_productos.png"), e -> {
