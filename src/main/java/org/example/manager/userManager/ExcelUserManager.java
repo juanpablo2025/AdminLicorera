@@ -326,18 +326,13 @@ public class ExcelUserManager {
                     }
                 }
 
-                // 4️⃣ Imprimir en consola para verificación
-                System.out.println("🔹 Totales por forma de pago:");
-                for (Map.Entry<String, Double> entry : totalPorFormaPago.entrySet()) {
-                    System.out.println(entry.getKey() + ": $" + String.format("%,.2f", entry.getValue()));
-                }
 
                 // Sumar los totales
                 double totalCompra = sumarTotalesCompras(purchasesSheet);
 
                 // Restar los totales de gastos
                 double totalGastos = restarTotalesGastos(gastosSheet);
-                double totalFinal = totalCompra - totalGastos;
+                double totalFinal = totalCompra;
 
                 // Copiar la hoja "Compras" y renombrarla, pasando el total de la compra
                 crearArchivoFacturacionYGastos(purchasesSheet, gastosSheet, empleadosSheet, totalCompra, totalGastos);
