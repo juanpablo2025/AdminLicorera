@@ -23,7 +23,7 @@ import static org.example.ui.uiUser.UIUserMesas.showPanelMesas;
 public class UIUserMain {
     private static boolean showingMoreOptions = false;
     private static String nombreEmpleado = ExcelUserManager.obtenerUltimoEmpleado().toUpperCase();
-        private static Color fondoPrincipal = new Color(250, 240, 230);
+        public static Color fondoPrincipal = new Color(250, 240, 230);
 
     public static void mainUser() {
         try {
@@ -195,7 +195,7 @@ public class UIUserMain {
     }
 
 
-    private static ImageIcon resizeIcon(String path) {
+    public static ImageIcon resizeIcon(String path) {
         ImageIcon icon = new ImageIcon(UIUserMain.class.getResource(path));
         Image img = icon.getImage().getScaledInstance(85, 55, Image.SCALE_SMOOTH);
         return new ImageIcon(img);
