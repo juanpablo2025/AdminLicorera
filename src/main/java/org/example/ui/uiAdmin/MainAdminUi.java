@@ -163,15 +163,15 @@ public class MainAdminUi {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "productos");
             });
-            JButton gastosButton = createButton("Facturas", resizeIcon("/icons/lista-de_productos.png"), e -> {
+            JButton gastosButton = createButton("Facturas", resizeIcon("/icons/Facturar.png"), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "facturas");
             });
-            JButton configButton = createButton("Configuracion", resizeIcon("/icons/lista-de_productos.png"), e -> {
+            JButton configButton = createButton("Configuracion", resizeIcon("/icons/obrero.png"), e -> {
                 showConfigDialog();
             });
 
-            JButton moreOptionsButton = createButton("Ventas", resizeIcon("/icons/lista-de_productos.png"), e -> {
+            JButton moreOptionsButton = createButton("Mesas", resizeIcon("/icons/mesa-redonda.png"), e -> {
                 if (hayRegistroDeHoy()) {
                     mainUser();
                 } else {

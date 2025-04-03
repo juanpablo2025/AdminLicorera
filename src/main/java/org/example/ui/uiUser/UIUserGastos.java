@@ -164,7 +164,7 @@ public class UIUserGastos {
         formPanel.add(nombreGastoField, gbcForm);
 
         // Campo Precio
-        JLabel precioLabel = new JLabel("Precio");
+        JLabel precioLabel = new JLabel("Total");
         precioLabel.setFont(labelFont);
         precioLabel.setForeground(labelColor);
         gbcForm.gridx = 0;

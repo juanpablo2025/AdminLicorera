@@ -15,6 +15,7 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -307,6 +308,30 @@ public class ExcelUserManager {
                     System.out.println("Producto: " + entry.getKey() + ", Cantidad Vendida: " + entry.getValue());
                 }
 
+
+                // 3️⃣ Calcular el total por método de pago
+                Map<String, Double> totalPorFormaPago = new HashMap<>();
+                for (int i = 1; i <= purchasesSheet.getLastRowNum(); i++) {
+                    Row row = purchasesSheet.getRow(i);
+                    if (row != null) {
+                        Cell pagoCell = row.getCell(4); // Forma de pago (columna 4)
+                        Cell totalCell = row.getCell(2); // Total de la compra (columna 2)
+
+                        if (pagoCell != null && totalCell != null && totalCell.getCellType() == CellType.NUMERIC) {
+                            String formaPago = pagoCell.getStringCellValue().trim();
+                            double total = totalCell.getNumericCellValue();
+
+                            totalPorFormaPago.put(formaPago, totalPorFormaPago.getOrDefault(formaPago, 0.0) + total);
+                        }
+                    }
+                }
+
+                // 4️⃣ Imprimir en consola para verificación
+                System.out.println("🔹 Totales por forma de pago:");
+                for (Map.Entry<String, Double> entry : totalPorFormaPago.entrySet()) {
+                    System.out.println(entry.getKey() + ": $" + String.format("%,.2f", entry.getValue()));
+                }
+
                 // Sumar los totales
                 double totalCompra = sumarTotalesCompras(purchasesSheet);
 
@@ -326,7 +351,7 @@ public class ExcelUserManager {
                 // Guardar el archivo actualizado
                 try (FileOutputStream fos = new FileOutputStream(FILE_PATH.toString())) {
                     workbook.write(fos);
-                    guardarTotalFacturadoEnArchivo(totalFinal); // Cambiar totalCompra a totalFinal
+                    guardarTotalFacturadoEnArchivo(totalPorFormaPago,totalFinal); // Cambiar totalCompra a totalFinal
                 }
 
                 // Borrar el contenido de la carpeta Facturas
@@ -545,7 +570,7 @@ public class ExcelUserManager {
                 String name = row.getCell(ONE).getStringCellValue();
                 int quantity = (int) row.getCell(TWO).getNumericCellValue();
 
-                if (quantity == 0) {
+                if (quantity <= -1) {
                     productosAgotados.add(new Producto(name, quantity, row.getCell(THREE).getNumericCellValue(),row.getCell(5).getStringCellValue()));
                 }
             }
@@ -926,11 +951,18 @@ public class ExcelUserManager {
         return facturas;
     }
 
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    // Verificar si hay un registro del día actual
+    private static final LocalTime LIMITE_HORA = LocalTime.of(6, 0); // 6:00 AM
+
     public static boolean hayRegistroDeHoy() {
-        LocalDate hoy = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDateTime ahora = LocalDateTime.now();
+        LocalDate hoy = ahora.toLocalDate();
+
+        // Si es antes de las 6 AM, consideramos el día anterior
+        if (ahora.toLocalTime().isBefore(LIMITE_HORA)) {
+            hoy = hoy.minusDays(1);
+        }
 
         try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -941,14 +973,13 @@ public class ExcelUserManager {
                     Row row = sheet.getRow(i);
                     if (row != null) {
                         String fechaRegistro = row.getCell(2).getStringCellValue();
-                        LocalDate fecha = LocalDate.parse(fechaRegistro, formatter);
+                        LocalDate fecha = LocalDate.parse(fechaRegistro, DATE_FORMATTER);
                         if (fecha.isEqual(hoy)) {
                             return true; // Ya hay un registro
                         }
                     }
                 }
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }

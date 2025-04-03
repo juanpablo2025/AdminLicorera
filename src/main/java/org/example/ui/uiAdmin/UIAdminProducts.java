@@ -6,6 +6,7 @@ import org.example.model.Producto;
 import org.example.ui.UIHelpers;
 import org.example.ui.uiUser.UIUserMesas;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -16,12 +17,15 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
+import static org.example.model.Producto.getFotoByName;
 import static org.example.ui.UIHelpers.createButton;
 import static org.example.ui.UIHelpers.createDialog;
 import static org.example.ui.uiAdmin.GastosAdminUI.productoAdminManager;
@@ -70,7 +74,7 @@ public class UIAdminProducts {
 
         // Crear la tabla
         JTable productTable = new JTable(tableModel);
-// Centrar las cantidades en la celda
+        // Centrar las cantidades en la celda
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
         productTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
@@ -237,11 +241,13 @@ public class UIAdminProducts {
             data[i][2] = formatCOP.format(p.getPrice());
         }
 
+
+
         // Modelo de tabla personalizado
         DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 0 || column == 1 || column == 2; // ✅ Ahora se pueden editar Nombre, Cantidad y Precio
+                return column == 0 ||  column == 2; // ✅ Ahora se pueden editar Nombre, Cantidad y Precio
             }
 
             @Override
@@ -254,6 +260,11 @@ public class UIAdminProducts {
         setupTableAppearance(productTable);
         setupTableEditors(productTable);
 
+        // Centrar las cantidades en la celda
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+        productTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+        productTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
         JScrollPane scrollPane = new JScrollPane(productTable);
         panel.add(titleLabel, BorderLayout.NORTH);
         panel.add(scrollPane, BorderLayout.CENTER);
@@ -288,11 +299,6 @@ public class UIAdminProducts {
         });
     }
 
-    private static Integer[] createQuantityModel() {
-        Integer[] quantities = new Integer[101];
-        for (int i = 0; i <= 100; i++) quantities[i] = i;
-        return quantities;
-    }
 
     private static JPanel createButtonPanel(DefaultTableModel tableModel, JTable productTable) {
 
@@ -302,6 +308,13 @@ public class UIAdminProducts {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
         JButton addButton = new JButton("Añadir Producto");
+
+        addButton.addActionListener(e -> {
+            tableModel.addRow(new Object[]{"Nuevo_Producto", 0, "0"});
+            productTable.scrollRectToVisible(productTable.getCellRect(productTable.getRowCount() - 1, 0, true));
+        });
+
+
         addButton.setFont(new Font("Arial", Font.BOLD, 22));
         addButton.setForeground(Color.WHITE);
         addButton.setBackground(new Color(255, 111, 97));
@@ -330,7 +343,7 @@ public class UIAdminProducts {
 
 
         JButton saveButton = new JButton("Guardar Cambios");
-        saveButton.addActionListener(e -> saveProducts(tableModel));
+        saveButton.addActionListener(e -> saveProducts(tableModel,productTable));
 
         saveButton.setFont(new Font("Arial", Font.BOLD, 18));
         saveButton.setForeground(Color.WHITE);
@@ -387,7 +400,12 @@ public class UIAdminProducts {
             if (selectedRow != -1) {
                 String nombre = (String) tableModel.getValueAt(selectedRow, 0);
                 int cantidad = (Integer) tableModel.getValueAt(selectedRow, 1);
-                showReabastecimientoDialog(productTable,nombre, cantidad);
+
+
+
+
+                // Pasamos la lista de productos correctamente
+                showReabastecimientoDialog(productTable, nombre, cantidad);
             }
         });
 
@@ -404,7 +422,7 @@ public class UIAdminProducts {
         table.scrollRectToVisible(table.getCellRect(table.getRowCount() - 1, 0, true));
     }
 //TODO quitar cantidads
-    private static void saveProducts(DefaultTableModel tableModel) {
+    private static void saveProducts(DefaultTableModel tableModel,JTable table) {
         try {
             List<Producto> existingProducts = productoAdminManager.getProducts();
             for (int i = 0; i < tableModel.getRowCount(); i++) {
@@ -421,42 +439,122 @@ public class UIAdminProducts {
             }
             ExcelAdminManager.updateProducts(existingProducts);
             JOptionPane.showMessageDialog(null, "Cambios guardados exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            updateProductTable(table);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    public static void showReabastecimientoDialog(JTable productTable,String nombre, int cantidad) {
-        JDialog dialog = createDialog("Reabastecimiento de Productos", 500, 300, new GridLayout(4, 2));
+    private static void cargarImagen(String ruta, JLabel imageLabel) {
+        new SwingWorker<ImageIcon, Void>() {
+            @Override
+            protected ImageIcon doInBackground() {
+                try {
+                    File archivo = new File(ruta);
+                    BufferedImage img = null;
 
-        // Campo de producto (no editable para mantener consistencia)
-        JComboBox<String> productCombo = new JComboBox<>(new String[]{nombre});
-        productCombo.setEnabled(false);
+                    // Si la imagen no existe, usar imagen de respaldo
+                    if (!archivo.exists() || !archivo.isFile()) {
+                        InputStream is = getClass().getResourceAsStream("/icons/sinfoto.png");
+                        if (is != null) {
+                            img = ImageIO.read(is);
+                        } else {
+                            System.err.println("❌ No se encontró la imagen de respaldo.");
+                            return new ImageIcon();
+                        }
+                    } else {
+                        img = ImageIO.read(archivo);
+                    }
 
+                    if (img != null) {
+                        Image scaledImg = img.getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+                        return new ImageIcon(scaledImg);
+                    }
+                } catch (Exception e) {
+                    System.err.println("⚠ Error al cargar la imagen: " + e.getMessage());
+                }
+                return new ImageIcon();
+            }
 
-        int min = -100; // Permitir valores negativos
-        int max = 100;
-        int initial = Math.max(min, Math.min(cantidad, max)); // Ajusta cantidad dentro del rango permitido
+            @Override
+            protected void done() {
+                try {
+                    ImageIcon icon = get();
+                    if (icon != null) {
+                        imageLabel.setIcon(icon); // ✅ Ahora actualiza correctamente el JLabel
+                    }
+                } catch (Exception e) {
+                    System.err.println("⚠ Error al asignar imagen: " + e.getMessage());
+                }
+            }
+        }.execute();
+    }
+    public static void showReabastecimientoDialog(JTable productTable, String nombre, int cantidad) {
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Reabastecimiento de Productos");
+        dialog.setSize(500, 600);
+        dialog.setLayout(new BorderLayout(10, 10));
+
+        // Construcción de la ruta de la imagen
+        String rutaImagen = System.getProperty("user.home") + File.separator + "Calculadora del Administrador" +
+                File.separator + "Fotos" + File.separator + nombre + ".png";
+
+        JLabel imageLabel = new JLabel();
+        imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        imageLabel.setPreferredSize(new Dimension(300, 300));
+        cargarImagen(rutaImagen, imageLabel);
+
+        JPanel centerPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+
+        JLabel productLabel = new JLabel("Producto: " + nombre);
+        productLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        centerPanel.add(productLabel, gbc);
+
+        gbc.gridy++;
+        JLabel quantityLabel = new JLabel("Cantidad:");
+        centerPanel.add(quantityLabel, gbc);
+
+        gbc.gridy++;
+        int min = 1, max = 1000;
+        int initial = Math.max(min, Math.min(cantidad, max));
         JSpinner quantitySpinner = new JSpinner(new SpinnerNumberModel(initial, min, max, 1));
+        centerPanel.add(quantitySpinner, gbc);
 
-        // Campo de precio total
-        JTextField priceField = new JTextField();
+        gbc.gridy++;
+        JLabel priceLabel = new JLabel("Valor de compra:");
+        centerPanel.add(priceLabel, gbc);
 
-        // Botón de confirmación
+        gbc.gridy++;
+        JTextField priceField = new JTextField(10);
+        centerPanel.add(priceField, gbc);
+
         JButton confirmButton = new JButton("Confirmar");
-        confirmButton.addActionListener(e -> handleReplenishment(dialog,productTable, nombre, (int) quantitySpinner.getValue(), priceField.getText()));
+        confirmButton.setFont(new Font("Arial", Font.BOLD, 14));
+        confirmButton.setPreferredSize(new Dimension(200, 40));
+        confirmButton.setBackground(new Color(76, 175, 80));
+        confirmButton.setForeground(Color.WHITE);
+        confirmButton.setFocusPainted(false);
 
-        // Agregar componentes al diálogo
-        dialog.add(new JLabel("PRODUCTO:"));
-        dialog.add(productCombo);
-        dialog.add(new JLabel("CANTIDAD:"));
-        dialog.add(quantitySpinner);
-        dialog.add(new JLabel("PRECIO TOTAL:"));
-        dialog.add(priceField);
-        dialog.add(confirmButton);
+        confirmButton.addActionListener(e ->
+                handleReplenishment(dialog, productTable, nombre, (int) quantitySpinner.getValue(), priceField.getText())
+        );
 
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.add(confirmButton);
+
+        dialog.add(imageLabel, BorderLayout.NORTH);
+        dialog.add(centerPanel, BorderLayout.CENTER);
+        dialog.add(bottomPanel, BorderLayout.SOUTH);
+
+        dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
     }
+
 
     private static void handleReplenishment(JDialog dialog, JTable productTable, String productName, int quantity, String priceText) {
         try {
@@ -508,5 +606,12 @@ public class UIAdminProducts {
         for (Producto p : products) {
             model.addRow(new Object[]{p.getName(), p.getQuantity(), formatCOP.format(p.getPrice())});
         }
+    }
+
+
+    private static Integer[] createQuantityModel() {
+        Integer[] quantities = new Integer[101];
+        for (int i = 0; i <= 100; i++) quantities[i] = i;
+        return quantities;
     }
 }

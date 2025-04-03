@@ -15,6 +15,7 @@ import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.manager.adminManager.ConfigAdminManager;
 import org.example.model.Producto;
 import org.example.utils.FormatterHelpers;
@@ -460,17 +461,17 @@ public class FacturacionUserManager {
             //EmailSender.enviarCorreoConResumen("juanpablo_1810dev@hotmail.com", nombreArchivo);
             //abrirPDF(nombreArchivo);
             FormatterHelpers.formatearMoneda(totalVentas);
-            String numeroDestino = "+573112599560";  //"+573146704316" Número al que quieres enviar el mensaje
-            String mensaje = "[Licorera CR] ¡Hola! se ha generado la liquidación del día de hoy por un total de: $ "
+            //String numeroDestino = "+573112599560";  //"+573146704316" Número al que quieres enviar el mensaje
+           /* String mensaje = "[Licorera CR] ¡Hola! se ha generado la liquidación del día de hoy por un total de: $ "
                     + FormatterHelpers.formatearMoneda(totalVentas) + " pesos.\n Puedes consultar los detalles en los resúmenes adjuntos en Google Drive: https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
-            enviarMensaje(numeroDestino,mensaje);
+            enviarMensaje(numeroDestino,mensaje);*/
 
         } catch (IOException e) {
             e.printStackTrace();
 
-        } catch (InterruptedException e) {
+        }/* catch (InterruptedException e) {
             throw new RuntimeException(e);
-        }
+        }*/
     }
 
 
@@ -517,7 +518,7 @@ public class FacturacionUserManager {
     }
 */
 
-    public static void guardarTotalFacturadoEnArchivo(double totalFacturado) {
+    public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorPago,double totalFacturado) {
 
 
         Map<String, Integer> productosVendidos = obtenerProductosVendidos();
@@ -542,16 +543,13 @@ public class FacturacionUserManager {
         String nombreArchivo = carpetaPath + "\\REALIZO_" + fechaActual.format(formatter) + EMPTY + horaActual.format(horaFormatter) + ".pdf";
 
         try {
-            // Dimensiones del papel
-            float anchoMm = 48;  // Ancho fijo para impresora POS-58
-            float altoBaseMm = 250;  // Altura base mínima del documento
-            float altoPorProductoMm = 12;  // Altura por cada producto
-            float altoFooterMm = 40;  // Espacio extra para el footer y firma
-
-// Calcular la altura total (considerando todos los productos + footer)
-            float altoTotalMm = Math.max(altoBaseMm, productosVendidos.size() * altoPorProductoMm + altoFooterMm);
+            float anchoMm = 48;
+            float altoBaseMm = 250;
+            float altoPorProductoMm = 12;
+            float altoFooterMm = 40;
+            float altoTotalMm = altoBaseMm + (productosVendidos.size() * altoPorProductoMm) + altoFooterMm;
             float anchoPuntos = anchoMm * 2.83465f;
-            float altoPuntos = altoTotalMm * 2.93465f;
+            float altoPuntos = altoTotalMm * 2.83465f;
 
 // Crear el PDF con la altura ajustada dinámicamente
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
@@ -593,7 +591,33 @@ public class FacturacionUserManager {
                     .setFont(fontBold)
                     .setFontSize(12)
                     .setTextAlignment(TextAlignment.LEFT)
-                    .setMarginBottom(10));
+                    .setMarginBottom(5));
+
+
+            document.add(new Paragraph("\nTotales por Forma de Pago:")
+                    .setFont(fontBold)
+                    .setFontSize(10)
+                    .setMarginBottom(5));
+
+            if (totalesPorPago != null && !totalesPorPago.isEmpty()) {
+                for (Map.Entry<String, Double> entry : totalesPorPago.entrySet()) {
+                    String metodoPago = entry.getKey();
+                    double total = entry.getValue();
+
+                    // Formateo del total en pesos colombianos
+                    String totalFormateado = formatCOP.format(total);
+
+                    document.add(new Paragraph(metodoPago + ": $" + totalFormateado)
+                            .setFont(fontNormal)
+                            .setFontSize(10)
+                            .setMarginBottom(3));
+                }
+            } else {
+                document.add(new Paragraph("No hay datos de pagos registrados.")
+                        .setFont(fontNormal)
+                        .setFontSize(10)
+                        .setMarginBottom(5));
+            }
 
             document.add(new Paragraph(new String(new char[22]).replace('\0', '_'))
                     .setFont(fontNormal)
