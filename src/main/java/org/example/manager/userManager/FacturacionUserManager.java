@@ -64,12 +64,12 @@ public class FacturacionUserManager {
      * Realiza la facturación y limpieza de los datos.
      * Luego, termina la ejecución del programa.
      */
-    public static void facturarYSalir() {
+    public static void facturarYSalir() throws IOException, InterruptedException {
         excelUserManager.facturarYLimpiar();
 
         //TODO: validar que no este ocupada
         eliminarMesasConIdMayorA15();
-
+        enviarMensaje("+573226094632", "Se ha realizado la facturación del día de hoy, por favor verifica el archivo en la carpeta de 'Facturas'.");
         System.exit(ZERO);
         // Salir del programa después de la facturación
     }
@@ -461,17 +461,17 @@ public class FacturacionUserManager {
             //EmailSender.enviarCorreoConResumen("juanpablo_1810dev@hotmail.com", nombreArchivo);
             //abrirPDF(nombreArchivo);
             FormatterHelpers.formatearMoneda(totalVentas);
-            //String numeroDestino = "+573112599560";  //"+573146704316" Número al que quieres enviar el mensaje
-           /* String mensaje = "[Licorera CR] ¡Hola! se ha generado la liquidación del día de hoy por un total de: $ "
+            String numeroDestino = "+573112599560";  //"+573146704316" Número al que quieres enviar el mensaje
+            String mensaje = "[Licorera CR] ¡Hola! se ha generado la liquidación del día de hoy por un total de: $ "
                     + FormatterHelpers.formatearMoneda(totalVentas) + " pesos.\n Puedes consultar los detalles en los resúmenes adjuntos en Google Drive: https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
-            enviarMensaje(numeroDestino,mensaje);*/
+            enviarMensaje(numeroDestino,mensaje);
 
         } catch (IOException e) {
             e.printStackTrace();
 
-        }/* catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
-        }*/
+        }
     }
 
 

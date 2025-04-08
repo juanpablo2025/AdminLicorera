@@ -76,7 +76,14 @@ public class GastosAdminManager {
             newRow.createCell(0).setCellValue(producto.getId());
             newRow.createCell(1).setCellValue(producto.getName());
             newRow.createCell(2).setCellValue(cantidad);
-            newRow.createCell(3).setCellValue(precioCompra);  // Guardar el precio ingresado
+
+// Si el precio es -1, escribir "N/A" o dejar vacío
+            if (precioCompra == -10) {
+                newRow.createCell(3).setCellValue("N/A");
+            } else {
+                newRow.createCell(3).setCellValue(precioCompra);
+            }
+
             newRow.createCell(4).setCellValue(fechaFormateada);
 
             // Guardar los cambios en el archivo Excel

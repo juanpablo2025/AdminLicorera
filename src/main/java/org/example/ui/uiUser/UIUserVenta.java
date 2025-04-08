@@ -36,6 +36,7 @@ import static org.example.ui.UIHelpers.*;
 //import static org.example.ui.uiUser.UIUserMesas.showMesas;
 import static org.example.ui.UIHelpers.compraDialog;
 import static org.example.ui.uiUser.UIUserMain.mainUser;
+import static org.example.ui.uiUser.UIUserProductList.obtenerTRM;
 import static org.example.utils.Constants.*;
 import static org.example.utils.Constants.ERROR_TITLE;
 
@@ -786,9 +787,28 @@ public class UIUserVenta {
                     generarFacturadeCompra(ventaID, Arrays.asList(listaProductosEnLinea.toString().split("\n")), total, dateTime, tipoPagoSeleccionado[0]);
                 }
 
+                Double TotalDolar = total/obtenerTRM();
+                NumberFormat FORMAT_USD = NumberFormat.getCurrencyInstance(Locale.US);
 
-                JOptionPane.showMessageDialog(compraDialog, PURCHASE_SUCCEDED + " por un total de: $ " + NumberFormat.getInstance(new Locale("es", "CO")).format(total) + " Pesos");
-                actualizarCantidadStockExcel(cantidadTotalPorProducto, mesaID);
+                String mensaje = String.format(
+                        "<html>" +
+                                "<div style='font-size:16pt;'>" +
+                                "✔ <b>%s</b><br><br>" +
+                                "Por un total de:<br>" +
+                                "<span style='font-size:22pt; color:#006400;'><b>$%s COP</b></span><br>" +
+                                "<span style='font-size:18pt; color:#003399;'><b>%s USD</b></span>" +
+                                "</div></html>",
+                        PURCHASE_SUCCEDED,
+                        NumberFormat.getInstance(new Locale("es", "CO")).format(total),
+                        FORMAT_USD.format(TotalDolar)
+                );
+
+                JOptionPane.showMessageDialog(
+                        compraDialog,
+                        mensaje,
+                        "Compra Exitosa",
+                        JOptionPane.INFORMATION_MESSAGE
+                );                actualizarCantidadStockExcel(cantidadTotalPorProducto, mesaID);
                 productoUserManager.limpiarCarrito();
                 // Cerrar la ventana actual (si es un JDialog)
                 SwingUtilities.invokeLater(() -> {

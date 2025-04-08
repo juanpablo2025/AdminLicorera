@@ -1015,6 +1015,9 @@ public class ExcelUserManager {
             // Guardar cambios en el archivo
             try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
                 workbook.write(fos);
+                enviarMensaje("+573226094632","El empleado " + nombreUsuario + " ha comenzado su jornada laboral a las " + horaInicio + " del día " + fechaInicio);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
 
         } catch (IOException e) {

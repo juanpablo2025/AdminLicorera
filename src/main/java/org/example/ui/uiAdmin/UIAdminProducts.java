@@ -13,6 +13,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -21,6 +23,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
@@ -467,7 +473,7 @@ public class UIAdminProducts {
                     }
 
                     if (img != null) {
-                        Image scaledImg = img.getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+                        Image scaledImg = img.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
                         return new ImageIcon(scaledImg);
                     }
                 } catch (Exception e) {
@@ -492,17 +498,97 @@ public class UIAdminProducts {
     public static void showReabastecimientoDialog(JTable productTable, String nombre, int cantidad) {
         JDialog dialog = new JDialog();
         dialog.setTitle("Reabastecimiento de Productos");
-        dialog.setSize(500, 600);
+        dialog.setSize(520, 710);
         dialog.setLayout(new BorderLayout(10, 10));
 
-        // Construcción de la ruta de la imagen
-        String rutaImagen = System.getProperty("user.home") + File.separator + "Calculadora del Administrador" +
-                File.separator + "Fotos" + File.separator + nombre + ".png";
+        String rutaImagen = System.getProperty("user.home") + File.separator + "Calculadora del Administrador"
+                + File.separator + "Fotos" + File.separator + nombre + ".png";
 
+        // Imagen
         JLabel imageLabel = new JLabel();
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         imageLabel.setPreferredSize(new Dimension(300, 300));
         cargarImagen(rutaImagen, imageLabel);
+
+        // Panel rojo debajo de la imagen
+        JPanel infoBar = new JPanel();
+        infoBar.setBackground(new Color(220, 53, 69));
+        infoBar.setLayout(new FlowLayout(FlowLayout.CENTER, 60, 10));
+        infoBar.setPreferredSize(new Dimension(400, 50));
+
+        JLabel cantidadLabel = new JLabel("x" + cantidad + " Uds");
+        cantidadLabel.setForeground(Color.WHITE);
+        cantidadLabel.setFont(new Font("Arial", Font.BOLD, 22));
+
+        JLabel precioLabel = new JLabel("$ "+ formatCOP.format(productoAdminManager.getProductByName(nombre).getPrice())+" Pesos");
+        precioLabel.setForeground(Color.WHITE);
+        precioLabel.setFont(new Font("Arial", Font.BOLD, 22));
+
+        infoBar.add(cantidadLabel);
+        infoBar.add(precioLabel);
+
+        // Título (nombre del producto)
+        JLabel productLabel = new JLabel(nombre);
+        productLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        productLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        productLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        productLabel.setForeground(Color.WHITE);
+
+
+
+
+        JPanel imageContainer = new JPanel(new BorderLayout());
+        imageContainer.add(imageLabel, BorderLayout.CENTER);
+        imageContainer.add(infoBar, BorderLayout.SOUTH);
+        imageContainer.setBackground(new Color(80, 80, 80));
+
+
+// Contenedor vertical: nombre + imagen + barra roja
+        Box topBox = Box.createVerticalBox();
+        topBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+        topBox.add(Box.createVerticalStrut(10));
+        topBox.add(productLabel);
+        topBox.add(Box.createVerticalStrut(10));
+        topBox.add(imageContainer); // ← esto incluye la imagen + barra roja
+
+// Contenedor con fondo negro
+        JPanel topContainer = new JPanel();
+        topContainer.setBackground(new Color(80, 80, 80));
+        topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.Y_AXIS));
+        topContainer.add(topBox);
+
+        topBox.add(imageContainer);
+
+
+        imageLabel.setTransferHandler(new TransferHandler() {
+            @Override
+            public boolean canImport(TransferSupport support) {
+                return support.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+            }
+
+            @Override
+            public boolean importData(TransferSupport support) {
+                try {
+                    Transferable t = support.getTransferable();
+                    java.util.List<File> files = (java.util.List<File>) t.getTransferData(DataFlavor.javaFileListFlavor);
+                    if (!files.isEmpty()) {
+                        File draggedFile = files.get(0);
+                        if (draggedFile.getName().toLowerCase().endsWith(".png") ||
+                                draggedFile.getName().toLowerCase().endsWith(".jpg") ||
+                                draggedFile.getName().toLowerCase().endsWith(".jpeg")) {
+
+                            Path destino = Paths.get(rutaImagen);
+                            Files.copy(draggedFile.toPath(), destino, StandardCopyOption.REPLACE_EXISTING);
+                            cargarImagen(rutaImagen, imageLabel);
+                            return true;
+                        }
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                return false;
+            }
+        });
 
         JPanel centerPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -511,43 +597,59 @@ public class UIAdminProducts {
         gbc.gridx = 0;
         gbc.gridy = 0;
 
-        JLabel productLabel = new JLabel("Producto: " + nombre);
-        productLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        centerPanel.add(productLabel, gbc);
-
         gbc.gridy++;
         JLabel quantityLabel = new JLabel("Cantidad:");
+        quantityLabel.setFont(new Font("Arial", Font.BOLD, 16));
         centerPanel.add(quantityLabel, gbc);
 
         gbc.gridy++;
         int min = 1, max = 1000;
-        int initial = Math.max(min, Math.min(cantidad, max));
+        int initial = Math.max(min, Math.min(min, max));
         JSpinner quantitySpinner = new JSpinner(new SpinnerNumberModel(initial, min, max, 1));
+        quantitySpinner.setFont(new Font("Arial", Font.PLAIN, 16));
+        quantitySpinner.setPreferredSize(new Dimension(400, 40));
         centerPanel.add(quantitySpinner, gbc);
 
+        JComponent editor = quantitySpinner.getEditor();
+        if (editor instanceof JSpinner.DefaultEditor defaultEditor) {
+            defaultEditor.getTextField().setFont(new Font("Arial", Font.PLAIN, 16));
+        }
+
+        SwingUtilities.invokeLater(() -> {
+            for (Component comp : quantitySpinner.getComponents()) {
+                if (comp instanceof JButton button) {
+                    button.setPreferredSize(new Dimension(60, 60));
+                    button.setFont(new Font("Arial", Font.BOLD, 16));
+                }
+            }
+        });
+
         gbc.gridy++;
-        JLabel priceLabel = new JLabel("Valor de compra:");
+        JLabel priceLabel = new JLabel("Valor de compra(Opcional)");
+        priceLabel.setFont(new Font("Arial", Font.BOLD, 16));
         centerPanel.add(priceLabel, gbc);
 
         gbc.gridy++;
         JTextField priceField = new JTextField(10);
+        priceField.setPreferredSize(new Dimension(400, 40));
         centerPanel.add(priceField, gbc);
-
+        String precioTexto = priceField.getText().trim();
+        String precioCompra = precioTexto.isEmpty() ? "-10" : (precioTexto);
         JButton confirmButton = new JButton("Confirmar");
-        confirmButton.setFont(new Font("Arial", Font.BOLD, 14));
-        confirmButton.setPreferredSize(new Dimension(200, 40));
+        confirmButton.setFont(new Font("Arial", Font.BOLD, 18));
+        confirmButton.setPreferredSize(new Dimension(400, 40));
         confirmButton.setBackground(new Color(76, 175, 80));
         confirmButton.setForeground(Color.WHITE);
         confirmButton.setFocusPainted(false);
 
         confirmButton.addActionListener(e ->
-                handleReplenishment(dialog, productTable, nombre, (int) quantitySpinner.getValue(), priceField.getText())
+                handleReplenishment(dialog, productTable, nombre, (int) quantitySpinner.getValue(), precioCompra)
         );
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(confirmButton);
 
-        dialog.add(imageLabel, BorderLayout.NORTH);
+        dialog.add(topContainer, BorderLayout.NORTH);
         dialog.add(centerPanel, BorderLayout.CENTER);
         dialog.add(bottomPanel, BorderLayout.SOUTH);
 
@@ -556,21 +658,17 @@ public class UIAdminProducts {
     }
 
 
+
+
     private static void handleReplenishment(JDialog dialog, JTable productTable, String productName, int quantity, String priceText) {
         try {
             // Validar que el precio no esté vacío
             priceText = priceText.trim().replace(".", "").replace(",", "");
-            if (priceText.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "El precio no puede estar vacío.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+
 
             // Convertir a número
             double price = Double.parseDouble(priceText);
-            if (price <= 0) {
-                JOptionPane.showMessageDialog(dialog, "El precio debe ser mayor que 0.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+
 
             // Buscar el producto en la lista
             Producto product = productoAdminManager.getProductByName(productName);
@@ -590,9 +688,7 @@ public class UIAdminProducts {
             // Actualizar la tabla
             updateProductTable(productTable);
             dialog.dispose();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(dialog, "Formato de precio inválido. Use solo números.", "Error", JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
+        }  catch (Exception ex) {
             JOptionPane.showMessageDialog(dialog, "Error inesperado: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }

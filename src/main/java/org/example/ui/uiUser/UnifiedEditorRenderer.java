@@ -1,6 +1,7 @@
 package org.example.ui.uiUser;
 
 
+import org.example.manager.userManager.ProductoUserManager;
 import org.example.manager.userManager.VentaMesaUserManager;
 
 import javax.swing.*;
@@ -15,50 +16,62 @@ import static org.example.utils.Constants.*;
 import static org.example.manager.userManager.ProductoUserManager.*;
 
 public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCellEditor, TableCellRenderer, ActionListener {
-    private JButton button;
-    private JSpinner spinner;
-    private DefaultTableModel tableModel;
+    private final JButton buttonRestar;
+    private final JButton buttonEliminar;
+    private final JSpinner spinner;
+    private final DefaultTableModel tableModel;
+    private final VentaMesaUserManager ventaMesaUserManager;
+    private JTable currentTable;
     private int editingRow;
     private int editingColumn;
-    private VentaMesaUserManager ventaMesaUserManager;
 
     public UnifiedEditorRenderer(DefaultTableModel model, VentaMesaUserManager manager) {
-        // Inicializar el botón con estilo personalizado
-        button = new JButton(X_BTN);
-        button.setBackground(new Color(201, 79, 79));        button.setForeground(Color.WHITE); // Letras siempre blancas
-        button.setOpaque(true); // Asegura que el fondo rojo se vea
-        button.setBorderPainted(false); // Quita el borde para que se vea más limpio
-        button.setFocusPainted(false); // Quita el borde cuando se selecciona
-        button.setContentAreaFilled(true); // Asegura que el color se aplique en toda el área
-        button.addActionListener(this);
-
-        // Inicializar el spinner
-        spinner = new JSpinner(new SpinnerNumberModel(ONE, ONE, ONE, ONE));
-
-        // Referencias externas
         this.tableModel = model;
         this.ventaMesaUserManager = manager;
+
+        buttonRestar = new JButton("-1");
+        buttonRestar.setBackground(new Color(201, 79, 79));
+        buttonRestar.setForeground(Color.WHITE);
+        buttonRestar.setPreferredSize(new Dimension(60, 30));
+        buttonRestar.setFocusPainted(false);
+        buttonRestar.setBorderPainted(false);
+        buttonRestar.setActionCommand("Restar");
+        buttonRestar.addActionListener(this);
+
+        buttonEliminar = new JButton("✖");
+        buttonEliminar.setBackground(new Color(140, 20, 20));
+        buttonEliminar.setForeground(Color.WHITE);
+        buttonEliminar.setPreferredSize(new Dimension(35, 30));
+        buttonEliminar.setFocusPainted(false);
+        buttonEliminar.setBorderPainted(false);
+        buttonEliminar.setActionCommand("Eliminar");
+        buttonEliminar.addActionListener(this);
+
+        spinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
     }
 
     @Override
     public Object getCellEditorValue() {
-        if (editingColumn == ONE) {
-            return spinner.getValue(); // Retorna el valor actualizado del spinner
+        if (editingColumn == 1) {
+            return spinner.getValue();
         }
         return null;
     }
 
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-        // Establecer la fila y la columna actuales en edición
         this.editingRow = row;
         this.editingColumn = column;
+        this.currentTable = table;
 
-        // Devolver el componente adecuado dependiendo de la columna
-        if (column == FOUR) {  // Columna del botón
-            return button;
-        } else if (column == ONE) {  // Columna del spinner
-            spinner.setValue(value);  // Establece el valor actual del spinner
+        if (column == 4) {
+            JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+            panel.setBackground(table.getBackground());
+            panel.add(buttonRestar);
+            panel.add(buttonEliminar);
+            return panel;
+        } else if (column == 1) {
+            spinner.setValue(value);
             return spinner;
         }
         return null;
@@ -66,53 +79,62 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        if (column == FOUR) {  // Botón de eliminación
-            JButton renderButton = new JButton(X_BTN);
-            renderButton.setForeground(Color.WHITE); // Letras blancas
-            renderButton.setBackground(new Color(201, 79, 79));
+        if (column == 4) {
+            JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
 
-            return renderButton;
-        } else if (column == ONE) {  // Spinner
-            spinner = new JSpinner(new SpinnerNumberModel(ONE, ONE, ONE_HUNDRED, ONE)); // Valores enteros
-            return spinner;
+            JButton btnRestar = new JButton("-1");
+            btnRestar.setBackground(new Color(201, 79, 79));
+            btnRestar.setForeground(Color.WHITE);
+            btnRestar.setFocusable(false);
+            btnRestar.setPreferredSize(new Dimension(60, 30));
+
+            JButton btnEliminar = new JButton("✖");
+            btnEliminar.setBackground(new Color(140, 20, 20));
+            btnEliminar.setForeground(Color.WHITE);
+            btnEliminar.setFocusable(false);
+            btnEliminar.setPreferredSize(new Dimension(35, 30));
+
+            panel.setBackground(table.getBackground());
+            panel.add(btnRestar);
+            panel.add(btnEliminar);
+            return panel;
+        } else if (column == 1) {
+            return new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
         }
         return null;
     }
 
-
     @Override
     public void actionPerformed(ActionEvent e) {
-        // Detener la edición de la celda actual para evitar problemas de edición
         stopCellEditing();
 
-        // Acción del botón: Eliminar una unidad o el producto si solo queda una
-        if (editingColumn == FOUR) {  // Verifica si la acción corresponde a la columna del botón
-            int selectedRow = editingRow;  // Guardar la fila actual
+        if (editingRow >= 0 && editingRow < tableModel.getRowCount()) {
+            Object cantidadObj = tableModel.getValueAt(editingRow, 1);
 
-            // Verificar si el índice de la fila es válido antes de intentar eliminar
-            if (selectedRow >= 0 && selectedRow < tableModel.getRowCount()) {
-                // Acceder al valor del JSpinner en la columna de cantidad (suponiendo que la columna de cantidad es la columna 1)
-                Object cantidadObj = tableModel.getValueAt(selectedRow, ONE);
-
-                // Validar que cantidadObj no sea null y que pueda convertirse a entero
-                if (cantidadObj instanceof Integer) {
-                    int cantidadActual = (int) cantidadObj;
-
-                    if (cantidadActual > 1) {
-                        // Si hay más de una unidad, se reduce en una
-                        tableModel.setValueAt(cantidadActual - 1, selectedRow, ONE);
-                    } else {
-                        // Si solo queda una unidad, se elimina la fila entera
-                        removeProductFromCart(selectedRow);  // Eliminar el producto del carrito
-                        tableModel.removeRow(selectedRow);  // Eliminar la fila de la tabla
+            switch (e.getActionCommand()) {
+                case "Restar":
+                    if (cantidadObj instanceof Integer) {
+                        int cantidadActual = (int) cantidadObj;
+                        if (cantidadActual > 1) {
+                            tableModel.setValueAt(cantidadActual - 1, editingRow, 1);
+                        } else {
+                            removeProductFromCart(editingRow);
+                            tableModel.removeRow(editingRow);
+                        }
+                        SwingUtilities.invokeLater(tableModel::fireTableDataChanged);
                     }
-
-                    // Redibuja la tabla para reflejar los cambios de forma adecuada sin afectar la edición
-                    SwingUtilities.invokeLater(() -> tableModel.fireTableDataChanged());
-                }
+                    break;
+                case "Eliminar":
+                    removeProductFromCart(editingRow);
+                    tableModel.removeRow(editingRow);
+                    SwingUtilities.invokeLater(tableModel::fireTableDataChanged);
+                    break;
             }
         }
     }
 
+    private void removeProductFromCart(int row) {
+        ProductoUserManager.removeProductFromCart(row);
+    }
 }
 

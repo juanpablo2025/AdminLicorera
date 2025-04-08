@@ -9,7 +9,6 @@ import org.example.ui.uiUser.UnifiedEditorRenderer;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
-import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicScrollBarUI;
@@ -24,10 +23,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.text.ParseException;
 import java.util.List;
 
 import static org.example.utils.Constants.*;
@@ -249,19 +245,73 @@ public class UIHelpers {
 
 
 
-        JTextField searchField = new JTextField();
-        searchField.setFont(new Font("Arial", Font.PLAIN, 16));
-        searchField.setPreferredSize(new Dimension(470, 30));
+
+
+        JTextField searchField = new JTextField() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (getText().isEmpty() && !isFocusOwner()) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setFont(new Font("Arial", Font.PLAIN, 18));
+                    g2.setColor(Color.GRAY);
+                    g2.drawString("Busca un producto...", 5, getHeight() - 10);
+                    g2.dispose();
+                }
+            }
+        };
+        searchField.setPreferredSize(new Dimension(470, 40));
         searchPanel.add(searchField);
         searchPanel.setBackground(new Color(28,28,28));
+        searchField.setForeground(Color.GRAY);
 
         inputPanel.add(searchPanel, BorderLayout.NORTH);
+
+// Spinner de cantidad (agrega esto arriba del searchPanel)
+        JPanel quantityPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 13, 1));
+        quantityPanel.setBackground(new Color(28, 28, 28));
+        JLabel quantityLabel = new JLabel("Cantidad:");
+        quantityLabel.setForeground(Color.WHITE);
+        quantityLabel.setFont(labelFont);
+
+        SpinnerNumberModel model = new SpinnerNumberModel(1, 1, 999, 1);
+        JSpinner cantidadSpinner = new JSpinner(model);
+
+        JComponent editor = cantidadSpinner.getEditor();
+        JFormattedTextField spinnerTextField = ((JSpinner.DefaultEditor) editor).getTextField();
+
+        spinnerTextField.setColumns(3);
+        spinnerTextField.setPreferredSize(new Dimension(400, 40));
+        spinnerTextField.setFont(new Font("Arial", Font.PLAIN, 20));
+
+
+// 👇 Esta línea fuerza sincronización en tiempo real al escribir
+        spinnerTextField.getDocument().addDocumentListener(new DocumentListener() {
+            void update() {
+                SwingUtilities.invokeLater(() -> {
+                    int caret = spinnerTextField.getCaretPosition();
+                    try {
+                        spinnerTextField.commitEdit();
+                    } catch (ParseException ignored) {
+                    }
+                    spinnerTextField.setCaretPosition(Math.min(caret, spinnerTextField.getText().length()));
+                });
+            }
+
+
+            @Override public void insertUpdate(DocumentEvent e) { update(); }
+            @Override public void removeUpdate(DocumentEvent e) { update(); }
+            @Override public void changedUpdate(DocumentEvent e) { update(); }
+        });
+        quantityPanel.add(quantityLabel, BorderLayout.WEST);
+        quantityPanel.add(cantidadSpinner);
+        inputPanel.add(quantityPanel);
 
         // Panel de productos dinámico
         JPanel productPanel = new JPanel(new GridLayout(0, 2, 2, 5));
         JScrollPane scrollPane = new JScrollPane(productPanel);
-        scrollPane.setPreferredSize(new Dimension(500, 300));
-        inputPanel.add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setPreferredSize(new Dimension(500, 365));
+        inputPanel.add(scrollPane, BorderLayout.SOUTH);
         productPanel.setBackground(new Color(28,28,28));
 
         List<Producto> productList = productoUserManager.getProducts().stream()
@@ -371,7 +421,6 @@ public class UIHelpers {
 
                         card.add(namePanel, BorderLayout.SOUTH);
                         card.setBackground(new Color(147, 89, 49));
-
                         new SwingWorker<ImageIcon, Void>() {
                             @Override
                             protected ImageIcon doInBackground() {
@@ -442,7 +491,9 @@ public class UIHelpers {
                             @Override
                             public void mouseClicked(MouseEvent e) {
                                 if (SwingUtilities.isLeftMouseButton(e)) {
-                                    AddProductsToTable(table, product, ventaMesaUserManager);
+                                    int cantidad = (Integer) cantidadSpinner.getValue();
+                                    AddProductsToTable(table, product, ventaMesaUserManager, cantidad);
+                                    cantidadSpinner.setValue(1);
                                 }
                             }
                         });
@@ -542,7 +593,7 @@ public class UIHelpers {
         }
     }
 
-    public static void AddProductsToTable(JTable table, Producto producto, VentaMesaUserManager ventaManager) {
+    public static void AddProductsToTable(JTable table, Producto producto, VentaMesaUserManager ventaManager, int cantidad) {
         if (producto == null) {
             JOptionPane.showMessageDialog(null, "Producto no válido.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
@@ -550,9 +601,6 @@ public class UIHelpers {
 
         DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
         boolean productoExistente = false;
-        int cantidad = 1;
-
-
 
         for (int i = 0; i < tableModel.getRowCount(); i++) {
             String nombreProducto = (String) tableModel.getValueAt(i, 0);
@@ -562,19 +610,13 @@ public class UIHelpers {
                     int cantidadExistente = Integer.parseInt(tableModel.getValueAt(i, 1).toString());
                     int nuevaCantidad = cantidadExistente + cantidad;
 
-                 /*  if (nuevaCantidad > producto.getQuantity()) {
-                        JOptionPane.showMessageDialog(null, "No hay suficiente stock para " + producto.getName(), "Error", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }*/
-
                     double precioUnitario = producto.getPrice();
                     double nuevoTotal = nuevaCantidad * precioUnitario;
 
                     tableModel.setValueAt(nuevaCantidad, i, 1);
-                    tableModel.setValueAt(formatearMoneda(precioUnitario), i, 2);
-                    tableModel.setValueAt((nuevoTotal), i, 3);
+                    tableModel.setValueAt(precioUnitario, i, 2);
+                    tableModel.setValueAt(nuevoTotal, i, 3);
 
-                    // Actualizar el producto en el carrito de compra
                     productoUserManager.updateProductQuantity(producto, nuevaCantidad);
 
                     productoExistente = true;
