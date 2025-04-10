@@ -4,14 +4,17 @@ import org.example.manager.adminManager.FacturasAdminManager;
 import org.example.manager.adminManager.GastosAdminManager;
 import org.example.manager.userManager.GastosUserManager;
 import org.example.model.Factura;
+import org.example.ui.UIHelpers;
 import org.example.ui.uiUser.UIUserMesas;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -124,7 +127,10 @@ public class UIAdminFacturas {
 
 
     public static JPanel getAdminBillsPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
+        JPanel facturasPanel = new JPanel(new BorderLayout());
+        facturasPanel.setBackground(new Color(250, 240, 230));
+        facturasPanel.setBorder(new EmptyBorder(20, 20, 20, 20)); // Margen de 20px en todos los lados
+
 
 
         JLabel titleLabel = new JLabel("Facturas", JLabel.CENTER);
@@ -188,23 +194,43 @@ public class UIAdminFacturas {
         facturasTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
         // Establecer la fuente y el tamaño
-        Font font = new Font("Arial", Font.PLAIN, 18); // Cambiar el tipo y tamaño de fuente
+        Font font = new Font("Arial", Font.PLAIN, 18);
         facturasTable.setFont(font);
-        facturasTable.setRowHeight(30); // Aumentar la altura de las filas
+        facturasTable.setRowHeight(30);
 
         // Establecer la fuente para el encabezado
         JTableHeader header = facturasTable.getTableHeader();
-        header.setFont(new Font("Arial", Font.BOLD, 20)); // Fuente más grande para el encabezado
-        header.setBackground(Color.LIGHT_GRAY); // Fondo para el encabezado
-        header.setForeground(Color.BLACK); // Color del texto del encabezado
+        header.setFont(new Font("Arial", Font.BOLD, 20));
+        header.setBackground(new Color(28,28,28));
+        header.setForeground(Color.BLACK);
 
         // Configuración de borde y color de fondo
         facturasTable.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-        facturasTable.setBackground(Color.WHITE); // Fondo de la tabla
-        facturasTable.setSelectionBackground(Color.CYAN); // Color de selección
-        facturasTable.setSelectionForeground(Color.BLACK); // Color del texto seleccionado
+        facturasTable.setBackground(new Color(250, 240, 230));
+        facturasTable.setSelectionBackground(new Color(173, 216, 230)); // Azul claro
+        facturasTable.setSelectionForeground(Color.BLACK);
+        // Aplicar renderer de moneda a la columna "Total"
+        facturasTable.getColumnModel().getColumn(2).setCellRenderer(new UIHelpers.CurrencyRenderer());
+        try {
+            InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
+
+            if (fontStream == null) {
+                throw new IOException("No se pudo encontrar la fuente en los recursos.");
+            }
+
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+            customFont = customFont.deriveFont(Font.ITALIC, 26); // Ajustar tamaño
+
+            header = facturasTable.getTableHeader();
+            header.setFont(customFont);
+            header.setForeground(new Color(201, 41, 41));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         JScrollPane scrollPane = new JScrollPane(facturasTable);
-        panel.add(scrollPane, BorderLayout.CENTER);
+        facturasPanel.add(scrollPane, BorderLayout.CENTER);
         // Crear el botón para eliminar
         JButton eliminarButton = new JButton("Eliminar"){
             @Override
@@ -244,7 +270,7 @@ public class UIAdminFacturas {
             int selectedRow = facturasTable.getSelectedRow();
             if (selectedRow != -1) {
                 String facturaID = facturasTable.getValueAt(selectedRow, 0).toString(); // Obtener el ID de la factura seleccionada
-                int confirm = JOptionPane.showConfirmDialog(panel, "¿Seguro que deseas eliminar esta factura?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+                int confirm = JOptionPane.showConfirmDialog(facturasPanel, "¿Seguro que deseas eliminar esta factura?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
                     // Llamar al método que elimina la factura y actualiza el inventario
                     boolean eliminado = facturasAdminManager.eliminarFacturaYActualizarProductos(facturaID);
@@ -252,23 +278,23 @@ public class UIAdminFacturas {
                     if (eliminado) {
                         // Eliminar la fila de la tabla
                         ((DefaultTableModel) facturasTable.getModel()).removeRow(selectedRow);
-                        JOptionPane.showMessageDialog(panel, "Factura eliminada exitosamente y productos actualizados.");
+                        JOptionPane.showMessageDialog(facturasPanel, "Factura eliminada exitosamente y productos actualizados.");
                     } else {
-                        JOptionPane.showMessageDialog(panel, "Error al eliminar la factura y actualizar productos.", "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(facturasPanel, "Error al eliminar la factura y actualizar productos.", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             } else {
-                JOptionPane.showMessageDialog(panel, "Por favor, selecciona una factura para eliminar.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(facturasPanel, "Por favor, selecciona una factura para eliminar.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         // Añadir el botón de eliminación
         JPanel buttonPanel = new JPanel();
         buttonPanel.add(eliminarButton);
-        panel.add(titleLabel, BorderLayout.NORTH);
-        panel.add(buttonPanel, BorderLayout.SOUTH);
+        facturasPanel.add(titleLabel, BorderLayout.NORTH);
+        facturasPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        return panel;
+        return facturasPanel;
 
     }
 }

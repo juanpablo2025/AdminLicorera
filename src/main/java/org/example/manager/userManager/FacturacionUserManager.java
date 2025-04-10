@@ -69,7 +69,7 @@ public class FacturacionUserManager {
 
         //TODO: validar que no este ocupada
         eliminarMesasConIdMayorA15();
-        enviarMensaje("+573226094632", "Se ha realizado la facturación del día de hoy, por favor verifica el archivo en la carpeta de 'Facturas'.");
+        //enviarMensaje("+573226094632", "Se ha realizado la facturación del día de hoy, por favor verifica el archivo en la carpeta de 'Facturas'.");
         System.exit(ZERO);
         // Salir del programa después de la facturación
     }
@@ -374,7 +374,13 @@ public class FacturacionUserManager {
                 Row row = gastosSheet.getRow(i);
                 if (row != null) {
                     String producto = row.getCell(1).getStringCellValue();  // Nombre del producto
-                    double precioGasto = row.getCell(3).getNumericCellValue();  // Precio de gasto
+                    String precioTexto = new DataFormatter().formatCellValue(row.getCell(3)).trim();
+                    double precioGasto = 0;
+                    try {
+                        precioGasto = Double.parseDouble(precioTexto.replace(".", "").replace(",", "."));
+                    } catch (NumberFormatException e) {
+                        // Si el valor no es numérico (por ejemplo, "N/A"), simplemente lo dejas en 0 o lo omites
+                    }  // Precio de gasto
 
                     document.add(new Paragraph("- " + producto + ": $" + formatearMoneda(precioGasto) + " pesos")
                             .setFont(fontNormal)
@@ -457,13 +463,40 @@ public class FacturacionUserManager {
             // Cerrar el documento
             document.close();
             System.out.println("Archivo PDF de resumen creado: " + nombreArchivo);
-            FacturacionUserManager EmailSender = new FacturacionUserManager();
+            //FacturacionUserManager EmailSender = new FacturacionUserManager();
             //EmailSender.enviarCorreoConResumen("juanpablo_1810dev@hotmail.com", nombreArchivo);
             //abrirPDF(nombreArchivo);
             FormatterHelpers.formatearMoneda(totalVentas);
+
+
+            // Agrega justo antes de construir el mensaje de WhatsApp
+            DataFormatter formatteo = new DataFormatter();
+            StringBuilder gastosNA = new StringBuilder();
+            try (FileInputStream fisGastos = new FileInputStream(FILE_PATH);
+                 Workbook wbGastos = WorkbookFactory.create(fisGastos)) {
+                 wbGastos.getSheet("Gastos");
+                if (gastosSheet != null) {
+                    for (int i = 1; i <= gastosSheet.getLastRowNum(); i++) {
+                        Row row = gastosSheet.getRow(i);
+                        if (row != null) {
+                            String cantidad = formatteo.formatCellValue(row.getCell(2)).trim().toLowerCase();
+                            if ("n/a".equals(cantidad)) {
+                                String producto = formatteo.formatCellValue(row.getCell(1));
+                                String valor = formatteo.formatCellValue(row.getCell(3));
+                                gastosNA.append("\n- ").append(producto).append(": $").append(valor).append(" pesos");
+                            }
+                        }
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             String numeroDestino = "+573112599560";  //"+573146704316" Número al que quieres enviar el mensaje
-            String mensaje = "[Licorera CR] ¡Hola! se ha generado la liquidación del día de hoy por un total de: $ "
+            String mensaje = "*[Licorera CR]* ¡Hola! se ha generado la liquidación del día de hoy por un total de: $ "
                     + FormatterHelpers.formatearMoneda(totalVentas) + " pesos.\n Puedes consultar los detalles en los resúmenes adjuntos en Google Drive: https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
+            if (!gastosNA.isEmpty()) {
+                mensaje += "\n\n*Gastos del d\u00eda:*" + gastosNA;
+            }
             enviarMensaje(numeroDestino,mensaje);
 
         } catch (IOException e) {

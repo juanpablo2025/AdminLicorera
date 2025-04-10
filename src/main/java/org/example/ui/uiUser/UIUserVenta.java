@@ -36,9 +36,9 @@ import static org.example.ui.UIHelpers.*;
 //import static org.example.ui.uiUser.UIUserMesas.showMesas;
 import static org.example.ui.UIHelpers.compraDialog;
 import static org.example.ui.uiUser.UIUserMain.mainUser;
-import static org.example.ui.uiUser.UIUserProductList.obtenerTRM;
 import static org.example.utils.Constants.*;
 import static org.example.utils.Constants.ERROR_TITLE;
+import static org.example.utils.FormatterHelpers.ConfiguracionGlobal.TRM;
 
 public class UIUserVenta {
     private static ProductoUserManager productoUserManager = new ProductoUserManager();
@@ -787,7 +787,7 @@ public class UIUserVenta {
                     generarFacturadeCompra(ventaID, Arrays.asList(listaProductosEnLinea.toString().split("\n")), total, dateTime, tipoPagoSeleccionado[0]);
                 }
 
-                Double TotalDolar = total/obtenerTRM();
+                Double TotalDolar = total/TRM;
                 NumberFormat FORMAT_USD = NumberFormat.getCurrencyInstance(Locale.US);
 
                 String mensaje = String.format(

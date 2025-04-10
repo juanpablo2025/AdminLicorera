@@ -11,9 +11,9 @@ public class Producto {
     private double price;
     private String foto;
 
-    public Producto(String name, int quantity, double price, String foto) {
+    public Producto(int id,String name, int quantity, double price, String foto) {
 
-        this.id = nextId++; // Asigna el ID actual y lo incrementa
+        this.id = id; // Asigna el ID actual y lo incrementa
         this.name = name;
         this.quantity = quantity;
         this.price = price;
@@ -71,5 +71,13 @@ public class Producto {
 
     public void setPrecio(double precio) {
         this.price = precio;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setId(int abs) {
+        this.id = abs;
     }
 }

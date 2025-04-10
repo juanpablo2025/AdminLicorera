@@ -9,9 +9,8 @@ import org.example.ui.uiUser.UIUserMesas;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -28,9 +27,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
 
+import static org.example.manager.adminManager.ExcelAdminManager.saveSelectedProduct;
 import static org.example.model.Producto.getFotoByName;
 import static org.example.ui.UIHelpers.createButton;
 import static org.example.ui.UIHelpers.createDialog;
@@ -40,7 +41,7 @@ import static org.example.utils.Constants.CLOSE_BUTTON;
 import static org.example.utils.Constants.LISTAR_PRODUCTO;
 
 public class UIAdminProducts {
-    static void showProductosDialog() {
+  /*  static void showProductosDialog() {
         // Crear el diálogo
         JDialog listProductsDialog = createDialog(LISTAR_PRODUCTO, 1280, 720, new BorderLayout());
         listProductsDialog.setResizable(true);
@@ -182,7 +183,7 @@ public class UIAdminProducts {
                         productoExistente.setPrecio(precio);
                     } else {
                         // ✅ Crear nuevo producto y agregarlo a la lista
-                        Producto nuevoProducto = new Producto(nombre, cantidad, precio, rutaFoto);
+                        Producto nuevoProducto = new Producto(id,nombre, cantidad, precio, rutaFoto);
                         existingProducts.add(nuevoProducto);
                     }
                 }
@@ -211,245 +212,477 @@ public class UIAdminProducts {
         listProductsDialog.setVisible(true);
     }
 
-
+*/
     private static final NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
 
 
+    // Panel principal con tabla y botones
     public static JPanel getAdminProductListPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
+
+        JPanel productListPanel = new JPanel(new BorderLayout());
+        productListPanel.setBackground(new Color(250, 240, 230));
+        productListPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JLabel titleLabel = new JLabel("Inventario", JLabel.CENTER);
         titleLabel.setForeground(new Color(28, 28, 28));
+
         try {
-
-
-            // Cargar la fuente desde los recursos dentro del JAR
             InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
-
-
-            // Crear la fuente desde el InputStream
-            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            customFont = customFont.deriveFont(Font.BOLD, 50); // Ajustar tamaño y peso
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 50);
             titleLabel.setFont(customFont);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-
         List<Producto> products = productoAdminManager.getProducts();
-        String[] columnNames = {"Nombre", "Cantidad", "Precio"};
-        Object[][] data = new Object[products.size()][3];
+        String[] columnNames = {"Id", "Nombre", "Cantidad", "Precio"};
 
+        Object[][] data = new Object[products.size()][4];
         for (int i = 0; i < products.size(); i++) {
             Producto p = products.get(i);
-            data[i][0] = p.getName();
-            data[i][1] = p.getQuantity();
-            data[i][2] = formatCOP.format(p.getPrice());
+            data[i][0] = p.getId();
+            data[i][1] = p.getName();
+            data[i][2] = p.getQuantity();
+            data[i][3] = formatCOP.format(p.getPrice());
         }
 
-
-
-        // Modelo de tabla personalizado
         DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 0 ||  column == 2; // ✅ Ahora se pueden editar Nombre, Cantidad y Precio
+                return false;
             }
-
             @Override
             public Class<?> getColumnClass(int columnIndex) {
-                return (columnIndex == 1) ? Integer.class : String.class;
+                return (columnIndex == 2) ? Integer.class : String.class;
             }
         };
 
         JTable productTable = new JTable(tableModel);
-        setupTableAppearance(productTable);
-        setupTableEditors(productTable);
 
-        // Centrar las cantidades en la celda
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        productTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
-        productTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
-        JScrollPane scrollPane = new JScrollPane(productTable);
-        panel.add(titleLabel, BorderLayout.NORTH);
-        panel.add(scrollPane, BorderLayout.CENTER);
-        panel.add(createButtonPanel(tableModel, productTable), BorderLayout.SOUTH);
-
-        return panel;
-    }
-
-    private static void setupTableAppearance(JTable table) {
-        table.setFont(new Font("Arial", Font.PLAIN, 18));
-        table.setRowHeight(30);
-        JTableHeader header = table.getTableHeader();
-        header.setFont(new Font("Arial", Font.BOLD, 20));
-        header.setBackground(Color.LIGHT_GRAY);
-        header.setForeground(Color.BLACK);
-    }
-
-    private static void setupTableEditors(JTable table) {
-       //table.getColumnModel().getColumn(1).setCellEditor(new DefaultCellEditor(new JComboBox<>(createQuantityModel())));
-        table.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(new JTextField()) {
+        // 🔧 Renderer personalizado para colorear filas
+        DefaultTableCellRenderer customRenderer = new DefaultTableCellRenderer() {
             @Override
-            public boolean stopCellEditing() {
-                try {
-                    String value = (String) getCellEditorValue();
-                    Double.parseDouble(value.replace(".", "").replace(",", ""));
-                    return super.stopCellEditing();
-                } catch (Exception e) {
-                    JOptionPane.showMessageDialog(table, "Formato de precio inválido", "Error", JOptionPane.ERROR_MESSAGE);
-                    return false;
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                Color fondo = new Color(250, 240, 230); // Fondo por defecto
+                Color texto = Color.BLACK;
+
+                if (!isSelected) {
+                    try {
+                        Object cantidadObj = table.getValueAt(row, 2);
+                        int cantidad = (cantidadObj instanceof Integer)
+                                ? (Integer) cantidadObj
+                                : Integer.parseInt(cantidadObj.toString());
+
+                        if (cantidad <= -1) {  // 🔧 Condición: cantidad menor o igual a -1
+                            fondo = new Color(255, 150, 150); // Fondo rojo
+                            texto = Color.BLACK;              // Texto blanco
+                        } else if (cantidad == 0) {
+                            fondo = new Color(255, 200, 100); // Naranja claro para 0
+                            texto = Color.BLACK;
+                        }
+
+                    } catch (Exception e) {
+                        fondo = Color.WHITE;
+                    }
+
+                    cell.setBackground(fondo);
+                    ((JLabel) cell).setForeground(texto);
+
+                } else {
+                    cell.setBackground(table.getSelectionBackground());
+                    ((JLabel) cell).setForeground(table.getSelectionForeground());
                 }
+
+                // Alineación
+                if (column == 2 || column == 3) {
+                    ((JLabel) cell).setHorizontalAlignment(SwingConstants.CENTER);
+                } else {
+                    ((JLabel) cell).setHorizontalAlignment(SwingConstants.LEFT);
+                }
+
+                return cell;
             }
-        });
+        };
+
+        // 🔧 Asignar el renderer a todas las columnas
+        for (int i = 0; i < productTable.getColumnCount(); i++) {
+            productTable.getColumnModel().getColumn(i).setCellRenderer(customRenderer);
+        }
+
+        // Ocultar columna Id
+        productTable.getColumnModel().getColumn(0).setMinWidth(0);
+        productTable.getColumnModel().getColumn(0).setMaxWidth(0);
+        productTable.getColumnModel().getColumn(0).setWidth(0);
+
+        productTable.setFont(new Font("Arial", Font.PLAIN, 18));
+        productTable.setRowHeight(40);
+        productTable.setBackground( new Color(250, 240, 230));
+        productTable.setSelectionBackground(new Color(173, 216, 230));
+        productTable.setSelectionForeground(Color.BLACK);
+        productTable.setFillsViewportHeight(true);
+
+        JTableHeader header = productTable.getTableHeader();
+        header.setForeground(new Color(201, 41, 41));
+        header.setBackground(new Color(28, 28, 28));
+
+        try {
+            InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
+            if (fontStream != null) {
+                Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.ITALIC, 26);
+                header.setFont(customFont);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        JScrollPane scrollPane = new JScrollPane(productTable);
+        productListPanel.add(titleLabel, BorderLayout.NORTH);
+        productListPanel.add(scrollPane, BorderLayout.CENTER);
+        productListPanel.add(createButtonPanel(tableModel, productTable), BorderLayout.SOUTH);
+
+        return productListPanel;
     }
 
 
-    private static JPanel createButtonPanel(DefaultTableModel tableModel, JTable productTable) {
 
 
 
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-
-        JButton addButton = new JButton("Añadir Producto");
-
-        addButton.addActionListener(e -> {
-            tableModel.addRow(new Object[]{"Nuevo_Producto", 0, "0"});
-            productTable.scrollRectToVisible(productTable.getCellRect(productTable.getRowCount() - 1, 0, true));
-        });
-
-
-        addButton.setFont(new Font("Arial", Font.BOLD, 22));
-        addButton.setForeground(Color.WHITE);
-        addButton.setBackground(new Color(255, 111, 97));
-        addButton.setOpaque(true);
-        addButton.setBorderPainted(false);
-        addButton.setFocusPainted(false);
-        addButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        addButton.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
-                BorderFactory.createEmptyBorder(10, 20, 10, 20)
-        ));
-        // Agregar el MouseListener para cambiar el color al pasar el mouse
-        addButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                addButton.setBackground(new Color(201, 41, 41)); // Rojo más oscuro
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                addButton.setBackground(new Color(255, 111, 97)); // Color original
-            }
-        });
-
-
-
-
-        JButton saveButton = new JButton("Guardar Cambios");
-        saveButton.addActionListener(e -> saveProducts(tableModel,productTable));
-
-        saveButton.setFont(new Font("Arial", Font.BOLD, 18));
-        saveButton.setForeground(Color.WHITE);
-        saveButton.setBackground(new Color(0, 204, 136));
-        saveButton.setOpaque(true);
-        saveButton.setBorderPainted(false);
-        saveButton.setFocusPainted(false);
-        saveButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        saveButton.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
-                BorderFactory.createEmptyBorder(10, 20, 10, 20)
-        ));
-
-        JButton reabastecimientoButton = new JButton("Reabastecer"){
+    // Botones con mismo estilo redondeado y hover
+    private static JButton createStyledButton(String text, Color baseColor, Color hoverColor, int fontSize) {
+        JButton button = new JButton(text) {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-                // Sombra del botón
                 g2.setColor(new Color(0, 0, 0, 30));
                 g2.fillRoundRect(2, 4, getWidth() - 4, getHeight() - 4, 40, 40);
 
-                // Color de fondo normal
-                if (getModel().isPressed()) {
-                    g2.setColor(new Color(255, 193, 7)); // Amarillo oscuro al presionar
-                } else {
-                    g2.setColor(new Color(228, 185, 42)); // Amarillo Material Design
-                }
-
+                g2.setColor(getModel().isRollover() ? hoverColor : baseColor);
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
+
                 super.paintComponent(g);
             }
         };
 
-        reabastecimientoButton.setEnabled(false); // Inicialmente deshabilitado
+        button.setFont(new Font("Arial", Font.BOLD, fontSize));
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setOpaque(false);
+        button.setPreferredSize(new Dimension(160, 40));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        reabastecimientoButton.setPreferredSize(new Dimension(160, 40)); // Más grande
-        reabastecimientoButton.setFont(new Font("Arial", Font.BOLD, 22)); // Fuente grande
-        reabastecimientoButton.setForeground(Color.WHITE); // Texto negro
-        reabastecimientoButton.setFocusPainted(false);
-        reabastecimientoButton.setContentAreaFilled(false);
-        reabastecimientoButton.setBorderPainted(false);
-        reabastecimientoButton.setOpaque(false);
+        return button;
+    }
 
-        productTable.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting() && productTable.getSelectedRow() != -1) {
-                reabastecimientoButton.setEnabled(true);
+    private static JPanel createButtonPanel(DefaultTableModel tableModel, JTable productTable) {
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10)); // ← centrado
+
+        JButton addButton = createStyledButton("Nuevo", new Color(255, 111, 97), new Color(201, 41, 41), 22);
+        addButton.addActionListener(e -> {
+            int tempId = -System.identityHashCode(new Object());
+            tableModel.addRow(new Object[]{tempId, "NUEVO_PRODUCTO", 0, "0"});
+            int row = tableModel.getRowCount() - 1;
+            productTable.setRowSelectionInterval(row, row);
+            showEditProductDialog(tableModel, row,
+                    tableModel.getValueAt(row, 1),
+                    tableModel.getValueAt(row, 2),
+                    tableModel.getValueAt(row, 3),
+                    productTable);
+        });
+
+        JButton editButton = createStyledButton("Editar", new Color(76, 175, 80), new Color(56, 142, 60), 18);
+        editButton.setEnabled(false);
+        editButton.addActionListener(e -> {
+            int selectedRow = productTable.getSelectedRow();
+            if (selectedRow != -1) {
+                Object nombre = tableModel.getValueAt(selectedRow, 1);
+                Object cantidad = tableModel.getValueAt(selectedRow, 2);
+                Object precio = tableModel.getValueAt(selectedRow, 3);
+                showEditProductDialog(tableModel, selectedRow, nombre, cantidad, precio, productTable);
             }
         });
 
+        JButton saveButton = createStyledButton("Guardar Cambios", new Color(0, 204, 136), new Color(0, 153, 102), 18);
+        saveButton.addActionListener(e -> saveProducts(tableModel, productTable));
+
+        JButton reabastecimientoButton = createStyledButton("Reabastecer", new Color(228, 185, 42), new Color(255, 193, 7), 22);
+        reabastecimientoButton.setEnabled(false);
         reabastecimientoButton.addActionListener(e -> {
             int selectedRow = productTable.getSelectedRow();
             if (selectedRow != -1) {
-                String nombre = (String) tableModel.getValueAt(selectedRow, 0);
-                int cantidad = (Integer) tableModel.getValueAt(selectedRow, 1);
-
-
-
-
-                // Pasamos la lista de productos correctamente
+                String nombre = (String) tableModel.getValueAt(selectedRow, 1);
+                int cantidad = (Integer) tableModel.getValueAt(selectedRow, 2);
                 showReabastecimientoDialog(productTable, nombre, cantidad);
             }
         });
 
-
+        productTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                boolean selected = productTable.getSelectedRow() != -1;
+                editButton.setEnabled(selected);
+                reabastecimientoButton.setEnabled(selected);
+            }
+        });
 
         buttonPanel.add(reabastecimientoButton);
         buttonPanel.add(addButton);
-        buttonPanel.add(saveButton);
+        buttonPanel.add(editButton);
         return buttonPanel;
     }
 
-    private static void addNewProduct(DefaultTableModel tableModel, JTable table) {
-        tableModel.addRow(new Object[]{"Nuevo_Producto", 0, "0"});
-        table.scrollRectToVisible(table.getCellRect(table.getRowCount() - 1, 0, true));
-    }
-//TODO quitar cantidads
-    private static void saveProducts(DefaultTableModel tableModel,JTable table) {
-        try {
-            List<Producto> existingProducts = productoAdminManager.getProducts();
-            for (int i = 0; i < tableModel.getRowCount(); i++) {
-                String name = ((String) tableModel.getValueAt(i, 0)).toUpperCase().replace(" ", "_");
-                int quantity = (Integer) tableModel.getValueAt(i, 1);
-                double price = Double.parseDouble(((String) tableModel.getValueAt(i, 2)).replace(".", "").replace(",", ""));
-                Producto product = existingProducts.stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
-                if (product != null) {
-                    product.setCantidad(quantity);
-                    product.setPrecio(price);
-                } else {
-                    existingProducts.add(new Producto(name, quantity, price, "\\Calculadora del Administrador\\Fotos\\" + name + ".png"));
+
+    private static void showEditProductDialog(DefaultTableModel model, int row, Object nombre, Object cantidad, Object precio, JTable table) {
+        JDialog dialog = new JDialog();
+        dialog.setTitle("Editar Producto");
+        dialog.setSize(520, 710);
+        dialog.setLayout(new BorderLayout(10, 10));
+        dialog.setModal(true);
+        String nombreProducto = nombre.toString();
+        String rutaImagen = System.getProperty("user.home") + File.separator + "Calculadora del Administrador"
+                + File.separator + "Fotos" + File.separator + nombreProducto + ".png";
+
+        JLabel imageLabel = new JLabel();
+        imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        imageLabel.setPreferredSize(new Dimension(300, 300));
+        cargarImagen(rutaImagen, imageLabel);
+
+        JButton examinarBtn = new JButton("Examinar imagen");
+        examinarBtn.setFont(new Font("Arial", Font.BOLD, 14));
+        examinarBtn.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileFilter(new FileNameExtensionFilter("Imágenes", "png", "jpg", "jpeg"));
+            int resultado = fileChooser.showOpenDialog(dialog);
+            if (resultado == JFileChooser.APPROVE_OPTION) {
+                File archivo = fileChooser.getSelectedFile();
+                try {
+                    Path destino = Paths.get(rutaImagen);
+                    Files.copy(archivo.toPath(), destino, StandardCopyOption.REPLACE_EXISTING);
+                    cargarImagen(rutaImagen, imageLabel);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
             }
-            ExcelAdminManager.updateProducts(existingProducts);
-            JOptionPane.showMessageDialog(null, "Cambios guardados exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-            updateProductTable(table);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Error al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        });
+
+        JPanel infoBar = new JPanel();
+        infoBar.setBackground(new Color(220, 53, 69));
+        infoBar.setLayout(new FlowLayout(FlowLayout.CENTER, 60, 10));
+        infoBar.setPreferredSize(new Dimension(400, 50));
+
+        JLabel cantidadLabel = new JLabel("x" + cantidad + " Uds");
+        cantidadLabel.setForeground(Color.WHITE);
+        cantidadLabel.setFont(new Font("Arial", Font.BOLD, 22));
+
+        JLabel precioLabel = new JLabel("$ " + precio.toString() + " Pesos");
+        precioLabel.setForeground(Color.WHITE);
+        precioLabel.setFont(new Font("Arial", Font.BOLD, 22));
+
+        infoBar.add(cantidadLabel);
+        infoBar.add(precioLabel);
+
+        JPanel imageContainer = new JPanel(new BorderLayout());
+        imageContainer.add(imageLabel, BorderLayout.CENTER);
+        imageContainer.add(infoBar, BorderLayout.SOUTH);
+        imageContainer.setBackground(new Color(80, 80, 80));
+
+        JLabel productLabel = new JLabel(nombre.toString());
+        productLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        productLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        productLabel.setForeground(Color.WHITE);
+
+        Box topBox = Box.createVerticalBox();
+        topBox.add(Box.createVerticalStrut(10));
+        topBox.add(productLabel);
+        topBox.add(Box.createVerticalStrut(10));
+        topBox.add(imageContainer);
+        topBox.add(Box.createVerticalStrut(10));
+        topBox.add(examinarBtn);
+
+        JPanel topContainer = new JPanel();
+        topContainer.setBackground(new Color(80, 80, 80));
+        topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.Y_AXIS));
+        topContainer.add(topBox);
+
+        JPanel centerPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        Dimension campoTamano = new Dimension(400, 40);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridwidth = GridBagConstraints.REMAINDER;
+
+        JTextField nameField = new JTextField(nombre.toString());
+        nameField.setPreferredSize(campoTamano);
+
+        JTextField quantityField = new JTextField(cantidad.toString());
+        quantityField.setPreferredSize(campoTamano);
+
+        JTextField priceField = new JTextField(precio.toString());
+        priceField.setPreferredSize(campoTamano);
+
+        gbc.gridy = 0;
+        centerPanel.add(new JLabel("Nombre:"), gbc);
+        gbc.gridy++;
+        centerPanel.add(nameField, gbc);
+        gbc.gridy++;
+        centerPanel.add(new JLabel("Precio:"), gbc);
+        gbc.gridy++;
+        centerPanel.add(priceField, gbc);
+
+        JButton saveBtn = new JButton("Guardar");
+        saveBtn.setFont(new Font("Arial", Font.BOLD, 18));
+        saveBtn.setBackground(new Color(76, 175, 80));
+        saveBtn.setForeground(Color.WHITE);
+        saveBtn.setPreferredSize(new Dimension(400, 40));
+        saveBtn.setFocusPainted(false);
+
+        saveBtn.addActionListener(e -> {
+            try {
+                int cantidadEditada = Integer.parseInt(quantityField.getText().trim());
+                String nombreEditado = nameField.getText().trim().toUpperCase().replace(" ", "_");
+                String precioEditado = priceField.getText().trim();
+
+                if (nombreEditado.isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "El nombre no puede estar vacío.",
+                            "Error de validación", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                model.setValueAt(nombreEditado, row, 1);
+                model.setValueAt(cantidadEditada, row, 2);
+                model.setValueAt(precioEditado, row, 3);
+
+                saveProducts(model, table);
+                dialog.dispose();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialog, "Cantidad debe ser un número entero.",
+                        "Error de formato", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.add(saveBtn);
+
+        dialog.add(topContainer, BorderLayout.NORTH);
+        dialog.add(centerPanel, BorderLayout.CENTER);
+        dialog.add(bottomPanel, BorderLayout.SOUTH);
+        dialog.setLocationRelativeTo(null);
+        dialog.setVisible(true);
+    }
+
+    public static void updateProductTable(JTable productTable) {
+        List<Producto> products = productoAdminManager.getProducts();
+        String[] columnNames = {"Id", "Nombre", "Cantidad", "Precio"};
+        Object[][] data = new Object[products.size()][4];
+
+        for (int i = 0; i < products.size(); i++) {
+            Producto p = products.get(i);
+            data[i][0] = p.getId();
+            data[i][1] = p.getName();
+            data[i][2] = p.getQuantity();
+            data[i][3] = formatCOP.format(p.getPrice());
+        }
+
+        DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                return (columnIndex == 2) ? Integer.class : String.class;
+            }
+        };
+
+        productTable.setModel(model);
+
+
+        productTable.getColumnModel().getColumn(0).setMinWidth(0);
+        productTable.getColumnModel().getColumn(0).setMaxWidth(0);
+        productTable.getColumnModel().getColumn(0).setWidth(0);
+
+        DefaultTableCellRenderer customRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                Color fondo = new Color(250, 240, 230);
+                Color texto = Color.BLACK;
+
+                if (!isSelected) {
+                    try {
+                        int cantidad = Integer.parseInt(table.getValueAt(row, 2).toString());
+                        if (cantidad <= -1) {
+                            fondo = new Color(255, 100, 100);
+                            texto = Color.BLACK;
+                        } else if (cantidad == 0) {
+                            fondo = new Color(255, 200, 100); // Naranja claro para 0
+                            texto = Color.BLACK;
+                        }
+                    } catch (Exception e) {
+                        fondo = Color.WHITE;
+                    }
+                    cell.setBackground(fondo);
+                    ((JLabel) cell).setForeground(texto);
+                } else {
+                    cell.setBackground(table.getSelectionBackground());
+                    ((JLabel) cell).setForeground(table.getSelectionForeground());
+                }
+
+                if (column == 2 || column == 3) {
+                    ((JLabel) cell).setHorizontalAlignment(SwingConstants.CENTER);
+                } else {
+                    ((JLabel) cell).setHorizontalAlignment(SwingConstants.LEFT);
+                }
+
+                return cell;
+            }
+        };
+
+        for (int i = 0; i < productTable.getColumnCount(); i++) {
+            productTable.getColumnModel().getColumn(i).setCellRenderer(customRenderer);
         }
     }
+
+//TODO quitar cantidads
+private static void saveProducts(DefaultTableModel tableModel, JTable table) {
+    try {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(null, "Selecciona un producto para guardar los cambios", "Advertencia", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int modelRow = table.convertRowIndexToModel(selectedRow); // por si la tabla está ordenada o filtrada
+        int id = Integer.parseInt(tableModel.getValueAt(modelRow, 0).toString());
+        String name = tableModel.getValueAt(modelRow, 1).toString().toUpperCase().replace(" ", "_");
+        int quantity = Integer.parseInt(tableModel.getValueAt(modelRow, 2).toString());
+        double price = Double.parseDouble(tableModel.getValueAt(modelRow, 3).toString().replace(".", "").replace(",", ""));
+
+        // Obtener producto existente
+        Producto productoActualizado = new Producto(id, name, quantity, price,
+                "\\Calculadora del Administrador\\Fotos\\" + name + ".png");
+
+        // Actualizar solo ese producto en el archivo Excel
+        ExcelAdminManager.updateProduct(productoActualizado);
+
+        JOptionPane.showMessageDialog(null, "Producto actualizado exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+        updateProductTable(table);
+
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(null, "Error al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+
+
 
     private static void cargarImagen(String ruta, JLabel imageLabel) {
         new SwingWorker<ImageIcon, Void>() {
@@ -500,7 +733,7 @@ public class UIAdminProducts {
         dialog.setTitle("Reabastecimiento de Productos");
         dialog.setSize(520, 710);
         dialog.setLayout(new BorderLayout(10, 10));
-
+        dialog.setModal(true);
         String rutaImagen = System.getProperty("user.home") + File.separator + "Calculadora del Administrador"
                 + File.separator + "Fotos" + File.separator + nombre + ".png";
 
@@ -693,16 +926,7 @@ public class UIAdminProducts {
         }
     }
 
-    private static void updateProductTable(JTable productTable) {
-        List<Producto> products = productoAdminManager.getProducts();
-        DefaultTableModel model = (DefaultTableModel) productTable.getModel();
 
-        // Limpiar la tabla y volver a llenarla
-        model.setRowCount(0);
-        for (Producto p : products) {
-            model.addRow(new Object[]{p.getName(), p.getQuantity(), formatCOP.format(p.getPrice())});
-        }
-    }
 
 
     private static Integer[] createQuantityModel() {

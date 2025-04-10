@@ -165,8 +165,8 @@ public class UIUserMain {
             moreOptionsButton.setMaximumSize(buttonSize);
 
             JButton moreOptionsButtons = createButton("Administrador", resizeIcon("/icons/obrero.png"), e -> {
-                adminPassword();
-                frame.dispose();
+                adminPassword(frame);
+
             });
             moreOptionsButtons.setMaximumSize(buttonSize);
 

@@ -7,6 +7,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.ui.uiUser.UIUserMain;
+import org.example.utils.FormatterHelpers;
+import org.example.utils.Updater;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,6 +47,8 @@ public class Main {
 
 
         public static void mostrarLogin() {
+
+
             try {
                 UIManager.setLookAndFeel(new FlatLightLaf());
             } catch (Exception ex) {
@@ -89,6 +93,9 @@ public class Main {
             JTextField userField = new JTextField(20);
             userField.setFont(new Font("Arial", Font.PLAIN, 18));
             userField.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+
+
+            Updater.checkForUpdates();
 
             JButton loginButton = new JButton("Iniciar Día");
             loginButton.setFont(new Font("Arial", Font.BOLD, 20));
@@ -137,8 +144,8 @@ public class Main {
             });
 
             adminButton.addActionListener(e -> {
-                adminPassword();
-                frame.dispose();
+                adminPassword(frame);
+
             });
         }
     }

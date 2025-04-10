@@ -34,7 +34,7 @@ public class ProductoAdminManager {
     /**
      * Agrega un producto utilizando los valores de los campos de entrada.
      */
-    public void addProductFromFields( JTextField nameField, JTextField quantityField, JTextField priceField, JDialog dialog) {
+   /* public void addProductFromFields( JTextField nameField, JTextField quantityField, JTextField priceField, JDialog dialog) {
         try {
 
             String name = nameField.getText();
@@ -55,11 +55,19 @@ public class ProductoAdminManager {
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(dialog, INVALID_DATA, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
-    }
+    }*/
 
     public void clearProducts() {
 
     }
 
 
+    public Producto getProductById(String id) {
+        for (Producto producto : getProducts()) {
+            if (String.valueOf(producto.getId()).equals(id)) {
+                return producto;
+            }
+        }
+        return null; // Si no se encuentra el producto, retorna null
+    }
 }

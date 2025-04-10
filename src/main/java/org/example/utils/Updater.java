@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -14,35 +15,29 @@ import java.util.Arrays;
 
 public class Updater {
 
-
-
-    private static final String VERSION_FILE = "version.txt";
-    private static final String UPDATE_JSON_URL = "https://raw.githubusercontent.com/juanpablo2025/AdminLicorera/main/update.json"; // 👈 cambia esto
+    private static final String CURRENT_VERSION = "v1.0.0"; // Cambiar en cada release
     private static final String TEMP_EXE_NAME = "update_temp.exe";
     private static final String APP_EXE_NAME = "Licorera CR.exe";
+    private static final String GITHUB_API_URL = "https://api.github.com/repos/juanpablo2025/AdminLicorera/releases/latest";
 
-    public static void update(){
+    public static void checkForUpdates() {
         try {
-            String localVersion = readLocalVersion();
-            JSONObject remoteInfo = fetchRemoteInfo();
+            JSONObject release = fetchLatestRelease();
 
-            String remoteVersion = remoteInfo.getString("latest_version");
-            String downloadUrl = remoteInfo.getString("download_url");
+            String remoteVersion = release.getString("tag_name").trim();
+            String downloadUrl = release.getJSONArray("assets")
+                    .getJSONObject(0)
+                    .getString("browser_download_url");
 
-            if (isNewVersion(remoteVersion, localVersion)) {
-                int opt = JOptionPane.showConfirmDialog(null,
-                        "Hay una nueva versión disponible (" + remoteVersion + "). ¿Actualizar ahora?",
-                        "Actualización disponible",
-                        JOptionPane.YES_NO_OPTION);
+            System.out.println("Versión actual: " + CURRENT_VERSION);
+            System.out.println("Versión remota: " + remoteVersion);
 
-                if (opt == JOptionPane.YES_OPTION) {
-                    downloadFile(downloadUrl, TEMP_EXE_NAME);
-                    createUpdateScript();
-                    launchUpdateScript();
-                    System.exit(0);
-                }
-            } else {
-                System.out.println("La app está actualizada.");
+            if (isNewVersion(remoteVersion, CURRENT_VERSION)) {
+                System.out.println("Actualizando a nueva versión: " + remoteVersion);
+                downloadFile(downloadUrl, TEMP_EXE_NAME);
+                createUpdateScript();
+                launchUpdateScript();
+                System.exit(0);
             }
 
         } catch (Exception e) {
@@ -50,16 +45,11 @@ public class Updater {
         }
     }
 
-    private static String readLocalVersion() throws IOException {
-        return Files.readString(Paths.get(VERSION_FILE)).trim();
-    }
-
-    private static JSONObject fetchRemoteInfo() throws IOException {
-        URL url = new URL(UPDATE_JSON_URL);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    private static JSONObject fetchLatestRelease() throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) new URL(GITHUB_API_URL).openConnection();
         conn.setRequestMethod("GET");
-
-        String json = new String(conn.getInputStream().readAllBytes());
+        conn.setRequestProperty("Accept", "application/vnd.github.v3+json");
+        String json = new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         return new JSONObject(json);
     }
 
@@ -77,17 +67,14 @@ public class Updater {
         String script = String.join("\r\n", Arrays.asList(
                 "@echo off",
                 "timeout /t 2 > nul",
-                "taskkill /F /IM " + APP_EXE_NAME,
-                "move /Y " + TEMP_EXE_NAME + " " + APP_EXE_NAME,
+                "taskkill /F /IM \"" + APP_EXE_NAME + "\"",
+                "move /Y \"" + TEMP_EXE_NAME + "\" \"" + APP_EXE_NAME + "\"",
                 "start \"\" \"" + APP_EXE_NAME + "\""
         ));
-        Files.write(Paths.get("update_launcher.bat"), script.getBytes());
+        Files.write(Paths.get("update_launcher.bat"), script.getBytes(StandardCharsets.UTF_8));
     }
 
     private static void launchUpdateScript() throws IOException {
         new ProcessBuilder("cmd", "/c", "start", "update_launcher.bat").start();
     }
-
-
-
 }

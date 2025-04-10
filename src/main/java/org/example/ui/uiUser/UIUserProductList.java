@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -29,6 +30,7 @@ import static org.example.ui.UIHelpers.*;
 import static org.example.ui.uiUser.UIUserMain.mainUser;
 import static org.example.utils.Constants.CLOSE_BUTTON;
 import static org.example.utils.Constants.LISTAR_PRODUCTO;
+import static org.example.utils.FormatterHelpers.ConfiguracionGlobal.TRM;
 import static org.example.utils.FormatterHelpers.formatearMoneda;
 
 public class UIUserProductList {
@@ -53,7 +55,6 @@ public class UIUserProductList {
 
             // Cargar la fuente desde los recursos dentro del JAR
             InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
-
 
             // Crear la fuente desde el InputStream
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
@@ -160,26 +161,7 @@ public class UIUserProductList {
         }
     }
 
-    public static double obtenerTRM() {
-        try {
-            URL url = new URL("https://www.datos.gov.co/resource/32sa-8pi3.json?$limit=1&$order=vigenciadesde%20DESC");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
 
-            if (conn.getResponseCode() != 200) throw new IOException("HTTP Error");
-
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = in.readLine()) != null) response.append(line);
-                JSONArray arr = new JSONArray(response.toString());
-                if (arr.length() == 0) return 0.0;
-                return Double.parseDouble(arr.getJSONObject(0).getString("valor"));
-            }
-        } catch (Exception e) {
-            return 0.0;
-        }
-    }
 
     public static JPanel getProductListPanel() {
         JPanel productListPanel = new JPanel(new BorderLayout());
@@ -187,13 +169,30 @@ public class UIUserProductList {
         productListPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JLabel titleLabel = new JLabel("Inventario", JLabel.CENTER);
-        titleLabel.setFont(titleFont);
-        titleLabel.setForeground(new Color(36, 36, 36));
+        titleLabel.setForeground(new Color(28, 28, 28));
+        try {
 
-        double trm = obtenerTRM();
+
+            // Cargar la fuente desde los recursos dentro del JAR
+            InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
+
+            // Crear la fuente desde el InputStream
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+            customFont = customFont.deriveFont(Font.BOLD, 50); // Ajustar tamaño y peso
+            titleLabel.setFont(customFont);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
         List<Producto> products = productoUserManager.getProducts();
 
-        String[] columnNames = {"Nombre", "Cantidad", "Precio PESOS/USD "+formatearMoneda((obtenerTRM()))+" TRM"};
+        String[] columnNames = {
+                "Nombre",
+                "Cantidad",
+                "<html><b>Pesos/USD</b><span style='font-size:14px; color:#28a745;'>(" + formatearMoneda(TRM) + " TRM)</span></html>"
+        };
+
 
 
         Object[][] data = new Object[products.size()][3];
@@ -202,8 +201,12 @@ public class UIUserProductList {
             data[i][0] = formatProductName(p.getName());
             data[i][1] = p.getQuantity();
 
-            double precioUSD = trm != 0.0 ? p.getPrice() / trm : 0.0;
-            data[i][2] = String.format("%s (%s)", "$ "+ formatearMoneda(p.getPrice()), FORMAT_USD.format(precioUSD));
+            double precioUSD = TRM != 0.0 ? p.getPrice() / TRM : 0.0;
+            data[i][2] = String.format(
+                    "<html><b>%s</b> <span style='font-size:14px; color:#28a745;'>(%s)</span></html>",
+                    "$ " + formatearMoneda(p.getPrice()),
+                    FORMAT_USD.format(precioUSD)
+            );
         }
 
         JTable productTable = new JTable(new DefaultTableModel(data, columnNames) {
@@ -221,22 +224,66 @@ public class UIUserProductList {
         header.setFont(headerFont);
         header.setForeground(new Color(201, 41, 41));
         header.setBackground(new Color(28, 28, 28));
+        try {
+            InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
 
+            if (fontStream == null) {
+                throw new IOException("No se pudo encontrar la fuente en los recursos.");
+            }
+
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+            customFont = customFont.deriveFont(Font.ITALIC, 26); // Ajustar tamaño
+
+
+            header = productTable.getTableHeader();
+            header.setFont(customFont);
+            header.setForeground(new Color(201, 41, 41));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
         productTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
         productTable.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
 
-        productTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
-                Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+        DefaultTableCellRenderer customRenderer = new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                // Fondo por cantidad
                 if (!isSelected) {
-                    int cantidad = (int) table.getValueAt(row, 1);
-                    cell.setBackground(cantidad < 0 ? new Color(255, 150, 150) : new Color(250, 240, 230));
+                    try {
+                        int cantidad = Integer.parseInt(table.getValueAt(row, 1).toString());
+                        cell.setBackground(cantidad < 0 ? new Color(255, 150, 150) : new Color(250, 240, 230));
+                    } catch (Exception e) {
+                        cell.setBackground(Color.WHITE);
+                    }
+                } else {
+                    cell.setBackground(table.getSelectionBackground());
                 }
+
+                // Alineación centrada para cantidad y precio
+                if (column == 1 || column == 2) {
+                    ((JLabel) cell).setHorizontalAlignment(SwingConstants.CENTER);
+                } else {
+                    ((JLabel) cell).setHorizontalAlignment(SwingConstants.LEFT);
+                }
+
+                // Soporte para HTML en precios (columna 2)
+                if (column == 2 && value instanceof String && ((String) value).contains("<html>")) {
+                    ((JLabel) cell).setText((String) value);
+                }
+
                 return cell;
             }
-        });
+        };
+
+// Asignar a todas las columnas el mismo renderer
+        for (int i = 0; i < productTable.getColumnCount(); i++) {
+            productTable.getColumnModel().getColumn(i).setCellRenderer(customRenderer);
+        }
 
         JScrollPane scrollPane = new JScrollPane(productTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));

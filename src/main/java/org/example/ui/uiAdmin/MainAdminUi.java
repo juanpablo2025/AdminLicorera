@@ -4,19 +4,25 @@ import com.formdev.flatlaf.FlatLightLaf;
 import org.example.ui.uiUser.UIUserGastos;
 import org.example.ui.uiUser.UIUserMain;
 import org.example.ui.uiUser.UIUserProductList;
+import org.json.JSONArray;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import static org.example.Main.mostrarLogin;
 import static org.example.manager.userManager.ExcelUserManager.hayRegistroDeHoy;
 import static org.example.ui.UIHelpers.createButton;
+import static org.example.ui.UIHelpers.setMainFrame;
 import static org.example.ui.uiAdmin.GastosAdminUI.showReabastecimientoDialog;
 import static org.example.ui.uiAdmin.UIAdminFacturas.getAdminBillsPanel;
 import static org.example.ui.uiAdmin.UIAdminProducts.getAdminProductListPanel;
-import static org.example.ui.uiAdmin.UIAdminProducts.showProductosDialog;
 import static org.example.ui.uiAdmin.UIConfigAdmin.showConfigDialog;
 import static org.example.ui.uiUser.UIUserFacturas.getFacturasPanel;
 import static org.example.ui.uiUser.UIUserMain.*;
@@ -209,7 +215,7 @@ public class MainAdminUi {
         }
     }
 
-    public static void adminPassword() {
+    public static void adminPassword(Frame frame) {
         JPasswordField passwordField = new JPasswordField();
         passwordField.setEchoChar('*'); // Oculta la contraseña con '*'
 
@@ -224,15 +230,13 @@ public class MainAdminUi {
 
             if (inputPassword.equals("admin2024")) {
                 showAdminPanel(); // Abrir panel de administrador si la contraseña es correcta
+                frame.dispose();
             } else {
                 JOptionPane.showMessageDialog(null,
                         "Contraseña incorrecta. Acceso denegado.",
                         "Error de Autenticación", JOptionPane.ERROR_MESSAGE);
                 redirigirUsuario();
             }
-        } else {
-            // Si el usuario presionó "Cancelar", redirigirlo correctamente
-            redirigirUsuario();
         }
     }
 
@@ -242,8 +246,28 @@ public class MainAdminUi {
             mainUser(); // Si hay registro, abrir el panel de usuario
         } else {
             mostrarLogin(); // Si no hay registro, mostrar la pantalla de login
+
         }
     }
+    public static double obtenerTRM() {
+        try {
+            URL url = new URL("https://www.datos.gov.co/resource/32sa-8pi3.json?$limit=1&$order=vigenciadesde%20DESC");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
 
+            if (conn.getResponseCode() != 200) throw new IOException("HTTP Error");
+
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = in.readLine()) != null) response.append(line);
+                JSONArray arr = new JSONArray(response.toString());
+                if (arr.length() == 0) return 0.0;
+                return Double.parseDouble(arr.getJSONObject(0).getString("valor"));
+            }
+        } catch (Exception e) {
+            return 0.0;
+        }
+    }
 }
 

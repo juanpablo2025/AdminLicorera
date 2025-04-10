@@ -5,6 +5,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.model.Factura;
 import org.example.model.Producto;
 
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,6 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.example.ui.uiAdmin.UIAdminProducts.updateProductTable;
 import static org.example.utils.Constants.*;
 
 public class ExcelAdminManager {
@@ -25,6 +28,52 @@ public class ExcelAdminManager {
 
     public static final String DIRECTORY_PATH_FACTURACION = System.getProperty("user.home") + "\\Calculadora del Administrador";
     public static final String FACTURACION_FILENAME = "\\Facturacion\\Facturacion" + fechaFormateada + ".xlsx";
+
+    public static void updateProduct(Producto productoActualizado) {
+        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
+            int lastRowNum = sheet.getLastRowNum();
+            boolean found = false;
+
+            for (int i = 1; i <= lastRowNum; i++) {
+                Row row = sheet.getRow(i);
+                if (row != null) {
+                    Cell idCell = row.getCell(0); // Suponiendo que ID está en la columna 0
+                    if (idCell != null && idCell.getCellType() == CellType.NUMERIC) {
+                        int idEnExcel = (int) idCell.getNumericCellValue();
+
+                        if (idEnExcel == productoActualizado.getId()) {
+                            row.getCell(1).setCellValue(productoActualizado.getName());
+                            row.getCell(2).setCellValue(productoActualizado.getQuantity());
+                            row.getCell(3).setCellValue(productoActualizado.getPrice());
+                            row.getCell(5).setCellValue(productoActualizado.getFoto());
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Si no se encontró, agregar al final
+            if (!found) {
+                Row newRow = sheet.createRow(++lastRowNum);
+                newRow.createCell(0).setCellValue(productoActualizado.getId());
+                newRow.createCell(1).setCellValue(productoActualizado.getName());
+                newRow.createCell(2).setCellValue(productoActualizado.getQuantity());
+                newRow.createCell(3).setCellValue(productoActualizado.getPrice());
+                newRow.createCell(5).setCellValue(productoActualizado.getFoto());
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(FILE_PATH.toString())) {
+                workbook.write(fos);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 
     // Método para agregar un producto al archivo Excel
@@ -59,12 +108,13 @@ public class ExcelAdminManager {
             for (int i = ONE; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row != null) {
+                    int id = (int) row.getCell(ZERO).getNumericCellValue();
                     String name = row.getCell(ONE).getStringCellValue();
                     int quantity = (int) row.getCell(TWO).getNumericCellValue();
                     double price = row.getCell(THREE).getNumericCellValue();
                     String foto = row.getCell(FIVE).getStringCellValue();
 
-                    products.add(new Producto(name, quantity, price,foto));
+                    products.add(new Producto(id,name, quantity, price,foto));
                 }
             }
         } catch (IOException e) {
@@ -281,6 +331,35 @@ public class ExcelAdminManager {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void saveSelectedProduct(DefaultTableModel tableModel, JTable table) {
+        try {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(null, "Selecciona un producto para guardar los cambios", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int modelRow = table.convertRowIndexToModel(selectedRow); // por si la tabla está ordenada o filtrada
+            int id = Integer.parseInt(tableModel.getValueAt(modelRow, 0).toString());
+            String name = tableModel.getValueAt(modelRow, 1).toString().toUpperCase().replace(" ", "_");
+            int quantity = Integer.parseInt(tableModel.getValueAt(modelRow, 2).toString());
+            double price = Double.parseDouble(tableModel.getValueAt(modelRow, 3).toString().replace(".", "").replace(",", ""));
+
+            // Obtener producto existente
+            Producto productoActualizado = new Producto(id, name, quantity, price,
+                    "\\Calculadora del Administrador\\Fotos\\" + name + ".png");
+
+            // Actualizar solo ese producto en el archivo Excel
+            ExcelAdminManager.updateProduct(productoActualizado);
+
+            JOptionPane.showMessageDialog(null, "Producto actualizado exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            updateProductTable(table);
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

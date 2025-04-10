@@ -145,12 +145,13 @@ public class ExcelUserManager {
             for (int i = ONE; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row != null) {
+                    int id = (int) row.getCell(ZERO).getNumericCellValue();
                     String name = getCellValueAsString(row.getCell(ONE));
                     int quantity = getCellValueAsInt(row.getCell(TWO));
                     double price = getCellValueAsDouble(row.getCell(THREE));
                     String foto = getCellValueAsString(row.getCell(5));
 
-                    products.add(new Producto(name, quantity, price, foto));
+                    products.add(new Producto(id,name, quantity, price, foto));
                 }
             }
         } catch (IOException e) {
@@ -562,11 +563,12 @@ public class ExcelUserManager {
         for (int i = ONE; i <= productsSheet.getLastRowNum(); i++) {
             Row row = productsSheet.getRow(i);
             if (row != null) {
+                int id = (int) row.getCell(ZERO).getNumericCellValue();
                 String name = row.getCell(ONE).getStringCellValue();
                 int quantity = (int) row.getCell(TWO).getNumericCellValue();
 
                 if (quantity <= -1) {
-                    productosAgotados.add(new Producto(name, quantity, row.getCell(THREE).getNumericCellValue(),row.getCell(5).getStringCellValue()));
+                    productosAgotados.add(new Producto(id,name, quantity, row.getCell(THREE).getNumericCellValue(),row.getCell(5).getStringCellValue()));
                 }
             }
         }
@@ -1015,10 +1017,10 @@ public class ExcelUserManager {
             // Guardar cambios en el archivo
             try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
                 workbook.write(fos);
-                enviarMensaje("+573226094632","El empleado " + nombreUsuario + " ha comenzado su jornada laboral a las " + horaInicio + " del día " + fechaInicio);
-            } catch (InterruptedException e) {
+               // enviarMensaje("+573226094632","El empleado " + nombreUsuario + " ha comenzado su jornada laboral a las " + horaInicio + " del día " + fechaInicio);
+            } /*catch (InterruptedException e) {
                 throw new RuntimeException(e);
-            }
+            }*/
 
         } catch (IOException e) {
             e.printStackTrace();
