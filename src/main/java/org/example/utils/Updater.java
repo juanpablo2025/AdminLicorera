@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 public class Updater {
 
-    private static final String CURRENT_VERSION = "v1.0.0"; // Cambiar en cada release
+    private static final String CURRENT_VERSION = "v1.0.1"; // Cambiar en cada release
     private static final String TEMP_EXE_NAME = "update_temp.exe";
     private static final String APP_EXE_NAME = "Licorera CR.exe";
     private static final String GITHUB_API_URL = "https://api.github.com/repos/juanpablo2025/AdminLicorera/releases/latest";
