@@ -15,33 +15,30 @@ import java.util.Arrays;
 
 public class Updater {
 
-    private static final String CURRENT_VERSION = "v1.0.1"; // Cambiar en cada release
+    private static final String CURRENT_VERSION = "v1.0.1";
     private static final String TEMP_EXE_NAME = "update_temp.exe";
     private static final String APP_EXE_NAME = "Licorera CR.exe";
     private static final String GITHUB_API_URL = "https://api.github.com/repos/juanpablo2025/AdminLicorera/releases/latest";
 
+    private static JFrame progressFrame;
+
     public static void checkForUpdates() {
         try {
             JSONObject release = fetchLatestRelease();
-
             String remoteVersion = release.getString("tag_name").trim();
-            String downloadUrl = release.getJSONArray("assets")
-                    .getJSONObject(0)
-                    .getString("browser_download_url");
-
-            System.out.println("Versión actual: " + CURRENT_VERSION);
-            System.out.println("Versión remota: " + remoteVersion);
+            String downloadUrl = release.getJSONArray("assets").getJSONObject(0).getString("browser_download_url");
 
             if (isNewVersion(remoteVersion, CURRENT_VERSION)) {
-                System.out.println("Actualizando a nueva versión: " + remoteVersion);
+                showProgressWindow();
                 downloadFile(downloadUrl, TEMP_EXE_NAME);
                 createUpdateScript();
+                hideProgressWindow();
                 launchUpdateScript();
                 System.exit(0);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
+            hideProgressWindow();
         }
     }
 
@@ -67,9 +64,10 @@ public class Updater {
         String script = String.join("\r\n", Arrays.asList(
                 "@echo off",
                 "timeout /t 2 > nul",
-                "taskkill /F /IM \"" + APP_EXE_NAME + "\"",
+                "taskkill /F /IM \"" + APP_EXE_NAME + "\" >nul 2>&1",
                 "move /Y \"" + TEMP_EXE_NAME + "\" \"" + APP_EXE_NAME + "\"",
-                "start \"\" \"" + APP_EXE_NAME + "\""
+                "start \"\" /min powershell -WindowStyle Hidden -Command \"Start-Process -FilePath 'Licorera CR.exe'\"",
+                "exit"
         ));
         Files.write(Paths.get("update_launcher.bat"), script.getBytes(StandardCharsets.UTF_8));
     }
@@ -77,4 +75,22 @@ public class Updater {
     private static void launchUpdateScript() throws IOException {
         new ProcessBuilder("cmd", "/c", "start", "update_launcher.bat").start();
     }
+
+    private static JWindow showProgressWindow() {
+        JWindow window = new JWindow();
+        JLabel label = new JLabel("Descargando actualización...", SwingConstants.CENTER);
+        window.getContentPane().add(label);
+        window.setSize(300, 80);
+        window.setLocationRelativeTo(null);
+        window.setAlwaysOnTop(true);
+        window.setVisible(true);
+        return window;
+    }
+
+    private static void hideProgressWindow() {
+        if (progressFrame != null) {
+            SwingUtilities.invokeLater(() -> progressFrame.dispose());
+        }
+    }
 }
+
