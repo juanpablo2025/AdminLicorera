@@ -75,6 +75,35 @@ public class ExcelAdminManager {
         }
     }
 
+    public static void deleteProductById(int productId) {
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row != null) {
+                    Cell idCell = row.getCell(0);
+                    if (idCell != null && idCell.getCellType() == CellType.NUMERIC) {
+                        int id = (int) idCell.getNumericCellValue();
+                        if (id == productId) {
+                            sheet.removeRow(row);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
+                workbook.write(fos);
+            }
+
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Error al eliminar producto: " + e.getMessage());
+        }
+    }
+
+
 
     // Método para agregar un producto al archivo Excel
     public void addProduct(Producto product) {

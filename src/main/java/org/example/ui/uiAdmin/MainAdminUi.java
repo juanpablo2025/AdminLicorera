@@ -235,7 +235,6 @@ public class MainAdminUi {
                 JOptionPane.showMessageDialog(null,
                         "Contraseña incorrecta. Acceso denegado.",
                         "Error de Autenticación", JOptionPane.ERROR_MESSAGE);
-                redirigirUsuario();
             }
         }
     }

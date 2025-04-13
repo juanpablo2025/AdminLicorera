@@ -383,17 +383,21 @@ public class UIAdminProducts {
     private static JPanel createButtonPanel(DefaultTableModel tableModel, JTable productTable) {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10)); // ← centrado
 
-        JButton addButton = createStyledButton("Nuevo", new Color(255, 111, 97), new Color(201, 41, 41), 22);
+        JButton addButton = createStyledButton("Nuevo", new Color(66, 133, 244), new Color(30, 70, 160), 22);
         addButton.addActionListener(e -> {
             int tempId = -System.identityHashCode(new Object());
             tableModel.addRow(new Object[]{tempId, "NUEVO_PRODUCTO", 0, "0"});
-            int row = tableModel.getRowCount() - 1;
-            productTable.setRowSelectionInterval(row, row);
-            showEditProductDialog(tableModel, row,
-                    tableModel.getValueAt(row, 1),
-                    tableModel.getValueAt(row, 2),
-                    tableModel.getValueAt(row, 3),
-                    productTable);
+
+            SwingUtilities.invokeLater(() -> {
+                int row = tableModel.getRowCount() - 1;
+                productTable.setRowSelectionInterval(row, row);
+                showEditProductDialog(tableModel, row,
+                        tableModel.getValueAt(row, 1),
+                        tableModel.getValueAt(row, 2),
+                        tableModel.getValueAt(row, 3),
+                        productTable);
+                productTable.clearSelection(); // si quieres limpiar después del diálogo
+            });
         });
 
         JButton editButton = createStyledButton("Editar", new Color(76, 175, 80), new Color(56, 142, 60), 18);
@@ -422,6 +426,51 @@ public class UIAdminProducts {
             }
         });
 
+        // Botón eliminar
+        JButton eliminarBtn = createStyledButton("Eliminar", new Color(255, 111, 97), new Color(201, 41, 41), 22);
+        eliminarBtn.setBackground(new Color(220, 53, 69));
+        eliminarBtn.setForeground(Color.WHITE);
+        eliminarBtn.setFocusPainted(false);
+        eliminarBtn.setEnabled(false); // deshabilitado por defecto
+
+// Listener para habilitar o deshabilitar el botón según selección
+        productTable.getSelectionModel().addListSelectionListener(e -> {
+            boolean isSelected = productTable.getSelectedRow() != -1;
+            eliminarBtn.setEnabled(isSelected);
+        });
+
+        eliminarBtn.addActionListener(e -> {
+            int selectedRow = productTable.getSelectedRow();
+            if (selectedRow == -1) return;
+
+            int modelRow = productTable.convertRowIndexToModel(selectedRow);
+            int cantidad = Integer.parseInt(tableModel.getValueAt(modelRow, 2).toString());
+
+            if (cantidad > 0 || cantidad == -1) {
+                JOptionPane.showMessageDialog(null,
+                        "No puedes eliminar un producto con cantidad en inventario o en deuda.",
+                        "Acción no permitida", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int confirm = JOptionPane.showConfirmDialog(null,
+                    "¿Estás seguro de que deseas eliminar este producto?",
+                    "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
+
+            if (confirm == JOptionPane.YES_OPTION) {
+                int productId = Integer.parseInt(tableModel.getValueAt(modelRow, 0).toString());
+
+                tableModel.removeRow(modelRow);
+                ExcelAdminManager.deleteProductById(productId);
+
+                JOptionPane.showMessageDialog(null,
+                        "Producto eliminado correctamente.",
+                        "Eliminado", JOptionPane.INFORMATION_MESSAGE);
+
+                updateProductTable(productTable);
+            }
+        });
+
         productTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 boolean selected = productTable.getSelectedRow() != -1;
@@ -433,6 +482,7 @@ public class UIAdminProducts {
         buttonPanel.add(reabastecimientoButton);
         buttonPanel.add(addButton);
         buttonPanel.add(editButton);
+        buttonPanel.add(eliminarBtn);
         return buttonPanel;
     }
 
@@ -560,12 +610,16 @@ public class UIAdminProducts {
                 model.setValueAt(precioEditado, row, 3);
 
                 saveProducts(model, table);
+                table.clearSelection();
                 dialog.dispose();
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(dialog, "Cantidad debe ser un número entero.",
                         "Error de formato", JOptionPane.ERROR_MESSAGE);
             }
+
         });
+
+
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(saveBtn);
@@ -877,6 +931,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
 
         confirmButton.addActionListener(e ->
                 handleReplenishment(dialog, productTable, nombre, (int) quantitySpinner.getValue(), precioCompra)
+
         );
 
         JPanel bottomPanel = new JPanel();
@@ -920,6 +975,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
 
             // Actualizar la tabla
             updateProductTable(productTable);
+            productTable.clearSelection();
             dialog.dispose();
         }  catch (Exception ex) {
             JOptionPane.showMessageDialog(dialog, "Error inesperado: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
