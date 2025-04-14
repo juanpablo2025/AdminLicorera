@@ -646,7 +646,7 @@ public class UIHelpers {
     }
 
 
-    private static JComboBox<String> createProductComboBox() {
+    public static JComboBox<String> createProductComboBox() {
         JComboBox<String> productComboBox = new JComboBox<>();
         productComboBox.setEditable(true);
         productComboBox.setFont(new Font("Arial", Font.BOLD, 18));

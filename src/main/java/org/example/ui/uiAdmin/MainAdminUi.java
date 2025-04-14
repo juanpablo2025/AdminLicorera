@@ -1,6 +1,7 @@
 package org.example.ui.uiAdmin;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import org.example.manager.adminManager.ConfigAdminManager;
 import org.example.ui.uiUser.UIUserGastos;
 import org.example.ui.uiUser.UIUserMain;
 import org.example.ui.uiUser.UIUserProductList;
@@ -23,6 +24,7 @@ import static org.example.ui.UIHelpers.setMainFrame;
 import static org.example.ui.uiAdmin.GastosAdminUI.showReabastecimientoDialog;
 import static org.example.ui.uiAdmin.UIAdminFacturas.getAdminBillsPanel;
 import static org.example.ui.uiAdmin.UIAdminProducts.getAdminProductListPanel;
+import static org.example.ui.uiAdmin.UIConfigAdmin.createPrinterConfigPanel;
 import static org.example.ui.uiAdmin.UIConfigAdmin.showConfigDialog;
 import static org.example.ui.uiUser.UIUserFacturas.getFacturasPanel;
 import static org.example.ui.uiUser.UIUserMain.*;
@@ -85,7 +87,7 @@ public class MainAdminUi {
             JPanel contentPanel = new JPanel(new CardLayout());
             contentPanel.add(getAdminProductListPanel(), "productos");
             contentPanel.add(getAdminBillsPanel(), "facturas");
-            //contentPanel.add(getAdminProductListPanel(), "configuracion");
+            contentPanel.add(createPrinterConfigPanel(), "configuracion");
 
             JLabel titleLabel = new JLabel("Panel de Administración", JLabel.CENTER);
             titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
@@ -174,7 +176,9 @@ public class MainAdminUi {
                 cl.show(contentPanel, "facturas");
             });
             JButton configButton = createButton("Configuracion", resizeIcon("/icons/obrero.png"), e -> {
-                showConfigDialog();
+                CardLayout cl = (CardLayout) contentPanel.getLayout();
+                cl.show(contentPanel, "configuracion");
+
             });
 
             JButton moreOptionsButton = createButton("Mesas", resizeIcon("/icons/mesa-redonda.png"), e -> {
@@ -249,6 +253,8 @@ public class MainAdminUi {
         }
     }
     public static double obtenerTRM() {
+
+        if (!ConfigAdminManager.isTrmEnabled()) return 0.0;
         try {
             URL url = new URL("https://www.datos.gov.co/resource/32sa-8pi3.json?$limit=1&$order=vigenciadesde%20DESC");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();

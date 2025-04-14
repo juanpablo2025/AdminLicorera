@@ -872,6 +872,13 @@ public class FacturacionUserManager {
 
 
     public static void enviarMensaje(String numero, String mensaje) throws IOException, InterruptedException {
+
+
+        if (!ConfigAdminManager.isMessageSendingEnabled()) {
+            System.out.println("Envío de mensajes desactivado. Mensaje no enviado.");
+            return;
+        }
+
         HttpClient client = HttpClient.newHttpClient();
         String data = "token=" + TOKEN +
                 "&to=" + URLEncoder.encode("+" + numero, StandardCharsets.UTF_8) +

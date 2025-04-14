@@ -31,7 +31,7 @@ public class Main {
 
     public static void main(String[] args) {
         crearDirectorios();
-
+        Updater.checkForUpdates();
 // Verificar si el archivo existe; si no, crear uno nuevo
         File file = new File(FILE_PATH);
         if (!file.exists()) {
@@ -95,7 +95,7 @@ public class Main {
             userField.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
 
 
-            Updater.checkForUpdates();
+
 
             JButton loginButton = new JButton("Iniciar Día");
             loginButton.setFont(new Font("Arial", Font.BOLD, 20));

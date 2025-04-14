@@ -32,6 +32,7 @@ import java.util.*;
 import java.util.List;
 
 import static org.example.manager.adminManager.ExcelAdminManager.saveSelectedProduct;
+import static org.example.manager.userManager.ProductoUserManager.getProducts;
 import static org.example.model.Producto.getFotoByName;
 import static org.example.ui.UIHelpers.createButton;
 import static org.example.ui.UIHelpers.createDialog;
@@ -788,16 +789,11 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         dialog.setSize(520, 710);
         dialog.setLayout(new BorderLayout(10, 10));
         dialog.setModal(true);
-        String rutaImagen = System.getProperty("user.home") + File.separator + "Calculadora del Administrador"
-                + File.separator + "Fotos" + File.separator + nombre + ".png";
 
-        // Imagen
         JLabel imageLabel = new JLabel();
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         imageLabel.setPreferredSize(new Dimension(300, 300));
-        cargarImagen(rutaImagen, imageLabel);
 
-        // Panel rojo debajo de la imagen
         JPanel infoBar = new JPanel();
         infoBar.setBackground(new Color(220, 53, 69));
         infoBar.setLayout(new FlowLayout(FlowLayout.CENTER, 60, 10));
@@ -807,45 +803,64 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         cantidadLabel.setForeground(Color.WHITE);
         cantidadLabel.setFont(new Font("Arial", Font.BOLD, 22));
 
-        JLabel precioLabel = new JLabel("$ "+ formatCOP.format(productoAdminManager.getProductByName(nombre).getPrice())+" Pesos");
+        JLabel precioLabel = new JLabel();
         precioLabel.setForeground(Color.WHITE);
         precioLabel.setFont(new Font("Arial", Font.BOLD, 22));
 
         infoBar.add(cantidadLabel);
         infoBar.add(precioLabel);
 
-        // Título (nombre del producto)
         JLabel productLabel = new JLabel(nombre);
         productLabel.setFont(new Font("Arial", Font.BOLD, 20));
         productLabel.setHorizontalAlignment(SwingConstants.CENTER);
         productLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         productLabel.setForeground(Color.WHITE);
 
+        JComboBox<String> searchBox = UIHelpers.createProductComboBox();
+        searchBox.setPreferredSize(new Dimension(400, 35));
+        searchBox.setMaximumSize(new Dimension(400, 35));
+        searchBox.setFont(new Font("Arial", Font.PLAIN, 16));
+        searchBox.setSelectedItem(nombre);
 
-
+        JPanel searchPanel = new JPanel();
+        searchPanel.setBackground(new Color(80, 80, 80));
+        searchPanel.add(searchBox);
 
         JPanel imageContainer = new JPanel(new BorderLayout());
         imageContainer.add(imageLabel, BorderLayout.CENTER);
         imageContainer.add(infoBar, BorderLayout.SOUTH);
         imageContainer.setBackground(new Color(80, 80, 80));
 
-
-// Contenedor vertical: nombre + imagen + barra roja
         Box topBox = Box.createVerticalBox();
         topBox.setAlignmentX(Component.CENTER_ALIGNMENT);
         topBox.add(Box.createVerticalStrut(10));
         topBox.add(productLabel);
         topBox.add(Box.createVerticalStrut(10));
-        topBox.add(imageContainer); // ← esto incluye la imagen + barra roja
+        topBox.add(searchPanel);
+        topBox.add(Box.createVerticalStrut(10));
+        topBox.add(imageContainer);
 
-// Contenedor con fondo negro
         JPanel topContainer = new JPanel();
         topContainer.setBackground(new Color(80, 80, 80));
         topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.Y_AXIS));
         topContainer.add(topBox);
 
-        topBox.add(imageContainer);
+        Runnable updateProductInfo = () -> {
+            String selected = (String) searchBox.getSelectedItem();
+            if (selected != null && !selected.equals("Busca un producto")) {
+                String rutaImagen = System.getProperty("user.home") + File.separator + "Calculadora del Administrador"
+                        + File.separator + "Fotos" + File.separator + selected + ".png";
 
+                cargarImagen(rutaImagen, imageLabel);
+                productLabel.setText(selected);
+                double precio = productoAdminManager.getProductByName(selected).getPrice();
+                precioLabel.setText("$ " + formatCOP.format(precio) + " Pesos");
+            }
+        };
+
+        searchBox.addActionListener(e -> updateProductInfo.run());
+
+        updateProductInfo.run();
 
         imageLabel.setTransferHandler(new TransferHandler() {
             @Override
@@ -863,6 +878,10 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
                         if (draggedFile.getName().toLowerCase().endsWith(".png") ||
                                 draggedFile.getName().toLowerCase().endsWith(".jpg") ||
                                 draggedFile.getName().toLowerCase().endsWith(".jpeg")) {
+
+                            String selected = (String) searchBox.getSelectedItem();
+                            String rutaImagen = System.getProperty("user.home") + File.separator + "Calculadora del Administrador"
+                                    + File.separator + "Fotos" + File.separator + selected + ".png";
 
                             Path destino = Paths.get(rutaImagen);
                             Files.copy(draggedFile.toPath(), destino, StandardCopyOption.REPLACE_EXISTING);
@@ -920,8 +939,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         JTextField priceField = new JTextField(10);
         priceField.setPreferredSize(new Dimension(400, 40));
         centerPanel.add(priceField, gbc);
-        String precioTexto = priceField.getText().trim();
-        String precioCompra = precioTexto.isEmpty() ? "-10" : (precioTexto);
+
         JButton confirmButton = new JButton("Confirmar");
         confirmButton.setFont(new Font("Arial", Font.BOLD, 18));
         confirmButton.setPreferredSize(new Dimension(400, 40));
@@ -929,10 +947,13 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         confirmButton.setForeground(Color.WHITE);
         confirmButton.setFocusPainted(false);
 
-        confirmButton.addActionListener(e ->
-                handleReplenishment(dialog, productTable, nombre, (int) quantitySpinner.getValue(), precioCompra)
-
-        );
+        confirmButton.addActionListener(e -> {
+            String selected = (String) searchBox.getSelectedItem();
+            String precioTexto = priceField.getText().trim();
+            String precioCompra = precioTexto.isEmpty() ? "-10" : (precioTexto);
+            handleReplenishment(dialog, productTable, selected, (int) quantitySpinner.getValue(), precioCompra);
+            quantitySpinner.setValue(1);
+        });
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(confirmButton);
@@ -976,7 +997,6 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
             // Actualizar la tabla
             updateProductTable(productTable);
             productTable.clearSelection();
-            dialog.dispose();
         }  catch (Exception ex) {
             JOptionPane.showMessageDialog(dialog, "Error inesperado: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
