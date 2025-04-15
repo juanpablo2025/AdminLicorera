@@ -31,16 +31,18 @@ public class Main {
 
     public static void main(String[] args) {
         crearDirectorios();
-        Updater.checkForUpdates();
+
 // Verificar si el archivo existe; si no, crear uno nuevo
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             createExcelFile();  // Llama al método que crea el archivo si no existe
         }
         if (hayRegistroDeHoy()) {
+            Updater.checkForUpdates();
             mainUser(); // Si hay registro, abrir el panel de usuario
         } else {
             mostrarLogin(); // Si no, mostrar el login
+            Updater.checkForUpdates();
         }
     }
 

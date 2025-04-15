@@ -371,6 +371,7 @@ public class UIUserVenta {
                 ImageIcon iconoEfectivo = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/dinero.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
                 ImageIcon iconoDaviplata = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/Daviplata.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
                 ImageIcon iconoDatafono = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/datafono.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
+                ImageIcon iconoPaypal = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/paypal.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
 
                 // Crear un diálogo modal personalizado
                 JDialog dialogoPago = new JDialog(compraDialog, "Seleccione el método de pago", true);
@@ -380,7 +381,7 @@ public class UIUserVenta {
 
                 // Crear panel para el menú de pago
                 JPanel panelPago = new JPanel();
-                panelPago.setLayout(new GridLayout(1, 3, 10, 10));
+                panelPago.setLayout(new GridLayout(2, 2, 10, 10));
 
                 // Crear botones de método de pago
                 JButton botonEfectivo = new JButton("Efectivo", iconoEfectivo);
@@ -391,12 +392,14 @@ public class UIUserVenta {
 
 
 
-                // Añadir botones al panel
+
+
                 panelPago.add(botonEfectivo);
                 panelPago.add(botonBancolombia);
                 panelPago.add(botonNequi);
                 panelPago.add(botonDaviplata);
                 panelPago.add(botonDatafono);
+
 
                 dialogoPago.add(panelPago, BorderLayout.CENTER);
 
@@ -629,6 +632,7 @@ public class UIUserVenta {
                 String tipoPagoSeleccionado = seleccionarMetodoPago(compraDialog, total);
                 if (tipoPagoSeleccionado == null) return;*/
 
+                //* Selección de método de pago
 
                 // Crear íconos redimensionados para los métodos de pago
                 ImageIcon iconoBancolombia = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/bancolombia.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
@@ -636,16 +640,30 @@ public class UIUserVenta {
                 ImageIcon iconoEfectivo = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/dinero.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
                 ImageIcon iconoDaviplata = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/Daviplata.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
                 ImageIcon iconoDatafono = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/datafono.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
+                ImageIcon iconoPaypal = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/paypal.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
 
-                // Crear un diálogo modal personalizado
                 JDialog dialogoPago = new JDialog(compraDialog, "Seleccione el método de pago", true);
-                dialogoPago.setSize(1300, 150);
-                dialogoPago.setLayout(new BorderLayout());
+                dialogoPago.setSize(1300, 400);
+                dialogoPago.setLayout(new BorderLayout(20, 20));
                 dialogoPago.setResizable(false);
+                Double totalDolar = total/TRM;
+                // Supón que tienes el valor total de la compra
+                 // <-- cambia esto por el valor real
+                String textoTotal = String.format(
+                        "<html><div style='text-align:center; font-size:28px; color:#2ecc71;'>" +
+                                "<b>Total: $%,.0f Pesos</b><br>" +
+                                "<span style='font-size:20pt; color:#000080;'><b>%.2f USD</b></span>" +
+                                "</div></html>",
+                        total, totalDolar
+                );
+                JLabel totalLabel = new JLabel(textoTotal, SwingConstants.CENTER);
+                totalLabel.setBorder(BorderFactory.createEmptyBorder(20, 10, 0, 10));
 
                 // Crear panel para el menú de pago
                 JPanel panelPago = new JPanel();
-                panelPago.setLayout(new GridLayout(1, 3, 10, 10));
+                panelPago.setLayout(new GridLayout(2, 3, 20, 20));
+                panelPago.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
+                panelPago.setBackground(Color.WHITE);
 
                 // Crear botones de método de pago
                 JButton botonEfectivo = new JButton("Efectivo", iconoEfectivo);
@@ -653,17 +671,24 @@ public class UIUserVenta {
                 JButton botonNequi = new JButton("Nequi - Transferencia", iconoNequi);
                 JButton botonDaviplata = new JButton("Daviplata - Transferencia", iconoDaviplata);
                 JButton botonDatafono = new JButton("Datafono", iconoDatafono);
+                JButton botonPaypal = new JButton("Paypal", iconoPaypal);
 
+                // Ajuste visual común para los botones
+                JButton[] botones = { botonEfectivo, botonBancolombia, botonNequi, botonDaviplata, botonDatafono, botonPaypal };
+                for (JButton btn : botones) {
+                    btn.setFont(new Font("Arial", Font.BOLD, 16));
+                    btn.setBackground(new Color(245, 245, 245));
+                    btn.setFocusPainted(false);
+                    btn.setHorizontalAlignment(SwingConstants.LEFT);
+                    btn.setIconTextGap(10);
+                    panelPago.add(btn);
+                }
 
-
-                // Añadir botones al panel
-                panelPago.add(botonEfectivo);
-                panelPago.add(botonBancolombia);
-                panelPago.add(botonNequi);
-                panelPago.add(botonDaviplata);
-                panelPago.add(botonDatafono);
-
+                // Añadir todo al diálogo
+                dialogoPago.add(totalLabel, BorderLayout.NORTH);
                 dialogoPago.add(panelPago, BorderLayout.CENTER);
+                dialogoPago.setLocationRelativeTo(null);
+              //  dialogoPago.setVisible(true);
 
                 // Variable para guardar el tipo de pago seleccionado
                 final String[] tipoPagoSeleccionado = {null};
@@ -682,6 +707,11 @@ public class UIUserVenta {
 
                 botonDaviplata.addActionListener(event -> {
                     tipoPagoSeleccionado[0] = "Daviplata - Transferencia";
+                    dialogoPago.dispose();
+                });
+
+                botonDaviplata.addActionListener(event -> {
+                    tipoPagoSeleccionado[0] = "Paypal - Transferencia";
                     dialogoPago.dispose();
                 });
 
@@ -787,7 +817,7 @@ public class UIUserVenta {
                     generarFacturadeCompra(ventaID, Arrays.asList(listaProductosEnLinea.toString().split("\n")), total, dateTime, tipoPagoSeleccionado[0]);
                 }
 
-                Double TotalDolar = total/TRM;
+
                 NumberFormat FORMAT_USD = NumberFormat.getCurrencyInstance(Locale.US);
 
                 String mensaje = String.format(
@@ -795,12 +825,12 @@ public class UIUserVenta {
                                 "<div style='font-size:16pt;'>" +
                                 "✔ <b>%s</b><br><br>" +
                                 "Por un total de:<br>" +
-                                "<span style='font-size:22pt; color:#006400;'><b>$%s COP</b></span><br>" +
-                                "<span style='font-size:18pt; color:#003399;'><b>%s USD</b></span>" +
+                                "<span style='font-size:28pt; color:#2ecc71;'><b>$%s Pesos</b></span><br>" +
+                                "<span style='font-size:20pt; color:#000080;'><b>%s USD</b></span>" +
                                 "</div></html>",
                         PURCHASE_SUCCEDED,
                         NumberFormat.getInstance(new Locale("es", "CO")).format(total),
-                        FORMAT_USD.format(TotalDolar)
+                        FORMAT_USD.format(totalDolar)
                 );
 
                 JOptionPane.showMessageDialog(

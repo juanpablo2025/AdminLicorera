@@ -190,7 +190,7 @@ public class UIUserProductList {
         String[] columnNames = {
                 "Nombre",
                 "Cantidad",
-                "<html><b>Pesos/USD</b><span style='font-size:14px; color:#28a745;'>(" + formatearMoneda(TRM) + " TRM)</span></html>"
+                "<html><b>Pesos/USD</b><span style='font-size:14px; color:#28a748;'>(" + formatearMoneda(TRM) + " TRM)</span></html>"
         };
 
 
@@ -203,7 +203,7 @@ public class UIUserProductList {
 
             double precioUSD = TRM != 0.0 ? p.getPrice() / TRM : 0.0;
             data[i][2] = String.format(
-                    "<html><b>%s</b> <span style='font-size:14px; color:#28a745;'>(%s)</span></html>",
+                    "<html><b>%s</b> <span style='font-size:14px; color:#000080;'>(%s)</span></html>",
                     "$ " + formatearMoneda(p.getPrice()),
                     FORMAT_USD.format(precioUSD)
             );

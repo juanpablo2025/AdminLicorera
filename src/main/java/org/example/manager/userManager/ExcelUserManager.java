@@ -12,11 +12,14 @@ import javax.swing.*;
 import java.io.*;
 
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,8 +40,6 @@ public class ExcelUserManager {
     static LocalDateTime fechaHora = LocalDateTime.now();
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH_mm_ss");
     static String fechaFormateada = fechaHora.format(formatter);
-
-    public static final String DIRECTORY_PATH_FACTURACION = System.getProperty("user.home") + "\\Calculadora del Administrador";
     public static final String FACTURACION_FILENAME = "\\Facturacion\\Facturacion"+ fechaFormateada+".xlsx";
 
     public ExcelUserManager() {
@@ -952,14 +953,14 @@ public class ExcelUserManager {
 
     private static final LocalTime LIMITE_HORA = LocalTime.of(6, 0); // 6:00 AM
 
-    public static boolean hayRegistroDeHoy() {
+    public static LocalDate getFechaTurnoActivo() {
         LocalDateTime ahora = LocalDateTime.now();
-        LocalDate hoy = ahora.toLocalDate();
-
-        // Si es antes de las 6 AM, consideramos el día anterior
-        if (ahora.toLocalTime().isBefore(LIMITE_HORA)) {
-            hoy = hoy.minusDays(1);
-        }
+        return ahora.toLocalTime().isBefore(LIMITE_HORA)
+                ? ahora.toLocalDate().minusDays(1)
+                : ahora.toLocalDate();
+    }
+    public static boolean hayRegistroDeHoy() {
+        LocalDate fechaTurno = getFechaTurnoActivo();
 
         try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -969,10 +970,13 @@ public class ExcelUserManager {
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                     Row row = sheet.getRow(i);
                     if (row != null) {
-                        String fechaRegistro = row.getCell(2).getStringCellValue();
-                        LocalDate fecha = LocalDate.parse(fechaRegistro, DATE_FORMATTER);
-                        if (fecha.isEqual(hoy)) {
-                            return true; // Ya hay un registro
+                        Cell cell = row.getCell(2);
+                        if (cell != null && cell.getCellType() == CellType.STRING) {
+                            String fechaRegistro = cell.getStringCellValue();
+                            LocalDate fecha = LocalDate.parse(fechaRegistro, DATE_FORMATTER);
+                            if (fecha.isEqual(fechaTurno)) {
+                                return true;
+                            }
                         }
                     }
                 }
@@ -980,7 +984,41 @@ public class ExcelUserManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false; // No hay registro
+        return false;
+    }
+    public static boolean hayRegistroDeHoys() {
+        LocalDate fechaTurno = getFechaTurnoActivo();
+        DataFormatter dataFormatter = new DataFormatter();
+
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            Sheet sheet = workbook.getSheet("Empleados");
+            if (sheet != null) {
+                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                    Row row = sheet.getRow(i);
+                    if (row != null) {
+                        Cell cell = row.getCell(2);
+                        if (cell != null) {
+                            String fechaTexto = dataFormatter.formatCellValue(cell).trim();
+                            if (!fechaTexto.isEmpty()) {
+                                try {
+                                    LocalDate fecha = LocalDate.parse(fechaTexto, DATE_FORMATTER);
+                                    if (fecha.isEqual(fechaTurno)) {
+                                        return true;
+                                    }
+                                } catch (DateTimeParseException e) {
+                                    // Ignorar fila con formato de fecha inválido
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
     public static void registrarDia(String nombreUsuario) {
         LocalDateTime now = LocalDateTime.now();
@@ -1028,23 +1066,24 @@ public class ExcelUserManager {
     }
 
     public static String obtenerUltimoEmpleado() {
-         String EMPLEADOS_SHEET_NAME = "Empleados";
+        String EMPLEADOS_SHEET_NAME = "Empleados";
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet empleadosSheet = workbook.getSheet(EMPLEADOS_SHEET_NAME);
             if (empleadosSheet == null) return "No hay empleados registrados";
 
-            int lastRowIndex = empleadosSheet.getLastRowNum();
-            while (lastRowIndex >= 0) {
-                Row row = empleadosSheet.getRow(lastRowIndex);
+            for (int i = empleadosSheet.getLastRowNum(); i >= 0; i--) {
+                Row row = empleadosSheet.getRow(i);
                 if (row != null) {
-                    Cell cell = row.getCell(0); // Suponiendo que los nombres están en la columna A (índice 0)
+                    Cell cell = row.getCell(0); // Columna A
                     if (cell != null && cell.getCellType() == CellType.STRING) {
-                        return cell.getStringCellValue();
+                        String nombre = cell.getStringCellValue().trim();
+                        if (!nombre.isEmpty()) {
+                            return nombre;
+                        }
                     }
                 }
-                lastRowIndex--;
             }
         } catch (IOException e) {
             e.printStackTrace();

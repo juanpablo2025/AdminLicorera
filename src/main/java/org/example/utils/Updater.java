@@ -15,7 +15,7 @@ import java.util.Arrays;
 
 public class Updater {
 
-    private static final String CURRENT_VERSION = "v1.0.3";
+    private static final String CURRENT_VERSION = "v1.0.4";
     private static final String TEMP_EXE_NAME = "update_temp.exe";
     private static final String APP_EXE_NAME = "Licorera CR.exe";
     private static final String GITHUB_API_URL = "https://api.github.com/repos/juanpablo2025/AdminLicorera/releases/latest";
@@ -23,6 +23,11 @@ public class Updater {
     private static JFrame progressFrame;
 
     public static void checkForUpdates() {
+
+        if (!hayConexionInternet()) {
+            System.out.println("Sin conexión a internet, se omite la búsqueda de actualizaciones.");
+            return;
+        }
         try {
             JSONObject release = fetchLatestRelease();
             String remoteVersion = release.getString("tag_name").trim();
@@ -39,6 +44,21 @@ public class Updater {
         } catch (Exception e) {
             e.printStackTrace();
             hideProgressWindow();
+        }
+    }
+
+
+    public static boolean hayConexionInternet() {
+        try {
+            URL url = new URL("https://github.com");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("HEAD");
+            connection.setConnectTimeout(3000); // 3 segundos
+            connection.setReadTimeout(3000);
+            int responseCode = connection.getResponseCode();
+            return (200 <= responseCode && responseCode <= 399);
+        } catch (Exception e) {
+            return false;
         }
     }
 
