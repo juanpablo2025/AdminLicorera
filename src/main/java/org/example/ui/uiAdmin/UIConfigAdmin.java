@@ -1,5 +1,6 @@
 package org.example.ui.uiAdmin;
 
+import com.fazecast.jSerialComm.SerialPort;
 import org.example.manager.adminManager.ConfigAdminManager;
 
 import javax.print.PrintService;
@@ -90,6 +91,15 @@ public class UIConfigAdmin {
         }
         String currentPrinter = ConfigAdminManager.getPrinterName();
 
+        // Leer datáfonos reales desde puertos COM
+        SerialPort[] ports = SerialPort.getCommPorts();
+        String[] dataphoneOptions = new String[ports.length + 1];
+        dataphoneOptions[0] = "Ninguno";
+        for (int i = 0; i < ports.length; i++) {
+            dataphoneOptions[i + 1] = ports[i].getSystemPortName() + " - " + ports[i].getDescriptivePortName();
+        }
+        String currentDataphone = ConfigAdminManager.getSelectedDataphone();
+
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -128,6 +138,17 @@ public class UIConfigAdmin {
         printerComboBox.setPreferredSize(new Dimension(300, 30));
         panel.add(printerComboBox, gbc);
 
+        // Datáfono detectado por COM
+        gbc.gridy++;
+        JLabel dataphoneLabel = new JLabel("Seleccione el datáfono:");
+        panel.add(dataphoneLabel, gbc);
+
+        gbc.gridy++;
+        JComboBox<String> dataphoneComboBox = new JComboBox<>(dataphoneOptions);
+        dataphoneComboBox.setSelectedItem(currentDataphone);
+        dataphoneComboBox.setPreferredSize(new Dimension(300, 30));
+        panel.add(dataphoneComboBox, gbc);
+
         gbc.gridy++;
         JCheckBox enableMessageCheckBox = new JCheckBox("Activar envío de mensajes");
         enableMessageCheckBox.setFont(enableMessageCheckBox.getFont().deriveFont(Font.PLAIN, 14f));
@@ -154,6 +175,7 @@ public class UIConfigAdmin {
             if (outputComboBox.getSelectedItem().equals("IMPRESORA")) {
                 ConfigAdminManager.setPrinterName((String) printerComboBox.getSelectedItem());
             }
+            ConfigAdminManager.setSelectedDataphone((String) dataphoneComboBox.getSelectedItem());
             ConfigAdminManager.setMessageSendingEnabled(enableMessageCheckBox.isSelected());
             ConfigAdminManager.setTrmEnabled(trmCheckBox.isSelected());
             JOptionPane.showMessageDialog(panel, "Configuración guardada con éxito.");

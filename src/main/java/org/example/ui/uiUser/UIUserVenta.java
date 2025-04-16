@@ -709,7 +709,7 @@ public class UIUserVenta {
                     dialogoPago.dispose();
                 });
 
-                botonDaviplata.addActionListener(event -> {
+                botonPaypal.addActionListener(event -> {
                     tipoPagoSeleccionado[0] = "Paypal - Transferencia";
                     dialogoPago.dispose();
                 });

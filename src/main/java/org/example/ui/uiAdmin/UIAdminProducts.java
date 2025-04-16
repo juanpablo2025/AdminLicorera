@@ -761,7 +761,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
                     }
 
                     if (img != null) {
-                        Image scaledImg = img.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
+                        Image scaledImg = img.getScaledInstance(250, 250, Image.SCALE_SMOOTH);
                         return new ImageIcon(scaledImg);
                     }
                 } catch (Exception e) {
@@ -792,7 +792,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
 
         JLabel imageLabel = new JLabel();
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        imageLabel.setPreferredSize(new Dimension(300, 300));
+        imageLabel.setPreferredSize(new Dimension(240, 240));
 
         JPanel infoBar = new JPanel();
         infoBar.setBackground(new Color(220, 53, 69));
@@ -810,11 +810,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         infoBar.add(cantidadLabel);
         infoBar.add(precioLabel);
 
-        JLabel productLabel = new JLabel(nombre);
-        productLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        productLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        productLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        productLabel.setForeground(Color.WHITE);
+
 
         JComboBox<String> searchBox = UIHelpers.createProductComboBox();
         searchBox.setPreferredSize(new Dimension(400, 35));
@@ -826,6 +822,12 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         searchPanel.setBackground(new Color(80, 80, 80));
         searchPanel.add(searchBox);
 
+        JLabel productLabel = new JLabel(nombre);
+        productLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        productLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        productLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        productLabel.setForeground(Color.WHITE);
+
         JPanel imageContainer = new JPanel(new BorderLayout());
         imageContainer.add(imageLabel, BorderLayout.CENTER);
         imageContainer.add(infoBar, BorderLayout.SOUTH);
@@ -833,11 +835,11 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
 
         Box topBox = Box.createVerticalBox();
         topBox.setAlignmentX(Component.CENTER_ALIGNMENT);
-        topBox.add(Box.createVerticalStrut(10));
-        topBox.add(productLabel);
-        topBox.add(Box.createVerticalStrut(10));
+        topBox.add(Box.createVerticalStrut(8));
         topBox.add(searchPanel);
-        topBox.add(Box.createVerticalStrut(10));
+        topBox.add(Box.createVerticalStrut(8));
+        topBox.add(productLabel);
+        topBox.add(Box.createVerticalStrut(8));
         topBox.add(imageContainer);
 
         JPanel topContainer = new JPanel();
@@ -931,7 +933,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         });
 
         gbc.gridy++;
-        JLabel priceLabel = new JLabel("Valor de compra(Opcional)");
+        JLabel priceLabel = new JLabel("Valor de compra");
         priceLabel.setFont(new Font("Arial", Font.BOLD, 16));
         centerPanel.add(priceLabel, gbc);
 

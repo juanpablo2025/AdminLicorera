@@ -41,8 +41,9 @@ public class Main {
             Updater.checkForUpdates();
             mainUser(); // Si hay registro, abrir el panel de usuario
         } else {
-            mostrarLogin(); // Si no, mostrar el login
             Updater.checkForUpdates();
+            mostrarLogin(); // Si no, mostrar el login
+
         }
     }
 

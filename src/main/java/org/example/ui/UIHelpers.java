@@ -5,6 +5,7 @@ import org.example.manager.userManager.VentaMesaUserManager;
 import org.example.model.Producto;
 import org.example.ui.uiUser.UIUserMain;
 import org.example.ui.uiUser.UnifiedEditorRenderer;
+import org.example.utils.FormatterHelpers;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -24,7 +25,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.example.utils.Constants.*;
 import static org.example.utils.FormatterHelpers.formatearMoneda;
@@ -236,9 +239,9 @@ public class UIHelpers {
     public static JPanel createInputPanel(JTable table, VentaMesaUserManager ventaMesaUserManager) {
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-        inputPanel.setPreferredSize(new Dimension(500, 400));
+        inputPanel.setPreferredSize(new Dimension(450, 400));
 
-        Font labelFont = new Font("Arial", Font.BOLD, 14);
+        Font labelFont = new Font("Arial", Font.BOLD, 18);
 
         // Panel de búsqueda
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 10));
@@ -253,24 +256,25 @@ public class UIHelpers {
                 super.paintComponent(g);
                 if (getText().isEmpty() && !isFocusOwner()) {
                     Graphics2D g2 = (Graphics2D) g.create();
-                    g2.setFont(new Font("Arial", Font.PLAIN, 18));
+                    g2.setFont(new Font("Arial", Font.PLAIN, 20));
                     g2.setColor(Color.GRAY);
                     g2.drawString("Busca un producto...", 5, getHeight() - 10);
                     g2.dispose();
                 }
             }
         };
-        searchField.setPreferredSize(new Dimension(470, 40));
+        searchField.setFont(new Font("Arial", Font.PLAIN, 20));
+        searchField.setPreferredSize(new Dimension(420, 40));
         searchPanel.add(searchField);
         searchPanel.setBackground(new Color(28,28,28));
-        searchField.setForeground(Color.GRAY);
+        searchField.setForeground(Color.black);
 
         inputPanel.add(searchPanel, BorderLayout.NORTH);
 
 // Spinner de cantidad (agrega esto arriba del searchPanel)
         JPanel quantityPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 13, 1));
         quantityPanel.setBackground(new Color(28, 28, 28));
-        JLabel quantityLabel = new JLabel("Cantidad:");
+        JLabel quantityLabel = new JLabel("Cantidad x");
         quantityLabel.setForeground(Color.WHITE);
         quantityLabel.setFont(labelFont);
 
@@ -323,7 +327,7 @@ public class UIHelpers {
 
 
 // ⏩ Aumentar la velocidad del scroll
-        scrollPane.getVerticalScrollBar().setUnitIncrement(20);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(30);
 
 // 🎨 Personalizar la apariencia de la barra de desplazamiento
         scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
@@ -389,7 +393,7 @@ public class UIHelpers {
 // 🔹 Ajustar la transparencia del fondo para evitar el color cuadrado
                         card.setOpaque(false);
                         card.setBackground(new Color(58, 58, 58)); // Fondo oscuro
-                        card.setPreferredSize(new Dimension(200, 220));
+                        card.setPreferredSize(new Dimension(80, 210));
                         card.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
                         JLabel imageLabel = new JLabel();
@@ -406,18 +410,39 @@ public class UIHelpers {
                                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
                             }
                         };
-                        namePanel.setPreferredSize(new Dimension(220, 30));
+                        namePanel.setPreferredSize(new Dimension(240, 50));
                         namePanel.setOpaque(false);
                         namePanel.setLayout(new BorderLayout());
 
-                        String formattedName = product.getName().replace("_", " "); // Reemplaza _ con espacio
-                        formattedName = formattedName.toLowerCase(); // Convierte todo a minúsculas
-                        formattedName = Character.toUpperCase(formattedName.charAt(0)) + formattedName.substring(1); // Primera letra en mayúscula
+                        String formattedName = Arrays.stream(product.getName().replace("_", " ").toLowerCase().split(" "))
+                                .map(word -> word.isEmpty() ? "" : Character.toUpperCase(word.charAt(0)) + word.substring(1))
+                                .collect(Collectors.joining(" "));
 
-                        JLabel nameLabel = new JLabel(formattedName, SwingConstants.CENTER);
-                        nameLabel.setFont(new Font("Arial", Font.BOLD, 17));
+                        namePanel.setLayout(new BorderLayout());
+                        namePanel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8)); // Espaciado interno
+
+                        JLabel nameLabel = new JLabel(formattedName);
+                        nameLabel.setFont(new Font("Arial", Font.BOLD, 16));
                         nameLabel.setForeground(Color.WHITE);
-                        namePanel.add(nameLabel, BorderLayout.CENTER);
+                        nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                        namePanel.add(nameLabel, BorderLayout.NORTH);
+
+                        JLabel quantityPLabel = new JLabel("x" + product.getQuantity());
+                        quantityPLabel.setFont(new Font("Arial", Font.BOLD, 14));
+                        quantityPLabel.setForeground(Color.WHITE);
+                        quantityPLabel.setHorizontalAlignment(SwingConstants.LEFT);
+
+                        JLabel priceLabel = new JLabel("$" + FormatterHelpers.formatearMoneda(product.getPrice()));
+                        priceLabel.setFont(new Font("Arial", Font.BOLD, 14));
+                        priceLabel.setForeground(Color.WHITE);
+                        priceLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+
+                        JPanel subInfoPanel = new JPanel(new BorderLayout());
+                        subInfoPanel.setOpaque(false);
+                        subInfoPanel.add(quantityPLabel, BorderLayout.WEST);
+                        subInfoPanel.add(priceLabel, BorderLayout.EAST);
+
+                        namePanel.add(subInfoPanel, BorderLayout.SOUTH);
 
                         card.add(namePanel, BorderLayout.SOUTH);
                         card.setBackground(new Color(147, 89, 49));
@@ -443,8 +468,9 @@ public class UIHelpers {
                                     }
 
                                     if (img != null) {
-                                        Image scaledImg = img.getScaledInstance(220, 185, Image.SCALE_SMOOTH);
-                                        return makeRoundedImage(scaledImg, 220, 185);
+                                        Image scaledImg = img.getScaledInstance(200, 150, Image.SCALE_SMOOTH);
+                                        return makeRoundedImage(scaledImg, 200, 150);
+
                                     }
                                 } catch (Exception e) {
                                     System.err.println("No se pudo cargar la imagen: " + e.getMessage());

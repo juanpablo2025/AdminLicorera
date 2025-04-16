@@ -100,4 +100,13 @@ public class ConfigAdminManager {
             System.out.println("Error al guardar la configuración: " + e.getMessage());
         }
     }
+
+    public static String getSelectedDataphone() {
+        return properties.getProperty("selected_dataphone", "Dataphone 1");
+    }
+
+    public static void setSelectedDataphone(String selectedItem) {
+        properties.setProperty("selected_dataphone", selectedItem);
+        saveProperties();
+    }
 }
