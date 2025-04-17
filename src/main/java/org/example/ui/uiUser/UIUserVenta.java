@@ -693,50 +693,354 @@ public class UIUserVenta {
                 final String[] tipoPagoSeleccionado = {null};
                 final double finalTotal = total;
 
-                // Listener para cada botón de pago y cerrar el diálogo al hacer una selección
                 botonBancolombia.addActionListener(event -> {
-                    tipoPagoSeleccionado[0] = "Bancolombia - Transferencia";
-                    dialogoPago.dispose();
+
+
+
+                    // Imagen QR
+                    ImageIcon qrIcon = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/procesoQR.png"))
+                            .getImage().getScaledInstance(300, 400, Image.SCALE_SMOOTH));
+                    JLabel qrLabel = new JLabel(qrIcon);
+                    qrLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Texto de valor total
+                    JLabel montoLabel = new JLabel("Total: " + FormatterHelpers.formatearMoneda(finalTotal) + " Pesos");
+                    montoLabel.setFont(new Font("Arial", Font.BOLD, 22));
+                    montoLabel.setForeground(new Color(0, 153, 0));
+                    montoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Instrucción
+                    JLabel instruccion = new JLabel("<html><div style='text-align:center; color:red;'>"
+                            + "Verifica en el teléfono del cliente<br>que la transacción fue exitosa antes de continuar."
+                            + "</div></html>");
+                    instruccion.setFont(new Font("Arial", Font.PLAIN, 18));
+                    instruccion.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Botón continuar
+                    JButton continuarBtn = new JButton("Continuar");
+                    continuarBtn.setBackground(new Color(0, 153, 0));
+                    continuarBtn.setForeground(Color.WHITE);
+                    continuarBtn.setFont(new Font("Arial", Font.BOLD, 18));
+                    continuarBtn.setFocusPainted(false);
+                    continuarBtn.setPreferredSize(new Dimension(200, 50));
+                    continuarBtn.setMaximumSize(new Dimension(200, 50)); // para que no se estire
+                    continuarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Crear el diálogo antes de usarlo en el listener
+                    JDialog dialogoQR = new JDialog(compraDialog, "Guía de Pago QR", true);
+                    dialogoQR.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+                    // Acción del botón
+                    continuarBtn.addActionListener(es -> {
+                        dialogoQR.dispose(); // ahora sí cierra correctamente
+                        tipoPagoSeleccionado[0] = "Bancolombia - Transferencia";
+                        dialogoPago.dispose();
+                        // Puedes agregar aquí cualquier otra lógica posterior
+                    });
+
+                    // Panel de contenido
+                    JPanel content = new JPanel();
+                    content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+                    content.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+                    content.setBackground(Color.WHITE);
+
+                    content.add(montoLabel);
+                    content.add(Box.createVerticalStrut(15));
+                    content.add(qrLabel);
+                    content.add(Box.createVerticalStrut(20));
+                    content.add(instruccion);
+                    content.add(Box.createVerticalStrut(25));
+                    content.add(continuarBtn);
+
+                    dialogoQR.getContentPane().add(content);
+                    dialogoQR.pack();
+                    dialogoQR.setResizable(false);
+                    dialogoQR.setLocationRelativeTo(compraDialog);
+                    dialogoQR.setVisible(true);
                 });
 
                 botonNequi.addActionListener(event -> {
-                    tipoPagoSeleccionado[0] = "Nequi - Transferencia";
-                    dialogoPago.dispose();
+
+                    // Imagen QR
+                    ImageIcon qrIcon = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/procesoQR.png"))
+                            .getImage().getScaledInstance(300, 400, Image.SCALE_SMOOTH));
+                    JLabel qrLabel = new JLabel(qrIcon);
+                    qrLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Texto de valor total
+                    JLabel montoLabel = new JLabel("Total: " + FormatterHelpers.formatearMoneda(finalTotal) + " Pesos");
+                    montoLabel.setFont(new Font("Arial", Font.BOLD, 22));
+                    montoLabel.setForeground(new Color(0, 153, 0));
+                    montoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Instrucción
+                    JLabel instruccion = new JLabel("<html><div style='text-align:center; color:red;'>"
+                            + "Verifica en el teléfono del cliente<br>que la transacción fue exitosa antes de continuar."
+                            + "</div></html>");
+                    instruccion.setFont(new Font("Arial", Font.PLAIN, 18));
+                    instruccion.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Botón continuar
+                    JButton continuarBtn = new JButton("Continuar");
+                    continuarBtn.setBackground(new Color(0, 153, 0));
+                    continuarBtn.setForeground(Color.WHITE);
+                    continuarBtn.setFont(new Font("Arial", Font.BOLD, 18));
+                    continuarBtn.setFocusPainted(false);
+                    continuarBtn.setPreferredSize(new Dimension(200, 50));
+                    continuarBtn.setMaximumSize(new Dimension(200, 50)); // para que no se estire
+                    continuarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Crear el diálogo antes de usarlo en el listener
+                    JDialog dialogoQR = new JDialog(compraDialog, "Guía de Pago QR", true);
+                    dialogoQR.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+                    // Acción del botón
+                    continuarBtn.addActionListener(es -> {
+                        dialogoQR.dispose(); // ahora sí cierra correctamente
+                        tipoPagoSeleccionado[0] = "Nequi - Transferencia";
+                        dialogoPago.dispose();
+                        // Puedes agregar aquí cualquier otra lógica posterior
+                    });
+
+                    // Panel de contenido
+                    JPanel content = new JPanel();
+                    content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+                    content.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+                    content.setBackground(Color.WHITE);
+
+                    content.add(montoLabel);
+                    content.add(Box.createVerticalStrut(15));
+                    content.add(qrLabel);
+                    content.add(Box.createVerticalStrut(20));
+                    content.add(instruccion);
+                    content.add(Box.createVerticalStrut(25));
+                    content.add(continuarBtn);
+
+                    dialogoQR.getContentPane().add(content);
+                    dialogoQR.pack();
+                    dialogoQR.setResizable(false);
+                    dialogoQR.setLocationRelativeTo(compraDialog);
+                    dialogoQR.setVisible(true);
                 });
 
                 botonDaviplata.addActionListener(event -> {
-                    tipoPagoSeleccionado[0] = "Daviplata - Transferencia";
-                    dialogoPago.dispose();
+
+                    // Imagen QR
+                    ImageIcon qrIcon = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/procesoQR.png"))
+                            .getImage().getScaledInstance(300, 400, Image.SCALE_SMOOTH));
+                    JLabel qrLabel = new JLabel(qrIcon);
+                    qrLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Texto de valor total
+                    JLabel montoLabel = new JLabel("Total: " + FormatterHelpers.formatearMoneda(finalTotal) + " Pesos");
+                    montoLabel.setFont(new Font("Arial", Font.BOLD, 22));
+                    montoLabel.setForeground(new Color(0, 153, 0));
+                    montoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Instrucción
+                    JLabel instruccion = new JLabel("<html><div style='text-align:center; color:red;'>"
+                            + "Verifica en el teléfono del cliente<br>que la transacción fue exitosa antes de continuar."
+                            + "</div></html>");
+                    instruccion.setFont(new Font("Arial", Font.PLAIN, 18));
+                    instruccion.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Botón continuar
+                    JButton continuarBtn = new JButton("Continuar");
+                    continuarBtn.setBackground(new Color(0, 153, 0));
+                    continuarBtn.setForeground(Color.WHITE);
+                    continuarBtn.setFont(new Font("Arial", Font.BOLD, 18));
+                    continuarBtn.setFocusPainted(false);
+                    continuarBtn.setPreferredSize(new Dimension(200, 50));
+                    continuarBtn.setMaximumSize(new Dimension(200, 50)); // para que no se estire
+                    continuarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Crear el diálogo antes de usarlo en el listener
+                    JDialog dialogoQR = new JDialog(compraDialog, "Guía de Pago QR", true);
+                    dialogoQR.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+                    // Acción del botón
+                    continuarBtn.addActionListener(es -> {
+                        dialogoQR.dispose(); // ahora sí cierra correctamente
+                        tipoPagoSeleccionado[0] = "Daviplata - Transferencia";
+                        dialogoPago.dispose();
+                        // Puedes agregar aquí cualquier otra lógica posterior
+                    });
+
+                    // Panel de contenido
+                    JPanel content = new JPanel();
+                    content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+                    content.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+                    content.setBackground(Color.WHITE);
+
+                    content.add(montoLabel);
+                    content.add(Box.createVerticalStrut(15));
+                    content.add(qrLabel);
+                    content.add(Box.createVerticalStrut(20));
+                    content.add(instruccion);
+                    content.add(Box.createVerticalStrut(25));
+                    content.add(continuarBtn);
+
+                    dialogoQR.getContentPane().add(content);
+                    dialogoQR.pack();
+                    dialogoQR.setResizable(false);
+                    dialogoQR.setLocationRelativeTo(compraDialog);
+                    dialogoQR.setVisible(true);
                 });
 
                 botonPaypal.addActionListener(event -> {
-                    tipoPagoSeleccionado[0] = "Paypal - Transferencia";
-                    dialogoPago.dispose();
+
+                    // Imagen QR
+                    ImageIcon qrIcon = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/procesoQR.png"))
+                            .getImage().getScaledInstance(300, 400, Image.SCALE_SMOOTH));
+                    JLabel qrLabel = new JLabel(qrIcon);
+                    qrLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Texto de valor total
+                    JLabel montoLabel = new JLabel("Total: " + FormatterHelpers.formatearMoneda(finalTotal) + " Pesos");
+                    montoLabel.setFont(new Font("Arial", Font.BOLD, 22));
+                    montoLabel.setForeground(new Color(0, 153, 0));
+                    montoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Instrucción
+                    JLabel instruccion = new JLabel("<html><div style='text-align:center; color:red;'>"
+                            + "Verifica en el teléfono del cliente<br>que la transacción fue exitosa antes de continuar."
+                            + "</div></html>");
+                    instruccion.setFont(new Font("Arial", Font.PLAIN, 18));
+                    instruccion.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Botón continuar
+                    JButton continuarBtn = new JButton("Continuar");
+                    continuarBtn.setBackground(new Color(0, 153, 0));
+                    continuarBtn.setForeground(Color.WHITE);
+                    continuarBtn.setFont(new Font("Arial", Font.BOLD, 18));
+                    continuarBtn.setFocusPainted(false);
+                    continuarBtn.setPreferredSize(new Dimension(200, 50));
+                    continuarBtn.setMaximumSize(new Dimension(200, 50)); // para que no se estire
+                    continuarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+                    // Crear el diálogo antes de usarlo en el listener
+                    JDialog dialogoQR = new JDialog(compraDialog, "Guía de Pago QR", true);
+                    dialogoQR.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+                    // Acción del botón
+                    continuarBtn.addActionListener(es -> {
+                        dialogoQR.dispose(); // ahora sí cierra correctamente
+                        tipoPagoSeleccionado[0] = "Paypal - Transferencia";
+                        dialogoPago.dispose();
+                        // Puedes agregar aquí cualquier otra lógica posterior
+                    });
+
+                    // Panel de contenido
+                    JPanel content = new JPanel();
+                    content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+                    content.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+                    content.setBackground(Color.WHITE);
+
+                    content.add(montoLabel);
+                    content.add(Box.createVerticalStrut(15));
+                    content.add(qrLabel);
+                    content.add(Box.createVerticalStrut(20));
+                    content.add(instruccion);
+                    content.add(Box.createVerticalStrut(25));
+                    content.add(continuarBtn);
+
+                    dialogoQR.getContentPane().add(content);
+                    dialogoQR.pack();
+                    dialogoQR.setResizable(false);
+                    dialogoQR.setLocationRelativeTo(compraDialog);
+                    dialogoQR.setVisible(true);
                 });
 
                 botonEfectivo.addActionListener(event -> {
-                    tipoPagoSeleccionado[0] = "Efectivo";
-                    String input = JOptionPane.showInputDialog(compraDialog, "Ingrese el dinero recibido:");
 
-                    // Si el usuario presiona "Cancelar" o cierra el diálogo
-                    if (input == null) {
-                        dialogoPago.dispose();  // Continuar el flujo sin calcular el cambio
-                        return;
-                    }
+                    JTextField inputField = new JTextField(12);
+                    inputField.setFont(new Font("Arial", Font.PLAIN, 18));
 
-                    try {
-                        double dineroRecibido = Double.parseDouble(input);
-                        if (dineroRecibido < finalTotal) {
-                            JOptionPane.showMessageDialog(compraDialog, "El monto recibido es insuficiente.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JLabel title = new JLabel("Ingrese el dinero recibido:");
+                    title.setFont(new Font("Arial", Font.BOLD, 20));
+                    title.setHorizontalAlignment(SwingConstants.CENTER);
+
+                    JPanel content = new JPanel();
+                    content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+                    content.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+                    content.setBackground(Color.WHITE);
+
+                    content.add(title);
+                    content.add(Box.createVerticalStrut(15));
+                    content.add(inputField);
+                    content.add(Box.createVerticalStrut(25));
+
+                    JButton continuarBtn = new JButton("Continuar");
+                    continuarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+                    continuarBtn.setBackground(new Color(0, 153, 0));
+                    continuarBtn.setForeground(Color.WHITE);
+                    continuarBtn.setFont(new Font("Arial", Font.BOLD, 16));
+                    continuarBtn.setFocusPainted(false);
+                    continuarBtn.setPreferredSize(new Dimension(150, 40));
+
+                    // Container para botón con padding
+                    JPanel btnPanel = new JPanel();
+                    btnPanel.setBackground(Color.WHITE);
+                    btnPanel.add(continuarBtn);
+
+                    JDialog dialog = new JDialog(compraDialog, "Calcula la Devuelta", true);
+                    dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                    dialog.getContentPane().add(content, BorderLayout.CENTER);
+                    dialog.getContentPane().add(btnPanel, BorderLayout.SOUTH);
+                    dialog.pack();
+                    dialog.setLocationRelativeTo(compraDialog);
+                    dialog.setResizable(false);
+
+                    // Acción del botón
+                    continuarBtn.addActionListener(es -> {
+                        String input = inputField.getText().trim();
+
+                        if (input.isEmpty()) {
+                            dialog.dispose();
+                            tipoPagoSeleccionado[0] = "Efectivo";
+                            dialogoPago.dispose();
                             return;
                         }
-                        double cambio = dineroRecibido - finalTotal;
-                        JOptionPane.showMessageDialog(compraDialog, "Devuelta: $" + FormatterHelpers.formatearMoneda(cambio)+ " Pesos", "Cambio", JOptionPane.INFORMATION_MESSAGE);
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(compraDialog, "Monto inválido.", "Error", JOptionPane.ERROR_MESSAGE);
-                    }
 
-                    dialogoPago.dispose();  // Cerrar el diálogo después de manejar el monto recibido o si el usuario cancela
+                        try {
+                            double dineroRecibido = Double.parseDouble(input);
+                            if (dineroRecibido < finalTotal) {
+                                JOptionPane.showMessageDialog(compraDialog,
+                                        "El monto recibido es insuficiente.",
+                                        "Error",
+                                        JOptionPane.ERROR_MESSAGE
+                                );
+                                return;
+                            }
+
+                            double cambio = dineroRecibido - finalTotal;
+                            String cambioFormateado = FormatterHelpers.formatearMoneda(cambio);
+                            JLabel label = new JLabel("<html><div style='text-align: center;'>"
+                                    + "<span style='font-size:16pt;font-weight:bold;'>Cambio devuelto:</span><br><br>"
+                                    + "<span style='font-size:20pt;color:green;'>$" + cambioFormateado + " Pesos</span>"
+                                    + "</div></html>");
+                            label.setHorizontalAlignment(SwingConstants.CENTER);
+
+                            JOptionPane.showMessageDialog(compraDialog, label, "Devuelta", JOptionPane.INFORMATION_MESSAGE);
+                            dialog.dispose();
+                            tipoPagoSeleccionado[0] = "Efectivo";
+                            dialogoPago.dispose();
+                        } catch (NumberFormatException ex) {
+                            JOptionPane.showMessageDialog(compraDialog,
+                                    "Monto inválido.",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                    });
+// Si el usuario cierra la ventana con la X, continúa flujo
+                    dialog.addWindowListener(new WindowAdapter() {
+                        @Override
+                        public void windowClosing(WindowEvent e) {
+                            dialog.dispose();
+                        }
+                    });
+                    dialog.setVisible(true);
                 });
 
                 botonDatafono.addActionListener(event -> {
@@ -754,12 +1058,6 @@ public class UIUserVenta {
                     return;
 
                 }
-
-
-
-
-
-
 
                 // Guardar la compra en Excel
                 ExcelUserManager excelUserManager = new ExcelUserManager();

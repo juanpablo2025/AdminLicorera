@@ -127,8 +127,8 @@ public class VentaMesaPanel extends JPanel {
         totalField.setFont(new Font("Arial", Font.BOLD, 26));
         totalField.setForeground(Color.RED);
         totalField.setEditable(false);
-        totalField.setHorizontalAlignment(JTextField.RIGHT);
-        totalField.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        totalField.setHorizontalAlignment(JTextField.CENTER);
+        totalField.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 90));
         totalField.setVisible(sumaTotal.get() > 0);
         totalField.setBackground(new Color(250, 240, 230)); // Fondo del campo total
         try {

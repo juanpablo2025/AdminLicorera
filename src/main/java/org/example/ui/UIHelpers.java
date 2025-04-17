@@ -679,14 +679,12 @@ public class UIHelpers {
 
         JTextField comboBoxEditor = (JTextField) productComboBox.getEditor().getEditorComponent();
 
-        // Obtener lista de productos disponibles
         List<String> productList = productoUserManager.getProducts().stream()
                 .filter(producto -> producto.getQuantity() > 0)
                 .map(Producto::getName)
                 .sorted(String::compareToIgnoreCase)
                 .toList();
 
-        // Agregar "Busca un producto" como primer elemento
         DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
         model.addElement("Busca un producto");
         productList.forEach(model::addElement);
@@ -719,7 +717,7 @@ public class UIHelpers {
                 }
 
                 productComboBox.setModel(filteredModel);
-                productComboBox.setSelectedItem(input.isEmpty() ? "" : input);
+                comboBoxEditor.setText(input); // 👈 mantiene el texto manual
                 productComboBox.showPopup();
             }
         });

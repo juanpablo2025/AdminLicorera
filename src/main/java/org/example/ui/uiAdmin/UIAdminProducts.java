@@ -30,6 +30,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.*;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.example.manager.adminManager.ExcelAdminManager.saveSelectedProduct;
 import static org.example.manager.userManager.ProductoUserManager.getProducts;
@@ -847,8 +848,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         topContainer.setLayout(new BoxLayout(topContainer, BoxLayout.Y_AXIS));
         topContainer.add(topBox);
 
-        Runnable updateProductInfo = () -> {
-            String selected = (String) searchBox.getSelectedItem();
+        Consumer<String> updateProductInfo = selected -> {
             if (selected != null && !selected.equals("Busca un producto")) {
                 String rutaImagen = System.getProperty("user.home") + File.separator + "Calculadora del Administrador"
                         + File.separator + "Fotos" + File.separator + selected + ".png";
@@ -860,9 +860,14 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
             }
         };
 
-        searchBox.addActionListener(e -> updateProductInfo.run());
+        searchBox.addActionListener(e -> {
+            String selected = (String) searchBox.getSelectedItem();
+            if (selected != null && !selected.equals("Busca un producto")) {
+                updateProductInfo.accept(selected);
+            }
+        });
 
-        updateProductInfo.run();
+        updateProductInfo.accept(nombre);
 
         imageLabel.setTransferHandler(new TransferHandler() {
             @Override
