@@ -711,7 +711,7 @@ public class UIUserVenta {
 
                     // Instrucción
                     JLabel instruccion = new JLabel("<html><div style='text-align:center; color:red;'>"
-                            + "Verifica en el teléfono del cliente<br>que la transacción fue exitosa antes de continuar."
+                            + "Verifica en el teléfono del cliente<br>Sí la transacción fue exitosa antes de continuar."
                             + "</div></html>");
                     instruccion.setFont(new Font("Arial", Font.PLAIN, 18));
                     instruccion.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -775,7 +775,7 @@ public class UIUserVenta {
 
                     // Instrucción
                     JLabel instruccion = new JLabel("<html><div style='text-align:center; color:red;'>"
-                            + "Verifica en el teléfono del cliente<br>que la transacción fue exitosa antes de continuar."
+                            + "Verifica en el teléfono del cliente<br>Sí la transacción fue exitosa antes de continuar."
                             + "</div></html>");
                     instruccion.setFont(new Font("Arial", Font.PLAIN, 18));
                     instruccion.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -839,7 +839,7 @@ public class UIUserVenta {
 
                     // Instrucción
                     JLabel instruccion = new JLabel("<html><div style='text-align:center; color:red;'>"
-                            + "Verifica en el teléfono del cliente<br>que la transacción fue exitosa antes de continuar."
+                            + "Verifica en el teléfono del cliente<br>Sí la transacción fue exitosa antes de continuar."
                             + "</div></html>");
                     instruccion.setFont(new Font("Arial", Font.PLAIN, 18));
                     instruccion.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -903,7 +903,7 @@ public class UIUserVenta {
 
                     // Instrucción
                     JLabel instruccion = new JLabel("<html><div style='text-align:center; color:red;'>"
-                            + "Verifica en el teléfono del cliente<br>que la transacción fue exitosa antes de continuar."
+                            + "Verifica en el teléfono del cliente<br>Sí la transacción fue exitosa antes de continuar."
                             + "</div></html>");
                     instruccion.setFont(new Font("Arial", Font.PLAIN, 18));
                     instruccion.setAlignmentX(Component.CENTER_ALIGNMENT);

@@ -291,6 +291,9 @@ public class FacturacionUserManager {
             Sheet productsSheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
             Sheet empleadosSheet = workbook.getSheet("Empleados");  // Hoja de empleados
 
+            // Obtener las hojas de compras, gastos y productos
+
+            Sheet reabastecimientoSheet = workbook.getSheet("reabastecimiento");
             // Calcular totales
             double totalVentas = sumarTotalesCompras(purchasesSheet);
             double totalGastos = restarTotalesGastos(gastosSheet);
@@ -389,6 +392,32 @@ public class FacturacionUserManager {
                 }
             }
 
+            // Mostrar la lista de todos los gastos
+            document.add(new Paragraph("Detalles de Reabastecimiento:")
+                    .setFont(fontBold)
+                    .setFontSize(9)
+                    .setTextAlignment(TextAlignment.LEFT)
+                    .setMarginBottom(5));
+
+            // Recorrer la hoja de gastos y listar cada uno
+            for (int i = 1; i <= reabastecimientoSheet.getLastRowNum(); i++) {
+                Row row = reabastecimientoSheet.getRow(i);
+                if (row != null) {
+                    String producto = row.getCell(1).getStringCellValue();  // Nombre del producto
+                    String precioTexto = new DataFormatter().formatCellValue(row.getCell(3)).trim();
+                    double precioreabastecimiento = 0;
+                    try {
+                        precioreabastecimiento = Double.parseDouble(precioTexto.replace(".", "").replace(",", "."));
+                    } catch (NumberFormatException e) {
+                        // Si el valor no es numérico (por ejemplo, "N/A"), simplemente lo dejas en 0 o lo omites
+                    }  // Precio de gasto
+
+                    document.add(new Paragraph("- " + producto + ": $" + formatearMoneda(precioreabastecimiento) + " pesos")
+                            .setFont(fontNormal)
+                            .setFontSize(7)
+                            .setTextAlignment(TextAlignment.LEFT));
+                }
+            }
 
             // Mostrar estadísticas de productos agotados
             document.add(new Paragraph("Productos Agotados: " + productosAgotadosCount + " productos (" + String.format("%.2f", porcentajeAgotados) + "%) del inventario")
@@ -493,11 +522,11 @@ public class FacturacionUserManager {
             }
             String numeroDestino = "+573112599560";  //"+573146704316" Número al que quieres enviar el mensaje
             String mensaje = "*[Licorera CR]* ¡Hola! se ha generado la liquidación del día de hoy por un total de: $ "
-                    + FormatterHelpers.formatearMoneda(totalVentas) + " pesos.\n Puedes consultar los detalles en los resúmenes adjuntos en Google Drive: https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
+                    + FormatterHelpers.formatearMoneda(totalVentas) + " pesos.\nPuedes consultar los detalles en los resúmenes adjuntos en Google Drive: https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
             if (!gastosNA.isEmpty()) {
                 mensaje += "\n\n*Gastos del d\u00eda:*" + gastosNA;
             }
-            enviarMensaje(numeroDestino,mensaje);
+           enviarMensaje(numeroDestino,mensaje);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -551,7 +580,7 @@ public class FacturacionUserManager {
     }
 */
 
-    public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorPago,double totalFacturado) {
+    public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorPago,double totalFacturado) throws IOException {
 
 
         Map<String, Integer> productosVendidos = obtenerProductosVendidos();
@@ -575,7 +604,18 @@ public class FacturacionUserManager {
         DateTimeFormatter horaFormatter = DateTimeFormatter.ofPattern("HH-mm-ss");
         String nombreArchivo = carpetaPath + "\\REALIZO_" + fechaActual.format(formatter) + EMPTY + horaActual.format(horaFormatter) + ".pdf";
 
-        try {
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+            Sheet gastosSheet = workbook.getSheet("Gastos");
+            System.out.println("GastosSheet tiene " + gastosSheet.getLastRowNum() + " filas");
+            for (int i = 1; i <= gastosSheet.getLastRowNum(); i++) {
+                Row row = gastosSheet.getRow(i);
+                if (row != null) {
+                    String raw = new DataFormatter().formatCellValue(row.getCell(3));
+                    System.out.println("Fila " + i + " valor gasto: " + raw);
+                }
+            }
+            double totalGastos = restarTotalesGastos(gastosSheet);
             float anchoMm = 48;
             float altoBaseMm = 250;
             float altoPorProductoMm = 12;
@@ -656,7 +696,38 @@ public class FacturacionUserManager {
                     .setFont(fontNormal)
                     .setFontSize(8)
                     .setMarginBottom(10));
+            if (totalGastos > 0) {
+                document.add(new Paragraph("Total en GASTOS: $" + formatearMoneda(totalGastos) + " pesos")
+                        .setFont(fontBold)
+                        .setFontSize(8)
+                        .setTextAlignment(TextAlignment.LEFT)
+                        .setMarginBottom(10));
 
+                document.add(new Paragraph("Detalle de GASTOS:")
+                        .setFont(fontBold)
+                        .setFontSize(9)
+                        .setTextAlignment(TextAlignment.LEFT)
+                        .setMarginBottom(5));
+
+                for (int i = 1; i <= gastosSheet.getLastRowNum(); i++) {
+                    Row row = gastosSheet.getRow(i);
+                    if (row != null) {
+                        String producto = row.getCell(1).getStringCellValue();
+                        String precioTexto = new DataFormatter().formatCellValue(row.getCell(3)).trim();
+                        double precioGasto = 0;
+                        try {
+                            precioGasto = Double.parseDouble(precioTexto.replace(".", "").replace(",", "."));
+                        } catch (NumberFormatException e) {
+                            continue; // Omitir si no es numérico
+                        }
+
+                        document.add(new Paragraph("- " + producto + ": $" + formatearMoneda(precioGasto) + " pesos")
+                                .setFont(fontNormal)
+                                .setFontSize(7)
+                                .setTextAlignment(TextAlignment.LEFT));
+                    }
+                }
+            }
             // Sección para el cierre de caja
             document.add(new Paragraph("Cierre de Caja")
                     .setFont(fontBold)
@@ -862,8 +933,8 @@ public class FacturacionUserManager {
     }
 
 
-    private static final String INSTANCE_ID = "instance110095";  // Reemplazar con tu instancia de UltraMsg
-    private static final String TOKEN = "kegfplgxcktgdbya";  // Reemplazar con tu token de UltraMsg
+    private static final String INSTANCE_ID = "instance115037";  // Reemplazar con tu instancia de UltraMsg
+    private static final String TOKEN = "w0xz1xtb14195z9u";  // Reemplazar con tu token de UltraMsg
     private static final String API_URL = "https://api.ultramsg.com/" + INSTANCE_ID + "/messages/chat";
 
 

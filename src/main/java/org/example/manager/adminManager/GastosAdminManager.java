@@ -52,14 +52,14 @@ public class GastosAdminManager {
             }
 
             // Crear la pestaña de gastos si no existe
-            String GASTOS_SHEET_NAME = "Gastos";
-            Sheet gastosSheet = workbook.getSheet(GASTOS_SHEET_NAME);
-            if (gastosSheet == null) {
+            String GASTOS_SHEET_NAME = "Reabastecimiento";
+            Sheet reabastecimientoSheet = workbook.getSheet(GASTOS_SHEET_NAME);
+            if (reabastecimientoSheet == null) {
                 // Crear la hoja de gastos
-                gastosSheet = workbook.createSheet(GASTOS_SHEET_NAME);
+                reabastecimientoSheet = workbook.createSheet(GASTOS_SHEET_NAME);
 
                 // Crear fila de encabezado
-                Row headerRow = gastosSheet.createRow(0);
+                Row headerRow = reabastecimientoSheet.createRow(0);
                 headerRow.createCell(0).setCellValue("ID Producto");
                 headerRow.createCell(1).setCellValue("Nombre Producto");
                 headerRow.createCell(2).setCellValue("Cantidad Reabastecida");
@@ -71,8 +71,8 @@ public class GastosAdminManager {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String fechaFormateada = fechaHora.format(formatter);
             // Añadir el registro del gasto
-            int lastRowNum = gastosSheet.getLastRowNum();
-            Row newRow = gastosSheet.createRow(lastRowNum + 1);
+            int lastRowNum = reabastecimientoSheet.getLastRowNum();
+            Row newRow = reabastecimientoSheet.createRow(lastRowNum + 1);
             newRow.createCell(0).setCellValue(producto.getId());
             newRow.createCell(1).setCellValue(producto.getName());
             newRow.createCell(2).setCellValue(cantidad);
@@ -89,7 +89,7 @@ public class GastosAdminManager {
             // Guardar los cambios en el archivo Excel
             try (FileOutputStream fos = new FileOutputStream(ExcelAdminManager.FILE_PATH)) {
                 workbook.write(fos);
-                System.out.println("Reabastecimiento registrado en la pestaña de gastos.");
+                System.out.println("Reabastecimiento registrado en la pestaña de reabastecimiento.");
             }
 
         } catch (IOException e) {

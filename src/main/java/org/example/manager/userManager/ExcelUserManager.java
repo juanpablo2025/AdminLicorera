@@ -12,8 +12,6 @@ import javax.swing.*;
 import java.io.*;
 
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -272,6 +270,7 @@ public class ExcelUserManager {
             Sheet purchasesSheet = workbook.getSheet(PURCHASES_SHEET_NAME);
             Sheet gastosSheet = workbook.getSheet("Gastos"); // Asegúrate de que el nombre coincida
             Sheet empleadosSheet = workbook.getSheet("Empleados");
+            Sheet reabastecimientoSheet = workbook.getSheet("Reabastecimiento");
 
             if (purchasesSheet != null) {
                 // Mapa para almacenar las cantidades vendidas por producto
@@ -329,29 +328,44 @@ public class ExcelUserManager {
                 }
 
 
-                // Sumar los totales
-                double totalCompra = sumarTotalesCompras(purchasesSheet);
 
-                // Restar los totales de gastos
-                double totalGastos = restarTotalesGastos(gastosSheet);
-                double totalFinal = totalCompra;
+
 
                 // Copiar la hoja "Compras" y renombrarla, pasando el total de la compra
-                crearArchivoFacturacionYGastos(purchasesSheet, gastosSheet, empleadosSheet, totalCompra, totalGastos);
-                generarResumenDiarioEstilizadoPDF();
+                // 1️⃣ Calcular totales
+                double totalCompra = sumarTotalesCompras(purchasesSheet);
+                double totalGastos = restarTotalesGastos(gastosSheet);
+                double totalReabastecimiento = restarTotalesGastos(reabastecimientoSheet);
+                double totalFinal = totalCompra;
                 String nombreEmpleado = obtenerUltimoEmpleado();
-                // Limpiar la hoja "Compras"
+
+                crearArchivoFacturacionYGastos(purchasesSheet, gastosSheet, empleadosSheet, totalCompra, totalGastos, reabastecimientoSheet, totalReabastecimiento);
+                generarResumenDiarioEstilizadoPDF();
+
+// 2️⃣ Guardar archivo con datos antes de limpiar
+                try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
+                    workbook.write(fos);
+                    guardarTotalFacturadoEnArchivo(totalPorFormaPago, totalFinal);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error al guardar archivo con datos.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+// 3️⃣ Ahora limpiar hojas
                 limpiarHojaCompras(purchasesSheet);
                 limpiarHojaCompras(gastosSheet);
                 limpiarHojaCompras(empleadosSheet);
+                limpiarHojaCompras(reabastecimientoSheet);
 
-                // Guardar el archivo actualizado
-                try (FileOutputStream fos = new FileOutputStream(FILE_PATH.toString())) {
+// 4️⃣ Guardar archivo limpio
+                try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
                     workbook.write(fos);
-                    guardarTotalFacturadoEnArchivo(totalPorFormaPago,totalFinal); // Cambiar totalCompra a totalFinal
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error al guardar archivo limpio.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
 
-                // Borrar el contenido de la carpeta Facturas
                 limpiarFacturas();
                 String nombreCapitalizado = nombreEmpleado.substring(0, 1).toUpperCase() + nombreEmpleado.substring(1).toLowerCase();
 
@@ -365,7 +379,7 @@ public class ExcelUserManager {
 
 
     // Método para crear el archivo Excel independiente con las hojas "Facturacion" y "Gastos"
-    public void crearArchivoFacturacionYGastos(Sheet purchasesSheet, Sheet gastosSheet,Sheet empleadosSheet, double totalCompra, double totalGastos) throws IOException {
+    public void crearArchivoFacturacionYGastos(Sheet purchasesSheet, Sheet gastosSheet, Sheet empleadosSheet, double totalCompra, double totalGastos, Sheet reabastecimientoSheet,double totalRebastecimiento) throws IOException {
         // Crear un nuevo Workbook (archivo Excel)
         Workbook workbook = new XSSFWorkbook();
         LocalDateTime fechaHoraFacturacion = LocalDateTime.now();
@@ -396,6 +410,21 @@ public class ExcelUserManager {
 
         // Agregar una fila extra con el total al final de la hoja "Gastos"
         agregarTotal(gastosSheetNueva, totalGastos, "Total Gastos", redStyle);
+
+
+
+        // Crear la hoja "Gastos"
+        String reabastecimientoHojaNombre = "Reabastecimientos_" + fechaFormateada;
+        Sheet reabastecimientoSheetNueva = workbook.createSheet(reabastecimientoHojaNombre);
+
+        // Copiar el contenido de la hoja "Gastos" a la nueva hoja "Gastos"
+        copiarContenidoHoja(reabastecimientoSheet, reabastecimientoSheetNueva);
+
+        // Agregar una fila extra con el total al final de la hoja "Gastos"
+        agregarTotal(reabastecimientoSheetNueva, totalRebastecimiento, "Total Reabastecimiento", redStyle);
+
+
+
 
         // Crear la hoja "Empleados" y añadir la hora de cierre
         String empleadosHojaNombre = "Empleados_" + fechaFormateada;
@@ -954,10 +983,13 @@ public class ExcelUserManager {
     private static final LocalTime LIMITE_HORA = LocalTime.of(6, 0); // 6:00 AM
 
     public static LocalDate getFechaTurnoActivo() {
-        LocalDateTime ahora = LocalDateTime.now();
-        return ahora.toLocalTime().isBefore(LIMITE_HORA)
-                ? ahora.toLocalDate().minusDays(1)
-                : ahora.toLocalDate();
+        LocalTime ahora = LocalTime.now();
+        LocalDate hoy = LocalDate.now();
+        if (ahora.isAfter(LocalTime.MIDNIGHT) && ahora.isBefore(LocalTime.of(6, 0))) {
+            return hoy.minusDays(1); // entre 00:00 y 06:00, aún es el turno de ayer
+        }
+
+        return hoy;
     }
     public static boolean hayRegistroDeHoy() {
         LocalDate fechaTurno = getFechaTurnoActivo();
@@ -974,7 +1006,8 @@ public class ExcelUserManager {
                         if (cell != null && cell.getCellType() == CellType.STRING) {
                             String fechaRegistro = cell.getStringCellValue();
                             LocalDate fecha = LocalDate.parse(fechaRegistro, DATE_FORMATTER);
-                            if (fecha.isEqual(fechaTurno)) {
+                            if (fecha.isEqual(fechaTurno) ||
+                                    (LocalTime.now().isBefore(LocalTime.of(6, 0)) && fecha.isEqual(fechaTurno.plusDays(1)))) {
                                 return true;
                             }
                         }
