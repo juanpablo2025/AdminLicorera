@@ -6,21 +6,15 @@ import org.example.ui.UIHelpers;
 import org.example.utils.FormatterHelpers;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumnModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
 
@@ -28,25 +22,16 @@ import static org.example.manager.userManager.ExcelUserManager.cargarProductosMe
 import static org.example.ui.UIHelpers.*;
 import static org.example.ui.uiUser.UIUserVenta.createConfirmPurchaseMesaButton;
 import static org.example.ui.uiUser.UIUserVenta.createSavePurchaseMesaButton;
-import static org.example.utils.Constants.*;
 
 public class VentaMesaPanel extends JPanel {
-    private static ProductoUserManager productoUserManager = new ProductoUserManager();
 
-    private static JDialog ventaMesaDialog;
 
     public VentaMesaPanel(List<String[]> productos, String mesaID, JPanel mainPanel, JFrame frame) {
 
-
-
-         AtomicReference<Double> sumaTotal = new AtomicReference<>(0.0);
-
-
-
+        AtomicReference<Double> sumaTotal = new AtomicReference<>(0.0);
 
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(1366, 720));
-
 
         JLabel titleLabel = new JLabel("Venta "+mesaID, JLabel.CENTER);
         titleLabel.setForeground(new Color(28,28,28));
@@ -54,10 +39,8 @@ public class VentaMesaPanel extends JPanel {
         titleLabel.setBackground(new Color(250, 240, 230));
         try {
 
-
             // Cargar la fuente desde los recursos dentro del JAR
             InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
-
 
             // Crear la fuente desde el InputStream
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
@@ -151,11 +134,11 @@ public class VentaMesaPanel extends JPanel {
             e.printStackTrace(); // Mostrar error en caso de fallo al cargar la fuente
         }
 
-// Panel del total
+        // Panel del total
         JPanel totalPanel = createTotalPanel();
         totalPanel.add(totalField, BorderLayout.CENTER);
 
-// Listener para actualizar el total al cambiar la cantidad o agregar productos
+        // Listener para actualizar el total al cambiar la cantidad o agregar productos
         tableModel.addTableModelListener(new TableModelListener() {
             // Bandera para evitar recursión
             private boolean updatingTable = false;
@@ -320,96 +303,6 @@ public class VentaMesaPanel extends JPanel {
         }
     }
 
-
-
-
-
-
-
-
-   /* private void cargarProductos(List<String[]> productos) {
-        for (String[] productoDetalles : productos) {
-            try {
-                String nombreProducto = productoDetalles[0].trim();
-                int cantidad = Integer.parseInt(productoDetalles[1].substring(1).trim());
-                double precioUnitario = Double.parseDouble(productoDetalles[2].substring(1).trim());
-                double total = cantidad * precioUnitario;
-                tableModel.addRow(new Object[]{nombreProducto, cantidad, FormatterHelpers.formatearMoneda(precioUnitario), total});
-                sumaTotal.updateAndGet(v -> v + total);
-            } catch (NumberFormatException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
-
-    private void styleTable() {
-        Font font = new Font("Arial", Font.PLAIN, 18);
-        table.setFont(font);
-        table.setRowHeight(30);
-        JTableHeader header = table.getTableHeader();
-        header.setFont(new Font("Arial", Font.BOLD, 20));
-        header.setBackground(Color.LIGHT_GRAY);
-        header.setForeground(Color.BLACK);
-        table.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-        table.setBackground(new Color(250, 240, 230));
-        table.setSelectionBackground(new Color(173, 216, 255));
-        table.setSelectionForeground(Color.BLACK);
-    }
-
-    private void styleTotalField() {
-        totalField.setFont(new Font("Arial", Font.BOLD, 24));
-        totalField.setForeground(Color.RED);
-        totalField.setEditable(false);
-        totalField.setHorizontalAlignment(JTextField.RIGHT);
-        totalField.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        totalField.setVisible(sumaTotal.get() > 0);
-    }
-
-    public static JTable createProductTable() {
-        String[] columnNames = {PRODUCTO, "Cant.", "Unid. $", "Total $", "Quitar unid."};
-
-        tableModel = new DefaultTableModel(columnNames, ZERO) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return column == FOUR; // Solo la columna de quitar unidad es editable
-            }
-        };
-
-        JTable table = new JTable(tableModel);
-        UnifiedEditorRenderer editorRenderer = new UnifiedEditorRenderer(tableModel, ventaMesaUserManager);
-
-        // Ajustar tamaño de columnas
-        TableColumnModel columnModel = table.getColumnModel();
-        columnModel.getColumn(0).setPreferredWidth(250); // Producto (Más grande)
-        columnModel.getColumn(1).setPreferredWidth(50);  // Cantidad
-        columnModel.getColumn(2).setPreferredWidth(80);  // Precio Unitario
-        columnModel.getColumn(3).setPreferredWidth(80);  // Total
-        columnModel.getColumn(4).setPreferredWidth(80); // Botón Quitar
-
-        // Centrar texto de las columnas Cantidad, Unid. $, y Total $
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
-
-        // Aplicar un CurrencyRenderer centrado a las columnas de precios
-        table.getColumnModel().getColumn(2).setCellRenderer(new CurrencyRenderer()); // PRECIO_UNITARIO
-        table.getColumnModel().getColumn(3).setCellRenderer(new CurrencyRenderer()); // TOTALP
-
-        // Asignar editor y renderer personalizados a la columna del botón
-        table.getColumnModel().getColumn(4).setCellRenderer(editorRenderer);
-        table.getColumnModel().getColumn(4).setCellEditor(editorRenderer);
-
-        return table;
-    }
-
-    private JPanel createTotalPanel() {
-        return new JPanel(new BorderLayout());
-    }
-
-    private JPanel createInputPanel() {
-        return new JPanel(); // Implementar si es necesario
-    }*/
-
     private JPanel createButtonPanel(JTable table, VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID, JPanel mainPanel,JFrame frame) {
         JPanel buttonPanel = new JPanel(new BorderLayout()); // 🔹 Usamos BorderLayout
 
@@ -434,10 +327,9 @@ public class VentaMesaPanel extends JPanel {
         // 🔹 Asegurar que los botones cubran todo el ancho
         guardarCompra.setPreferredSize(new Dimension(0, 50)); // Altura fija, ancho automático
         confirmarCompraButton.setPreferredSize(new Dimension(0, 50));
-//confirmarCompraButton.setBackground(new Color(250, 240, 230));
+
         topButtonsPanel.add(guardarCompra);
         topButtonsPanel.add(confirmarCompraButton);
-
 
         buttonPanel.add(topButtonsPanel, BorderLayout.CENTER); // 🔹 Agregar los botones de compra en el centro
 
@@ -476,22 +368,5 @@ public class VentaMesaPanel extends JPanel {
         buttonPanel.add(bottomPanel, BorderLayout.SOUTH); // 🔹 Botón "Volver" centrado en la parte inferior
         bottomPanel.setBackground( new Color(250, 240, 230));
         return buttonPanel;
-    }
-
-    private static void actualizarVistaMesas(JPanel mainPanel, JFrame frame) {
-        for (Component comp : mainPanel.getComponents()) {
-            if (comp instanceof JPanel && "mesas".equals(comp.getName())) {
-                JPanel mesasPanel = (JPanel) comp;
-
-                // 🔹 Remover todo el contenido y volver a cargarlo
-                mesasPanel.removeAll();
-                mesasPanel.add(UIUserMesas.showPanelMesas(frame,mainPanel)); // Método para regenerar la vista
-
-                // 🔹 Refrescar la UI
-                mesasPanel.revalidate();
-                mesasPanel.repaint();
-                break;
-            }
-        }
     }
 }

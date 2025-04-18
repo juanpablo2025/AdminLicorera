@@ -491,10 +491,7 @@ public class FacturacionUserManager {
 
             // Cerrar el documento
             document.close();
-            System.out.println("Archivo PDF de resumen creado: " + nombreArchivo);
-            //FacturacionUserManager EmailSender = new FacturacionUserManager();
-            //EmailSender.enviarCorreoConResumen("juanpablo_1810dev@hotmail.com", nombreArchivo);
-            //abrirPDF(nombreArchivo);
+           // System.out.println("Archivo PDF de resumen creado: " + nombreArchivo);
             FormatterHelpers.formatearMoneda(totalVentas);
 
 
@@ -536,50 +533,6 @@ public class FacturacionUserManager {
         }
     }
 
-
-   /* public static void enviarCorreoConResumen(String destinatario, String archivoAdjunto) {
-        final String remitente = "tu_correo@example.com";  // Cambia esto con tu cuenta SMTP2GO
-        final String clave = "tu_contraseña";  // Contraseña SMTP2GO
-
-        Properties props = new Properties();
-        props.put("mail.smtp.host", "mail.smtp2go.com");
-        props.put("mail.smtp.port", "587");  // También puedes probar con 2525 o 465
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-
-        Session session = Session.getInstance(props, new Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(remitente, clave);
-            }
-        });
-
-        try {
-            Message mensaje = new MimeMessage(session);
-            mensaje.setFrom(new InternetAddress(remitente));
-            mensaje.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destinatario));
-            mensaje.setSubject("Resumen Diario - Facturación");
-
-            MimeBodyPart mensajeTexto = new MimeBodyPart();
-            mensajeTexto.setText("Adjunto encontrarás el resumen diario en PDF.");
-
-            MimeBodyPart adjunto = new MimeBodyPart();
-            adjunto.attachFile(new File(archivoAdjunto));
-
-            Multipart multipart = new MimeMultipart();
-            multipart.addBodyPart(mensajeTexto);
-            multipart.addBodyPart(adjunto);
-
-            mensaje.setContent(multipart);
-
-            Transport.send(mensaje);
-            System.out.println("Correo enviado exitosamente a " + destinatario);
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("Error al enviar el correo.");
-        }
-    }
-*/
-
     public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorPago,double totalFacturado) throws IOException {
 
 
@@ -607,12 +560,12 @@ public class FacturacionUserManager {
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
             Sheet gastosSheet = workbook.getSheet("Gastos");
-            System.out.println("GastosSheet tiene " + gastosSheet.getLastRowNum() + " filas");
+           // System.out.println("GastosSheet tiene " + gastosSheet.getLastRowNum() + " filas");
             for (int i = 1; i <= gastosSheet.getLastRowNum(); i++) {
                 Row row = gastosSheet.getRow(i);
                 if (row != null) {
                     String raw = new DataFormatter().formatCellValue(row.getCell(3));
-                    System.out.println("Fila " + i + " valor gasto: " + raw);
+                  //  System.out.println("Fila " + i + " valor gasto: " + raw);
                 }
             }
             double totalGastos = restarTotalesGastos(gastosSheet);
@@ -815,12 +768,12 @@ public class FacturacionUserManager {
                     }
                     boolean deleted = elemento.delete(); // Borrar el archivo o directorio
                     if (!deleted) {
-                        System.out.println("No se pudo eliminar: " + elemento.getPath());
+                      //  System.out.println("No se pudo eliminar: " + elemento.getPath());
                     }
                 }
             }
         } else {
-            System.out.println("La carpeta no existe o no es un directorio: " + carpetaPath);
+          //  System.out.println("La carpeta no existe o no es un directorio: " + carpetaPath);
         }
     }
 
@@ -926,27 +879,21 @@ public class FacturacionUserManager {
                 workbook.write(fos);
             }
 
-            System.out.println("Se ha limpiado la columna 'Cantidad Vendida'.");
+          //  System.out.println("Se ha limpiado la columna 'Cantidad Vendida'.");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-
     private static final String INSTANCE_ID = "instance115037";  // Reemplazar con tu instancia de UltraMsg
     private static final String TOKEN = "w0xz1xtb14195z9u";  // Reemplazar con tu token de UltraMsg
     private static final String API_URL = "https://api.ultramsg.com/" + INSTANCE_ID + "/messages/chat";
-
-
-
-
-
 
     public static void enviarMensaje(String numero, String mensaje) throws IOException, InterruptedException {
 
 
         if (!ConfigAdminManager.isMessageSendingEnabled()) {
-            System.out.println("Envío de mensajes desactivado. Mensaje no enviado.");
+           // System.out.println("Envío de mensajes desactivado. Mensaje no enviado.");
             return;
         }
 

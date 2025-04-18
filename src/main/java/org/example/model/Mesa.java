@@ -17,7 +17,6 @@ public class Mesa {
         this.totalCuenta = 0.0;
     }
 
-
     public boolean isOcupada() {
         return ocupada;
     }
@@ -25,7 +24,6 @@ public class Mesa {
     public void setOcupada(boolean ocupada) {
         this.ocupada = ocupada;
     }
-
 
     public String getId() {
         return Id;

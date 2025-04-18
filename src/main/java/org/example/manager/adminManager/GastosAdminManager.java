@@ -15,10 +15,6 @@ import java.time.format.DateTimeFormatter;
 import static org.example.utils.Constants.PRODUCTS_SHEET_NAME;
 
 public class GastosAdminManager {
-    public static void Reabastecer() {
-
-    }
-
 
     public void reabastecerProducto(Producto producto, int cantidad, double precioCompra) {
         try (FileInputStream fis = new FileInputStream(ExcelAdminManager.FILE_PATH);
@@ -45,10 +41,10 @@ public class GastosAdminManager {
                 // Guardar la actualización de productos
                 try (FileOutputStream fos = new FileOutputStream(ExcelAdminManager.FILE_PATH)) {
                     workbook.write(fos);
-                    System.out.println("Cantidad del producto actualizada exitosamente.");
+                   // System.out.println("Cantidad del producto actualizada exitosamente.");
                 }
             } else {
-                System.out.println("Producto no encontrado.");
+               // System.out.println("Producto no encontrado.");
             }
 
             // Crear la pestaña de gastos si no existe
@@ -70,6 +66,7 @@ public class GastosAdminManager {
             LocalDateTime fechaHora = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String fechaFormateada = fechaHora.format(formatter);
+
             // Añadir el registro del gasto
             int lastRowNum = reabastecimientoSheet.getLastRowNum();
             Row newRow = reabastecimientoSheet.createRow(lastRowNum + 1);
@@ -77,7 +74,7 @@ public class GastosAdminManager {
             newRow.createCell(1).setCellValue(producto.getName());
             newRow.createCell(2).setCellValue(cantidad);
 
-// Si el precio es -1, escribir "N/A" o dejar vacío
+            // Si el precio es -1, escribir "N/A" o dejar vacío
             if (precioCompra == -10) {
                 newRow.createCell(3).setCellValue("N/A");
             } else {
@@ -89,7 +86,7 @@ public class GastosAdminManager {
             // Guardar los cambios en el archivo Excel
             try (FileOutputStream fos = new FileOutputStream(ExcelAdminManager.FILE_PATH)) {
                 workbook.write(fos);
-                System.out.println("Reabastecimiento registrado en la pestaña de reabastecimiento.");
+                //System.out.println("Reabastecimiento registrado en la pestaña de reabastecimiento.");
             }
 
         } catch (IOException e) {

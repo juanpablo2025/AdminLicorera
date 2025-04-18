@@ -6,7 +6,7 @@ public class MainUserManager {
 
     public static void crearDirectorios() {
         String documentosPath = System.getProperty("user.home") + "\\Calculadora del Administrador";
-        String facturacionPath = documentosPath + "\\Facturación";
+        String facturacionPath = documentosPath + "\\Facturacion";
         String facturasPath = documentosPath + "\\Facturas";
         String realizadoPath = documentosPath + "\\Realizo";
 
@@ -17,7 +17,7 @@ public class MainUserManager {
 
     private static void crearDirectorioSiNoExiste(String path) {
         File directorio = new File(path);
-        if (!directorio.exists()) {
+        /*if (!directorio.exists()) {
             if (directorio.mkdirs()) {
                 System.out.println("Directorio creado: " + path);
             } else {
@@ -25,6 +25,6 @@ public class MainUserManager {
             }
         } else {
             System.out.println("El directorio ya existe: " + path);
-        }
+        }*/
     }
 }

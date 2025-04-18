@@ -34,118 +34,8 @@ import static org.example.utils.FormatterHelpers.ConfiguracionGlobal.TRM;
 import static org.example.utils.FormatterHelpers.formatearMoneda;
 
 public class UIUserProductList {
+
     private static ProductoUserManager productoUserManager = new ProductoUserManager();
-
-
-    public static void showListProductsDialog() {
-        JDialog listProductsDialog = createDialog("Inventario - Licorera CR", 1280, 720, new BorderLayout());
-        listProductsDialog.setResizable(true);
-        listProductsDialog.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                mainUser();
-            }
-        });
-
-
-        JLabel titleLabel = new JLabel("Inventario", JLabel.CENTER);
-        titleLabel.setForeground(new Color(28, 28, 28));
-        try {
-
-
-            // Cargar la fuente desde los recursos dentro del JAR
-            InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
-
-            // Crear la fuente desde el InputStream
-            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            customFont = customFont.deriveFont(Font.BOLD, 50); // Ajustar tamaño y peso
-            titleLabel.setFont(customFont);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-        List<Producto> products = productoUserManager.getProducts();
-        String[] columnNames = {"Nombre", "Cantidad", "Precio"};
-        Object[][] data = new Object[products.size()][3];
-
-        NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
-
-        for (int i = 0; i < products.size(); i++) {
-            Producto p = products.get(i);
-
-            // **Transformar el nombre del producto**
-            String formattedName = p.getName().replace("_", " ").toLowerCase();
-            String[] words = formattedName.split(" ");
-            StringBuilder capitalizedName = new StringBuilder();
-            for (String word : words) {
-                if (!word.isEmpty()) {
-                    capitalizedName.append(Character.toUpperCase(word.charAt(0)))
-                            .append(word.substring(1))
-                            .append(" ");
-                }
-            }
-            formattedName = capitalizedName.toString().trim(); // Elimina espacio extra al final
-
-            data[i][0] = formattedName; // Nombre formateado
-            data[i][1] = p.getQuantity();
-            data[i][2] = formatCOP.format(p.getPrice());
-        }
-
-        DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        JTable productTable = new JTable(tableModel);
-        productTable.setFillsViewportHeight(true);
-        productTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-        productTable.setFont(new Font("Arial", Font.PLAIN, 18));
-        productTable.setRowHeight(30);
-
-        JTableHeader header = productTable.getTableHeader();
-        header.setFont(new Font("Arial", Font.BOLD, 20));
-        header.setBackground(Color.LIGHT_GRAY);
-        header.setForeground(Color.BLACK);
-
-        productTable.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-        productTable.setBackground(Color.WHITE);
-        productTable.setSelectionBackground(Color.CYAN);
-        productTable.setSelectionForeground(Color.BLACK);
-
-        // **Centrar cantidad en la celda**
-        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
-        centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        productTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
-
-        // **Resaltar toda la fila si cantidad <= -1**
-        productTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-                Object cantidadValue = table.getValueAt(row, 1);
-                if (cantidadValue instanceof Integer && (Integer) cantidadValue <= -1) {
-                    cell.setBackground(new Color(255, 200, 200)); // Rojo sutil para toda la fila
-                } else if (!isSelected) {
-                    cell.setBackground(Color.WHITE);
-                }
-
-                return cell;
-            }
-        });
-        listProductsDialog.add(titleLabel, BorderLayout.NORTH);
-        JScrollPane scrollPane = new JScrollPane(productTable);
-        listProductsDialog.add(scrollPane, BorderLayout.CENTER);
-
-        listProductsDialog.setVisible(true);
-        listProductsDialog.setLocationRelativeTo(null);
-    }
-
-
-    private static final NumberFormat FORMAT_COP = NumberFormat.getCurrencyInstance(new Locale("es", "CO"));
     private static final NumberFormat FORMAT_USD = NumberFormat.getCurrencyInstance(Locale.US);
     private static Font titleFont;
     private static Font headerFont;
@@ -161,8 +51,6 @@ public class UIUserProductList {
         }
     }
 
-
-
     public static JPanel getProductListPanel() {
         JPanel productListPanel = new JPanel(new BorderLayout());
         productListPanel.setBackground(new Color(250, 240, 230));
@@ -171,7 +59,6 @@ public class UIUserProductList {
         JLabel titleLabel = new JLabel("Inventario", JLabel.CENTER);
         titleLabel.setForeground(new Color(28, 28, 28));
         try {
-
 
             // Cargar la fuente desde los recursos dentro del JAR
             InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
@@ -192,8 +79,6 @@ public class UIUserProductList {
                 "Cantidad",
                 "<html><b>Pesos/USD</b><span style='font-size:14px; color:#28a748;'>(" + formatearMoneda(TRM) + " TRM)</span></html>"
         };
-
-
 
         Object[][] data = new Object[products.size()][3];
         for (int i = 0; i < products.size(); i++) {
@@ -280,7 +165,7 @@ public class UIUserProductList {
             }
         };
 
-// Asignar a todas las columnas el mismo renderer
+        // Asignar a todas las columnas el mismo renderer
         for (int i = 0; i < productTable.getColumnCount(); i++) {
             productTable.getColumnModel().getColumn(i).setCellRenderer(customRenderer);
         }
@@ -324,10 +209,7 @@ public class UIUserProductList {
         return productListPanel;
     }
 
-
-
-
-private static String formatProductName(String name) {
+    private static String formatProductName(String name) {
         String formatted = name.replace("_", " ").toLowerCase();
         String[] words = formatted.split(" ");
         StringBuilder capitalized = new StringBuilder();

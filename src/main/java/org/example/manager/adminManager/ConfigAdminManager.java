@@ -53,7 +53,7 @@ public class ConfigAdminManager {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error al crear el archivo de configuración: " + e.getMessage());
+            //System.out.println("Error al crear el archivo de configuración: " + e.getMessage());
         }
     }
 
@@ -62,7 +62,7 @@ public class ConfigAdminManager {
             properties.load(input);
             messageSendingEnabled = Boolean.parseBoolean(properties.getProperty("message_sending_enabled", "true"));
         } catch (IOException e) {
-            System.out.println("No se pudo cargar el archivo de configuración: " + e.getMessage());
+            //System.out.println("No se pudo cargar el archivo de configuración: " + e.getMessage());
         }
     }
 
@@ -97,7 +97,7 @@ public class ConfigAdminManager {
         try (OutputStream output = new FileOutputStream(CONFIG_FILE)) {
             properties.store(output, "Configuración de la Aplicación");
         } catch (IOException e) {
-            System.out.println("Error al guardar la configuración: " + e.getMessage());
+            //System.out.println("Error al guardar la configuración: " + e.getMessage());
         }
     }
 

@@ -2,11 +2,8 @@ package org.example.ui.uiAdmin;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import org.example.manager.adminManager.ConfigAdminManager;
-import org.example.ui.uiUser.UIUserGastos;
 import org.example.ui.uiUser.UIUserMain;
-import org.example.ui.uiUser.UIUserProductList;
 import org.json.JSONArray;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -16,37 +13,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-
 import static org.example.Main.mostrarLogin;
 import static org.example.manager.userManager.ExcelUserManager.hayRegistroDeHoy;
 import static org.example.ui.UIHelpers.createButton;
-import static org.example.ui.UIHelpers.setMainFrame;
-import static org.example.ui.uiAdmin.GastosAdminUI.showReabastecimientoDialog;
 import static org.example.ui.uiAdmin.UIAdminFacturas.getAdminBillsPanel;
 import static org.example.ui.uiAdmin.UIAdminProducts.getAdminProductListPanel;
 import static org.example.ui.uiAdmin.UIConfigAdmin.createPrinterConfigPanel;
-import static org.example.ui.uiAdmin.UIConfigAdmin.showConfigDialog;
-import static org.example.ui.uiUser.UIUserFacturas.getFacturasPanel;
 import static org.example.ui.uiUser.UIUserMain.*;
-import static org.example.ui.uiUser.UIUserMesas.showPanelMesas;
-//import static org.example.ui.uiUser.UIUserMesas.showMesas;
 
 public class MainAdminUi {
 
-
-
-
     public static void mainAdmin() {
-
-
-
-
-
-
-
         showAdminPanel();
-
-        }
+    }
 
     public static void showAdminPanel() {
         try {
@@ -127,12 +106,7 @@ public class MainAdminUi {
                 e.printStackTrace();
             }
 
-
-
-
             sidebarPanel.add(employeeLabel, BorderLayout.NORTH);
-
-
 
             logoPanel.add(Box.createVerticalStrut(10));
             logoPanel.add(logoLabel);
@@ -194,7 +168,6 @@ public class MainAdminUi {
             moreOptionsButton.setPreferredSize(new Dimension(150, 50));
 
             buttonsPanel.add(moreOptionsButton);
-
             buttonsPanel.add(Box.createVerticalStrut(5));
             buttonsPanel.add(listaProductosButton);
             buttonsPanel.add(Box.createVerticalStrut(5));
@@ -204,8 +177,6 @@ public class MainAdminUi {
             buttonsPanel.add(Box.createVerticalStrut(5));
             buttonsPanel.add(configButton);
             buttonsPanel.add(Box.createVerticalStrut(5));
-            /*buttonsPanel.add(moreOptionsButtons);
-            buttonsPanel.add(Box.createVerticalGlue());*/
 
             sidebarPanel.add(buttonsPanel, BorderLayout.CENTER);
             mainPanel.add(sidebarPanel, BorderLayout.WEST);
@@ -243,15 +214,6 @@ public class MainAdminUi {
         }
     }
 
-    // Método para manejar la redirección después de un intento fallido o cancelación
-    private static void redirigirUsuario() {
-        if (hayRegistroDeHoy()) {
-            mainUser(); // Si hay registro, abrir el panel de usuario
-        } else {
-            mostrarLogin(); // Si no hay registro, mostrar la pantalla de login
-
-        }
-    }
     public static double obtenerTRM() {
 
         if (!ConfigAdminManager.isTrmEnabled()) return 0.0;

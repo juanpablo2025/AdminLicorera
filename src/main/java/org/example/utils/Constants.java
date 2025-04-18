@@ -62,13 +62,13 @@ public class Constants {
     public static final String EMPTY = " ";
 
 
-// ARCHIVOS   CAMBIAR RUTAS
+    // ARCHIVOS   CAMBIAR RUTAS
     public static final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
     public static final String PRODUCTS_SHEET_NAME = "Productos";
     public static final String PURCHASES_SHEET_NAME = "Ventas";
     public static final String BILL_FILE = "Factura N°";
 
-// FActura config
+    // FActura config
     public static final float WIDE_DOTS = 2.83465f;
     public static final float HEIGHT_DOTS = 2.83465f;
     public static final float EIGHTY_F = 58;
@@ -82,7 +82,7 @@ public class Constants {
     public static final String DIRECCION = "Dirección: CR 70 # 46 - 80";
     public static final String TELEFONO = "Teléfono: 411 19 00";
 
-//BILL DETAILS
+    //BILL DETAILS
     public static final String BILL_ID = "Factura ";
     public static final String BILL_FECHA_HORA = "Fecha y Hora: ";
     public static final String BILL_PRODUCTS = "Productos: ";

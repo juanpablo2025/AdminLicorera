@@ -1,10 +1,10 @@
 package org.example.manager.adminManager;
 
 import org.example.model.Factura;
-
 import java.util.List;
 
 public class FacturasAdminManager {
+
     private ExcelAdminManager excelAdminManager = new ExcelAdminManager();
 
     // Método para obtener todas las facturas desde el archivo Excel
@@ -16,7 +16,6 @@ public class FacturasAdminManager {
     public void eliminarFactura(String facturaID) {
         excelAdminManager.eliminarFactura(facturaID);
     }
-
 
     public boolean eliminarFacturaYActualizarProductos(String facturaID) {
         return excelAdminManager.eliminarFacturaYActualizarProductos(facturaID);

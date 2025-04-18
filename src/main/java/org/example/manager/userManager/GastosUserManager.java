@@ -14,7 +14,6 @@ import java.time.format.DateTimeFormatter;
 
 public class GastosUserManager {
 
-
     public static void saveGasto(String nombreGasto, int i, double precio) {
         try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {

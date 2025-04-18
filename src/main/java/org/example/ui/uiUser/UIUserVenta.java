@@ -8,7 +8,6 @@ import org.example.model.Producto;
 import org.example.utils.FormatterHelpers;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -26,15 +25,11 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.apache.poi.ss.util.ImageUtils.setPreferredSize;
 import static org.example.manager.userManager.ExcelUserManager.actualizarCantidadStockExcel;
 import static org.example.manager.userManager.ExcelUserManager.cargarProductosMesaDesdeExcel;
 import static org.example.manager.userManager.FacturacionUserManager.generarFacturadeCompra;
 import static org.example.manager.userManager.ProductoUserManager.getProductListWithQuantities;
 import static org.example.ui.UIHelpers.*;
-//import static org.example.ui.uiUser.UIUserMesas.showMesas;
-import static org.example.ui.UIHelpers.compraDialog;
 import static org.example.ui.uiUser.UIUserMain.mainUser;
 import static org.example.utils.Constants.*;
 import static org.example.utils.Constants.ERROR_TITLE;
@@ -111,11 +106,11 @@ public class UIUserVenta {
         totalField.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         totalField.setVisible(sumaTotal.get() > 0);
 
-// Panel del total
+        // Panel del total
         JPanel totalPanel = createTotalPanel();
         totalPanel.add(totalField, BorderLayout.CENTER);
 
-// Listener para actualizar el total al cambiar la cantidad o agregar productos
+        // Listener para actualizar el total al cambiar la cantidad o agregar productos
         tableModel.addTableModelListener(new TableModelListener() {
             // Bandera para evitar recursión
             private boolean updatingTable = false;
@@ -147,8 +142,6 @@ public class UIUserVenta {
         });
         JScrollPane tableScrollPane = new JScrollPane(table);
         ventaMesaDialog.add(tableScrollPane, BorderLayout.CENTER);
-        //JPanel inputLista = createInputLista(table, new VentaMesaUserManager());
-        //ventaMesaDialog.add(inputLista, BorderLayout.EAST);
         JPanel inputPanel = createInputPanel(table, new VentaMesaUserManager());
         ventaMesaDialog.add(inputPanel, BorderLayout.EAST);
 
@@ -162,7 +155,6 @@ public class UIUserVenta {
 
         JPanel southPanel = new JPanel(new BorderLayout());
         southPanel.add(totalPanel, BorderLayout.NORTH);
-        //southPanel.add(openSubMenuButton, BorderLayout.CENTER);
         southPanel.add(buttonPanel, BorderLayout.SOUTH);
         ventaMesaDialog.add(southPanel, BorderLayout.SOUTH);
         ventaMesaDialog.setVisible(true);
@@ -238,35 +230,13 @@ public class UIUserVenta {
         guardarCompra.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 18)); // Configuración de fuente
         buttonPanel.add(guardarCompra);
 
-       /* // Crear el botón de confirmar compra y asignar el ID de la mesa y el diálogo de compra
-       JButton confirmarCompraButton = createConfirmPurchaseMesaButtons(ventaMesaUserManager, compraDialog, mesaID, table);
-        confirmarCompraButton.setFont(new java.awt.Font("Arial", Font.BOLD, 18)); // Configuración de fuente
 
-        // Verificar si hay productos en Excel para la mesa
-        List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
-        boolean productosEnExcel = !productosPrevios.isEmpty();
-
-        // Deshabilitar el botón si no hay productos en la tabla ni en Excel
-        confirmarCompraButton.setEnabled(productosEnExcel || table.getRowCount() > 0);
-
-        // Agregar un listener a la tabla para verificar el estado al cambiar su contenido
-        ((DefaultTableModel) table.getModel()).addTableModelListener(e -> {
-            confirmarCompraButton.setEnabled(productosEnExcel || table.getRowCount() > 0);
-        });
-
-        // Añadir el botón de confirmación al panel
-        buttonPanel.add(confirmarCompraButton);
-*/
         return buttonPanel;
     }
 
 
     public static JButton createConfirmPurchaseMesaButtons(VentaMesaUserManager ventaMesaUserManager, JDialog compraDialog, String mesaID) {
         JButton confirmarCompraButton = new JButton(CONFIRM_PURCHASE);
-
-
-
-
 
         confirmarCompraButton.setFont(new Font("Arial", Font.BOLD, 18));
         confirmarCompraButton.setForeground(Color.WHITE);
@@ -534,6 +504,8 @@ public class UIUserVenta {
 
         return confirmarCompraButton;
     }
+
+
     private static Map<String, Integer> actualizarProductosDesdeTabla(JTable productosTable) {
         Map<String, Integer> productosActualizados = new HashMap<>();
         DefaultTableModel tableModel = (DefaultTableModel) productosTable.getModel();
@@ -562,7 +534,7 @@ public class UIUserVenta {
                 BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
                 BorderFactory.createEmptyBorder(10, 20, 10, 20)
         ));
-// Efecto hover: cambiar color al pasar el mouse
+        // Efecto hover: cambiar color al pasar el mouse
         confirmarCompraButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -574,10 +546,6 @@ public class UIUserVenta {
                 confirmarCompraButton.setBackground(new Color(168, 230, 207)); // Vuelve al color original
             }
         });
-
-
-
-
 
         confirmarCompraButton.addActionListener(e -> {
             try {
@@ -606,11 +574,6 @@ public class UIUserVenta {
                     precioUnitarioPorProducto.put(nombre, producto.getPrice());
                 }
 
-                  /*  if (producto == null || producto.getQuantity() < cantidadAdicional) {
-                        JOptionPane.showMessageDialog(compraDialog, "No hay suficiente stock para " + nombreProducto, "Error de stock", JOptionPane.ERROR_MESSAGE);
-                        compraDialog.dispose();
-                        return;
-                    }*/
 
                 // Generar resumen de productos y calcular el total
                 for (Map.Entry<String, Integer> entrada : cantidadTotalPorProducto.entrySet()) {
@@ -627,11 +590,9 @@ public class UIUserVenta {
                     total += precioTotal;
                 }
 
-                /* Selección de método de pago
-                String tipoPagoSeleccionado = seleccionarMetodoPago(compraDialog, total);
-                if (tipoPagoSeleccionado == null) return;*/
 
-                //* Selección de método de pago
+
+                // Selección de método de pago
 
                 // Crear íconos redimensionados para los métodos de pago
                 ImageIcon iconoBancolombia = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/bancolombia.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
@@ -646,8 +607,6 @@ public class UIUserVenta {
                 dialogoPago.setLayout(new BorderLayout(20, 20));
                 dialogoPago.setResizable(false);
                 Double totalDolar = total/TRM;
-                // Supón que tienes el valor total de la compra
-                 // <-- cambia esto por el valor real
                 String textoTotal = String.format(
                         "<html><div style='text-align:center; font-size:28px; color:#2ecc71;'>" +
                                 "<b>Total: $%,.0f Pesos</b><br>" +
@@ -687,15 +646,10 @@ public class UIUserVenta {
                 dialogoPago.add(totalLabel, BorderLayout.NORTH);
                 dialogoPago.add(panelPago, BorderLayout.CENTER);
                 dialogoPago.setLocationRelativeTo(null);
-              //  dialogoPago.setVisible(true);
-
-                // Variable para guardar el tipo de pago seleccionado
                 final String[] tipoPagoSeleccionado = {null};
                 final double finalTotal = total;
 
                 botonBancolombia.addActionListener(event -> {
-
-
 
                     // Imagen QR
                     ImageIcon qrIcon = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/procesoQR.png"))
@@ -863,7 +817,6 @@ public class UIUserVenta {
                         dialogoQR.dispose(); // ahora sí cierra correctamente
                         tipoPagoSeleccionado[0] = "Daviplata - Transferencia";
                         dialogoPago.dispose();
-                        // Puedes agregar aquí cualquier otra lógica posterior
                     });
 
                     // Panel de contenido
@@ -1033,7 +986,7 @@ public class UIUserVenta {
                             );
                         }
                     });
-// Si el usuario cierra la ventana con la X, continúa flujo
+                    // Si el usuario cierra la ventana con la X, continúa flujo
                     dialog.addWindowListener(new WindowAdapter() {
                         @Override
                         public void windowClosing(WindowEvent e) {
@@ -1102,10 +1055,6 @@ public class UIUserVenta {
                     throw new RuntimeException(ex);
                 }
 
-
-
-
-
                 // Mostramos el dialogo de confirmación
                 int respuesta = JOptionPane.showConfirmDialog(null, PRINT_BILL, COMFIRM_TITLE, JOptionPane.YES_NO_OPTION);
                 NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
@@ -1113,7 +1062,6 @@ public class UIUserVenta {
                     // Corregimos aquí, enviamos la lista completa y no solo un String.
                     generarFacturadeCompra(ventaID, Arrays.asList(listaProductosEnLinea.toString().split("\n")), total, dateTime, tipoPagoSeleccionado[0]);
                 }
-
 
                 NumberFormat FORMAT_USD = NumberFormat.getCurrencyInstance(Locale.US);
 
@@ -1156,10 +1104,7 @@ public class UIUserVenta {
 
         return confirmarCompraButton;
     }
-    public static void clearProductTable(JTable table) {
-        DefaultTableModel model = (DefaultTableModel) table.getModel();
-        model.setRowCount(0);  // Esto elimina todas las filas de la tabla
-    }
+
 
     public static JButton createSavePurchaseMesaButton(VentaMesaUserManager ventaMesaUserManager, String mesaID, JTable productosTable,JFrame frame) {
         JButton saveCompraButton = new JButton("Guardar Compra");
@@ -1219,17 +1164,6 @@ public class UIUserVenta {
                     int cantidad = (int) tableModel.getValueAt(i, 1); // Columna 1: cantidad del producto
                     productosComprados.put(nombreProducto, cantidad);
                 }
-
-               /* // Verificar el stock para cada producto
-                for (Map.Entry<String, Integer> entry : productosComprados.entrySet()) {
-                    String nombreProducto = entry.getKey();
-                    int cantidadComprada = entry.getValue();
-                    Producto producto = productoUserManager.getProductByName(nombreProducto);
-                    if (producto.getQuantity() < cantidadComprada) {
-                        JOptionPane.showMessageDialog(null, "No hay suficiente stock para el producto: " + nombreProducto, "Error", JOptionPane.ERROR_MESSAGE);
-                        return; // Salir si no hay suficiente stock
-                    }
-                }*/
 
                 // Obtener el total para esta mesa específica
                 double total = productoUserManager.getTotalCartAmount();
@@ -1307,9 +1241,7 @@ public class UIUserVenta {
                         // Mostrar mensaje de confirmación
                         JOptionPane.showMessageDialog(null, "Compra guardada para la mesa: " + mesaID + ".");
                         tableModel.setRowCount(0); // Limpiar la tabla
-                        productoUserManager.limpiarCarrito(); // Limpia el carrito de la mesa después de guardar la compra
-                        //ventaMesaDialog.dispose();
-                        //mainUser();
+                        productoUserManager.limpiarCarrito();// Limpia el carrito de la mesa después de guardar la compra
 
                         SwingUtilities.invokeLater(() -> {
                             Window window = SwingUtilities.getWindowAncestor(saveCompraButton);

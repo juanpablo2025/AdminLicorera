@@ -38,41 +38,9 @@ public class UIHelpers {
     private static ProductoUserManager productoUserManager = new ProductoUserManager();
     public static VentaMesaUserManager ventaMesaUserManager = new VentaMesaUserManager();
 
-    private static JComboBox<String> productComboBox;
-    private static JSpinner cantidadSpinner;
-    private static JLabel totalLabel;
-    private static JLabel totalCompraLabel;
     private static DefaultTableModel tableModel;
     public static Component compraDialog;
 
-
-
-
-    static class RoundedBorder extends AbstractBorder {
-        private final int radius;
-
-        public RoundedBorder(int radius) {
-            this.radius = radius;
-        }
-
-        @Override
-        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-            Graphics2D g2 = (Graphics2D) g;
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setColor(Color.WHITE);
-            g2.drawRoundRect(x, y, width - 1, height - 1, radius, radius);
-        }
-
-        @Override
-        public Insets getBorderInsets(Component c) {
-            return new Insets(radius, radius, radius, radius);
-        }
-
-        @Override
-        public boolean isBorderOpaque() {
-            return false;
-        }
-    }
 
     public static JButton createButton(String text, Icon icon, ActionListener listener) {
         JButton button = new JButton();
@@ -246,10 +214,6 @@ public class UIHelpers {
         // Panel de búsqueda
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 10));
 
-
-
-
-
         JTextField searchField = new JTextField() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -271,7 +235,7 @@ public class UIHelpers {
 
         inputPanel.add(searchPanel, BorderLayout.NORTH);
 
-// Spinner de cantidad (agrega esto arriba del searchPanel)
+        // Spinner de cantidad (agrega esto arriba del searchPanel)
         JPanel quantityPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 13, 1));
         quantityPanel.setBackground(new Color(28, 28, 28));
         JLabel quantityLabel = new JLabel("Cantidad x");
@@ -289,7 +253,7 @@ public class UIHelpers {
         spinnerTextField.setFont(new Font("Arial", Font.PLAIN, 20));
 
 
-// 👇 Esta línea fuerza sincronización en tiempo real al escribir
+        // 👇 Esta línea fuerza sincronización en tiempo real al escribir
         spinnerTextField.getDocument().addDocumentListener(new DocumentListener() {
             void update() {
                 SwingUtilities.invokeLater(() -> {
@@ -320,16 +284,10 @@ public class UIHelpers {
 
         List<Producto> productList = productoUserManager.getProducts().stream()
                 .toList();
-
-
-
-
-
-
-// ⏩ Aumentar la velocidad del scroll
+        // ⏩ Aumentar la velocidad del scroll
         scrollPane.getVerticalScrollBar().setUnitIncrement(30);
 
-// 🎨 Personalizar la apariencia de la barra de desplazamiento
+        // 🎨 Personalizar la apariencia de la barra de desplazamiento
         scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
             @Override
             protected void configureScrollBarColors() {
@@ -354,11 +312,8 @@ public class UIHelpers {
             }
         });
 
-// 📌 Aumentar el grosor de la barra de desplazamiento
+        // 📌 Aumentar el grosor de la barra de desplazamiento
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(15, 0));
-
-
-
 
 
         Runnable updateProducts = () -> {
@@ -390,7 +345,7 @@ public class UIHelpers {
                             }
                         };
 
-// 🔹 Ajustar la transparencia del fondo para evitar el color cuadrado
+                        // 🔹 Ajustar la transparencia del fondo para evitar el color cuadrado
                         card.setOpaque(false);
                         card.setBackground(new Color(58, 58, 58)); // Fondo oscuro
                         card.setPreferredSize(new Dimension(80, 210));
@@ -492,7 +447,7 @@ public class UIHelpers {
                             }
                         }.execute();
 
-// 🟢 Aplicar efecto de pulsado al botón (Cambio de color temporal)
+                        // 🟢 Aplicar efecto de pulsado al botón (Cambio de color temporal)
                         card.addMouseListener(new MouseAdapter() {
                             @Override
                             public void mouseEntered(MouseEvent e) {
@@ -558,66 +513,7 @@ public class UIHelpers {
         return new ImageIcon(roundedImage);
     }
 
-    public static void agregarProductoATabla(JTable table, Producto producto, VentaMesaUserManager ventaManager) {
-        if (producto == null) {
-            JOptionPane.showMessageDialog(null, "Producto no válido.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
 
-        DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
-        boolean productoExistente = false;
-        int cantidad = 1;
-
-
-
-        for (int i = 0; i < tableModel.getRowCount(); i++) {
-            String nombreProducto = (String) tableModel.getValueAt(i, 0);
-
-            if (nombreProducto.equals(producto.getName())) {
-                try {
-                    int cantidadExistente = Integer.parseInt(tableModel.getValueAt(i, 1).toString());
-                    int nuevaCantidad = cantidadExistente + cantidad;
-
-                   /* if (nuevaCantidad > producto.getQuantity()) {
-                        JOptionPane.showMessageDialog(null, "No hay suficiente stock para " + producto.getName(), "Error", JOptionPane.ERROR_MESSAGE);
-                        return;
-                    }*/
-
-                    double precioUnitario = producto.getPrice();
-                    double nuevoTotal = nuevaCantidad * precioUnitario;
-
-                    tableModel.setValueAt(nuevaCantidad, i, 1);
-                    tableModel.setValueAt(formatearMoneda(precioUnitario), i, 2);
-                    tableModel.setValueAt((nuevoTotal), i, 3);
-
-                    // Actualizar el producto en el carrito de compra
-                    productoUserManager.addProductToCart(producto, nuevaCantidad);
-
-                    productoExistente = true;
-                    break;
-                } catch (ClassCastException | NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "Error en la conversión de cantidad.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-            }
-        }
-
-        if (!productoExistente) {
-            double precioUnitario = producto.getPrice();
-            double totalProducto = precioUnitario * cantidad;
-
-            tableModel.addRow(new Object[]{
-                    producto.getName(),
-                    cantidad,
-                    precioUnitario,
-                    totalProducto,
-                    "X"
-            });
-
-            // Agregar nuevo producto al carrito de compra
-            productoUserManager.addProductToCart(producto, cantidad);
-        }
-    }
 
     public static void AddProductsToTable(JTable table, Producto producto, VentaMesaUserManager ventaManager, int cantidad) {
         if (producto == null) {
@@ -743,9 +639,6 @@ public class UIHelpers {
     public static JTable createProductTable() {
         String[] columnNames = {PRODUCTO, "Cant.", "Unid. $", "Total $", "Quitar unid."};
 
-
-
-
         tableModel = new DefaultTableModel(columnNames, ZERO) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -782,13 +675,8 @@ public class UIHelpers {
 
     public static JPanel createTotalPanel() {
         JPanel totalPanel = new JPanel(new GridLayout(1, 1));
-
-
         return totalPanel;
     }
-
-
-
 
     public static JButton createAddProductMesaButton(JTable table, JComboBox<String> productComboBox, JSpinner cantidadSpinner, VentaMesaUserManager ventaManager) {
         JButton agregarProductoButton = new JButton("AGREGAR");
@@ -810,10 +698,6 @@ public class UIHelpers {
                 }
 
                 Producto producto = productoUserManager.getProductByName(selectedProduct);
-              /*  if ( producto.getQuantity() < cantidad) {
-                    JOptionPane.showMessageDialog(null, "No hay suficiente stock para el producto: " + selectedProduct, "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }*/
 
                 DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
                 boolean productoExistente = false;
@@ -826,7 +710,7 @@ public class UIHelpers {
                         int cantidadExistente = (int) tableModel.getValueAt(i, 1); // Columna 1 es la cantidad
                         int nuevaCantidad = cantidadExistente + cantidad;
 
-                    /*    // Verificar que la nueva cantidad no exceda el stock disponible
+                        /* // Verificar que la nueva cantidad no exceda el stock disponible
                         if (nuevaCantidad > producto.getQuantity()) {
                             JOptionPane.showMessageDialog(null, "No hay suficiente stock disponible para aumentar la cantidad del producto: " + selectedProduct, "Error", JOptionPane.ERROR_MESSAGE);
                             return;
@@ -863,7 +747,7 @@ public class UIHelpers {
 
                 // Añadir el producto al carrito de ventas en el productoUserManager
                 productoUserManager.addProductToCart(producto, cantidad);
-// Reiniciar el valor del spinner a 1
+                // Reiniciar el valor del spinner a 1
                 cantidadSpinner.setValue(1);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(null, "Cantidad o precio inválido.", "Error", JOptionPane.ERROR_MESSAGE);

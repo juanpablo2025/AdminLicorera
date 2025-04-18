@@ -1,9 +1,7 @@
 package org.example.model;
 
-import java.util.List;
 
 public class Producto {
-    private static int nextId = 1; // Contador estático para el ID auto-incremental
 
     private int id;
     private String name;
@@ -13,22 +11,12 @@ public class Producto {
 
     public Producto(int id,String name, int quantity, double price, String foto) {
 
-        this.id = id; // Asigna el ID actual y lo incrementa
+        this.id = id;
         this.name = name;
         this.quantity = quantity;
         this.price = price;
         this.foto = foto;
     }
-
-    public static String getFotoByName(String nombre, List<Producto> productos) {
-        for (Producto p : productos) {
-            if (p.getName().equalsIgnoreCase(nombre)) {
-                return p.getFoto();
-            }
-        }
-        return "sin_imagen.png"; // Imagen por defecto si no se encuentra
-    }
-
 
     public int getId() {
         return id;

@@ -22,12 +22,6 @@ public class ExcelAdminManager {
     public static final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
     public static final String DIRECTORY_PATH = System.getProperty("user.home") + "\\Calculadora del Administrador";
     public static final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
-    static LocalDateTime fechaHora = LocalDateTime.now();
-    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH_mm_ss");
-    static String fechaFormateada = fechaHora.format(formatter);
-
-    public static final String DIRECTORY_PATH_FACTURACION = System.getProperty("user.home") + "\\Calculadora del Administrador";
-    public static final String FACTURACION_FILENAME = "\\Facturacion\\Facturacion" + fechaFormateada + ".xlsx";
 
     public static void updateProduct(Producto productoActualizado) {
         try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
@@ -102,8 +96,6 @@ public class ExcelAdminManager {
             JOptionPane.showMessageDialog(null, "Error al eliminar producto: " + e.getMessage());
         }
     }
-
-
 
     // Método para agregar un producto al archivo Excel
     public void addProduct(Producto product) {
@@ -221,7 +213,6 @@ public class ExcelAdminManager {
         }
     }
 
-
     public boolean eliminarFacturaYActualizarProductos(String facturaId) {
         try {
             // Carga el archivo Excel y accede a las hojas "Ventas" y "Productos"
@@ -277,7 +268,7 @@ public class ExcelAdminManager {
 
                                 // Si el producto no se encuentra en la hoja "Productos", mostrar un mensaje detallado
                                 if (!productoActualizado) {
-                                    System.out.println("Producto no encontrado en hoja 'Productos': " + nombreProducto);
+                                  //  System.out.println("Producto no encontrado en hoja 'Productos': " + nombreProducto);
                                 }
 
                                 // Reiniciar para el siguiente producto
@@ -314,81 +305,6 @@ public class ExcelAdminManager {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
-        }
-    }
-
-    public static void updateProducts(List<Producto> existingProducts) {
-        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
-             Workbook workbook = WorkbookFactory.create(fis)) {
-
-            Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
-            int lastRowNum = sheet.getLastRowNum(); // Última fila con datos
-
-            for (Producto producto : existingProducts) {
-                boolean exists = false;
-
-                // Verifica si el producto ya existe en la hoja
-                for (int i = 1; i <= lastRowNum; i++) {
-                    Row row = sheet.getRow(i);
-                    if (row != null) {
-                        String name = row.getCell(ONE).getStringCellValue();
-
-                        if (name.equalsIgnoreCase(producto.getName())) {
-                            // Producto encontrado, actualizar cantidad y precio
-                            row.getCell(TWO).setCellValue(producto.getQuantity());
-                            row.getCell(THREE).setCellValue(producto.getPrice());
-                            exists = true;
-                            break;
-                        }
-                    }
-                }
-
-                // Si el producto no existe, lo añadimos en una nueva fila
-                if (!exists) {
-                    Row newRow = sheet.createRow(++lastRowNum);
-                    newRow.createCell(ONE).setCellValue(producto.getName());
-                    newRow.createCell(TWO).setCellValue(producto.getQuantity());
-                    newRow.createCell(THREE).setCellValue(producto.getPrice());
-                    newRow.createCell(FIVE).setCellValue(producto.getFoto());
-                }
-            }
-
-            // Guardar cambios
-            try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH.toString())) {
-                workbook.write(fileOut);
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void saveSelectedProduct(DefaultTableModel tableModel, JTable table) {
-        try {
-            int selectedRow = table.getSelectedRow();
-            if (selectedRow == -1) {
-                JOptionPane.showMessageDialog(null, "Selecciona un producto para guardar los cambios", "Advertencia", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            int modelRow = table.convertRowIndexToModel(selectedRow); // por si la tabla está ordenada o filtrada
-            int id = Integer.parseInt(tableModel.getValueAt(modelRow, 0).toString());
-            String name = tableModel.getValueAt(modelRow, 1).toString().toUpperCase().replace(" ", "_");
-            int quantity = Integer.parseInt(tableModel.getValueAt(modelRow, 2).toString());
-            double price = Double.parseDouble(tableModel.getValueAt(modelRow, 3).toString().replace(".", "").replace(",", ""));
-
-            // Obtener producto existente
-            Producto productoActualizado = new Producto(id, name, quantity, price,
-                    "\\Calculadora del Administrador\\Fotos\\" + name + ".png");
-
-            // Actualizar solo ese producto en el archivo Excel
-            ExcelAdminManager.updateProduct(productoActualizado);
-
-            JOptionPane.showMessageDialog(null, "Producto actualizado exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-            updateProductTable(table);
-
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Error al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
