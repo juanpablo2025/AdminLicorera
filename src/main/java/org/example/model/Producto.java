@@ -18,6 +18,11 @@ public class Producto {
         this.foto = foto;
     }
 
+    public Producto(String nombre, int i) {
+        this.name = nombre;
+        this.quantity = i;
+    }
+
     public int getId() {
         return id;
     }

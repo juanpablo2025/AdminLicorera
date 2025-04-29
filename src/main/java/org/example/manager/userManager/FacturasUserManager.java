@@ -1,5 +1,6 @@
 package org.example.manager.userManager;
 
+import org.example.manager.userDBManager.DatabaseUserManager;
 import org.example.model.Factura;
 
 import java.util.List;
@@ -10,7 +11,8 @@ public class FacturasUserManager {
 
     // Método para obtener todas las facturas desde el archivo Excel
     public List<Factura> getFacturas() {
-        return excelUserManager.getFacturas();
+        return DatabaseUserManager.getFacturas();
+        //excelUserManager.getFacturas();
     }
 
 }

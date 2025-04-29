@@ -1,13 +1,19 @@
 package org.example;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import org.example.manager.userDBManager.DatabaseUserManager;
 import org.example.ui.uiUser.UIUserMain;
 import org.example.utils.Updater;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
+import static org.example.manager.userDBManager.DatabaseUserManager.URL;
+import static org.example.manager.userDBManager.DatabaseUserManager.registrarDia;
 import static org.example.manager.userManager.ExcelUserManager.*;
 import static org.example.manager.userManager.MainUserManager.crearDirectorios;
 import static org.example.ui.uiAdmin.MainAdminUi.adminPassword;
@@ -17,15 +23,15 @@ import static org.example.ui.uiUser.UIUserMain.mainUser;
 public class Main {
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         crearDirectorios();
-
+        Connection conn = DriverManager.getConnection(URL);
         // Verificar si el archivo existe; si no, crear uno nuevo
-        File file = new File(FILE_PATH);
+       /* File file = new File(FILE_PATH);
         if (!file.exists()) {
             createExcelFile();  // Llama al método que crea el archivo si no existe
-        }
-        if (hayRegistroDeHoy()) {
+        }*/
+        if (DatabaseUserManager.hayRegistroDeHoy(conn)) {
             Updater.checkForUpdates();
             mainUser(); // Si hay registro, abrir el panel de usuario
         } else {
@@ -121,10 +127,28 @@ public class Main {
         loginButton.addActionListener(e -> {
             String nombreUsuario = userField.getText();
             if (!nombreUsuario.isEmpty()) {
-                registrarDia(nombreUsuario);
-                JOptionPane.showMessageDialog(frame, "¡Bienvenido!");
-                frame.dispose();
-                mainUser();
+                Connection connection = null;
+                try {
+                    connection = DriverManager.getConnection(DatabaseUserManager.URL);
+
+                    registrarDia(connection, nombreUsuario);
+
+                    JOptionPane.showMessageDialog(frame, "¡Bienvenido!");
+                    frame.dispose();
+                    mainUser();
+
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(frame, "Error al conectar con la base de datos.");
+                } finally {
+                    try {
+                        if (connection != null) {
+                            connection.close();
+                        }
+                    } catch (SQLException e2) {
+                        e2.printStackTrace();
+                    }
+                }
             } else {
                 JOptionPane.showMessageDialog(frame, "Por favor ingresa un nombre de usuario.");
             }

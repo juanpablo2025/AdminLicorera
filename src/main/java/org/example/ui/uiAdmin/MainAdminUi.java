@@ -2,6 +2,7 @@ package org.example.ui.uiAdmin;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import org.example.manager.adminManager.ConfigAdminManager;
+import org.example.manager.userDBManager.DatabaseUserManager;
 import org.example.ui.uiUser.UIUserMain;
 import org.json.JSONArray;
 import javax.swing.*;
@@ -13,8 +14,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
 import static org.example.Main.mostrarLogin;
-import static org.example.manager.userManager.ExcelUserManager.hayRegistroDeHoy;
+import static org.example.manager.userDBManager.DatabaseUserManager.hayRegistroDeHoy;
+//import static org.example.manager.userManager.ExcelUserManager.hayRegistroDeHoy;
 import static org.example.ui.UIHelpers.createButton;
 import static org.example.ui.uiAdmin.UIAdminFacturas.getAdminBillsPanel;
 import static org.example.ui.uiAdmin.UIAdminProducts.getAdminProductListPanel;
@@ -45,13 +51,35 @@ public class MainAdminUi {
             }
 
             // Listener para manejar cierre de ventana
-            frame.addWindowListener(new WindowAdapter() {
+            /*frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
+
                     if (hayRegistroDeHoy()) {
                         mainUser();
                     } else {
                         mostrarLogin();
+                    }
+                }
+            });*/
+
+
+
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    try (Connection connection = DriverManager.getConnection(
+                            "jdbc:mysql://localhost:3306/tuBaseDeDatos", "usuario", "contraseña")) {
+
+                        if (DatabaseUserManager.hayRegistroDeHoy(connection)) {
+                            mainUser();
+                        } else {
+                            mostrarLogin();
+                        }
+
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(frame, "Error al verificar el registro de hoy.");
                     }
                 }
             });
@@ -156,7 +184,13 @@ public class MainAdminUi {
             });
 
             JButton moreOptionsButton = createButton("Mesas", resizeIcon("/icons/mesa-redonda.png"), e -> {
-                if (hayRegistroDeHoy()) {
+                Connection conn;
+                try {
+                    conn = DriverManager.getConnection(DatabaseUserManager.URL);
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                if (hayRegistroDeHoy(conn)) {
                     mainUser();
                 } else {
                     mostrarLogin();

@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 
-import static org.example.manager.userManager.ExcelUserManager.cargarProductosMesaDesdeExcel;
+//import static org.example.manager.userManager.ExcelUserManager.cargarProductosMesaDesdeExcel;
+import static org.example.manager.userDBManager.DatabaseUserManager.cargarProductosMesaDesdeBD;
 import static org.example.ui.UIHelpers.*;
-import static org.example.ui.uiUser.UIUserVenta.createConfirmPurchaseMesaButton;
-import static org.example.ui.uiUser.UIUserVenta.createSavePurchaseMesaButton;
+import static org.example.ui.uiUser.UIUserVenta.*;
 
 public class VentaMesaPanel extends JPanel {
 
@@ -316,7 +316,9 @@ public class VentaMesaPanel extends JPanel {
         confirmarCompraButton.setFont(new Font("Arial", Font.BOLD, 22));
 
 
-        List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
+        //List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
+        List<String[]> productosPrevios = cargarProductosMesaDesdeBD(mesaID);
+
         boolean productosEnExcel = !productosPrevios.isEmpty();
         confirmarCompraButton.setEnabled(productosEnExcel || table.getRowCount() > 0);
 

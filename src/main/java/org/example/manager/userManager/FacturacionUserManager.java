@@ -17,6 +17,7 @@ import com.itextpdf.layout.properties.UnitValue;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.manager.adminManager.ConfigAdminManager;
+import org.example.manager.userDBManager.DatabaseUserManager;
 import org.example.model.Producto;
 import org.example.utils.FormatterHelpers;
 
@@ -28,6 +29,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.sql.*;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,6 +38,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 
+import static org.example.manager.userDBManager.DatabaseUserManager.*;
 import static org.example.manager.userManager.ExcelUserManager.*;
 import static org.example.manager.userManager.PrintUserManager.abrirPDF;
 import static org.example.manager.userManager.PrintUserManager.imprimirPDF;
@@ -64,8 +67,9 @@ public class FacturacionUserManager {
      * Realiza la facturación y limpieza de los datos.
      * Luego, termina la ejecución del programa.
      */
-    public static void facturarYSalir() throws IOException, InterruptedException {
-        excelUserManager.facturarYLimpiar();
+    public static void facturarYSalir() throws IOException, InterruptedException, SQLException {
+       //excelUserManager.facturarYLimpiar();
+        DatabaseUserManager.facturarYLimpiar();
 
         //TODO: validar que no este ocupada
         eliminarMesasConIdMayorA15();
@@ -261,7 +265,7 @@ public class FacturacionUserManager {
     }
 
 
-    public static void generarResumenDiarioEstilizadoPDF() {
+    /*public static void generarResumenDiarioEstilizadoPDF() {
         LocalDate fechaActual = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
@@ -297,7 +301,7 @@ public class FacturacionUserManager {
             // Calcular totales
             double totalVentas = sumarTotalesCompras(purchasesSheet);
             double totalGastos = restarTotalesGastos(gastosSheet);
-            List<Producto> productosAgotados = obtenerProductosAgotados(productsSheet);
+            List<Producto> productosAgotados = DatabaseUserManager.obtenerProductosAgotados(productsSheet);
             int totalProductos = productsSheet.getLastRowNum();  // Total de productos
             int productosAgotadosCount = productosAgotados.size();  // Total de productos con cantidad 0
 
@@ -359,7 +363,7 @@ public class FacturacionUserManager {
                     .setMarginBottom(5));*/
 
             // Mostrar el total de gastos
-            document.add(new Paragraph("Total en GASTOS: $" + formatearMoneda(totalGastos) + " pesos")
+            /*document.add(new Paragraph("Total en GASTOS: $" + formatearMoneda(totalGastos) + " pesos")
                     .setFont(fontBold)
                     .setFontSize(8)
                     .setTextAlignment(TextAlignment.LEFT)
@@ -531,9 +535,258 @@ public class FacturacionUserManager {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }*/
+
+
+    public static void generarResumenDiarioEstilizadoPDF() {
+        LocalDate fechaActual = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        DateTimeFormatter horaFormatter = DateTimeFormatter.ofPattern("HH-mm-ss");
+
+        String carpetaPath = System.getProperty("user.home") + "\\Calculadora del Administrador\\Resumen del día";
+        new File(carpetaPath).mkdirs();
+        String nombreArchivo = carpetaPath + "\\Resumen_Diario_" + fechaActual.format(formatter) + "_" + LocalTime.now().format(horaFormatter) + ".pdf";
+
+        try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL)) {
+            double totalVentas = 0.0;
+            double totalGastos = 0.0;
+            double totalReabastecimiento = 0.0;
+            List<Producto> productosAgotados = new ArrayList<>();
+            List<String[]> listaGastos = new ArrayList<>();
+            List<String[]> listaReabastecimientos = new ArrayList<>();
+            List<String[]> listaEmpleados = new ArrayList<>();
+
+            try (PreparedStatement stmt = connection.prepareStatement("SELECT SUM(total) FROM compras"); ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) totalVentas = rs.getDouble(1);
+            }
+            try (PreparedStatement stmt = connection.prepareStatement("SELECT descripcion, monto FROM gastos"); ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    listaGastos.add(new String[]{rs.getString(1), String.valueOf(rs.getDouble(2))});
+                    totalGastos += rs.getDouble(2);
+                }
+            }
+            try (PreparedStatement stmt = connection.prepareStatement("SELECT nombre_producto, precio_compra FROM reabastecimientos"); ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    listaReabastecimientos.add(new String[]{rs.getString(1), String.valueOf(rs.getDouble(2))});
+                    totalReabastecimiento += rs.getDouble(2);
+                }
+            }
+            try (PreparedStatement stmt = connection.prepareStatement("SELECT nombre FROM productos WHERE cantidad = 0"); ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) productosAgotados.add(new Producto(rs.getString("nombre"), 0));
+            }
+            try (PreparedStatement stmt = connection.prepareStatement("SELECT nombre, hora_inicio, fecha FROM empleados"); ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) listaEmpleados.add(new String[]{rs.getString(1), rs.getString(2), rs.getString(3)});
+            }
+
+            float anchoMm = ConfigAdminManager.getPaperSize().equals("58mm") ? 58 : 210;
+            float altoMm = 200;
+            float anchoPuntos = anchoMm * 2.83465f;
+            float altoPuntos = altoMm * 2.83465f;
+
+            PdfWriter writer = new PdfWriter(nombreArchivo);
+            PdfDocument pdfDoc = new PdfDocument(writer);
+            Document document = new Document(pdfDoc, new PageSize(anchoPuntos, altoPuntos));
+            document.setMargins(5, 5, 5, 5);
+
+            PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+            PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            PdfFont fontItalic = PdfFontFactory.createFont(StandardFonts.HELVETICA_OBLIQUE);
+
+            document.add(new Paragraph("Resumen Diario\n" + fechaActual.format(formatter) + " " + LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")))
+                    .setFont(fontBold).setFontSize(10).setTextAlignment(TextAlignment.CENTER).setMarginBottom(10));
+
+            document.add(new Paragraph("REALIZO DEL SISTEMA: $" + FormatterHelpers.formatearMoneda(totalVentas) + " pesos")
+                    .setFont(fontBold).setFontSize(12).setTextAlignment(TextAlignment.LEFT).setMarginBottom(10));
+
+            document.add(new Paragraph("Total en GASTOS: $" + FormatterHelpers.formatearMoneda(totalGastos) + " pesos")
+                    .setFont(fontBold).setFontSize(8).setTextAlignment(TextAlignment.LEFT).setMarginBottom(10));
+
+            document.add(new Paragraph("Detalle de GASTOS:").setFont(fontBold).setFontSize(9).setMarginBottom(5));
+            for (String[] gasto : listaGastos) {
+                document.add(new Paragraph("- " + gasto[0] + ": $" + FormatterHelpers.formatearMoneda(Double.parseDouble(gasto[1])) + " pesos")
+                        .setFont(fontNormal).setFontSize(7).setTextAlignment(TextAlignment.LEFT));
+            }
+
+            document.add(new Paragraph("Detalles de Reabastecimiento:").setFont(fontBold).setFontSize(9).setMarginBottom(5));
+            for (String[] item : listaReabastecimientos) {
+                document.add(new Paragraph("- " + item[0] + ": $" + FormatterHelpers.formatearMoneda(Double.parseDouble(item[1])) + " pesos")
+                        .setFont(fontNormal).setFontSize(7).setTextAlignment(TextAlignment.LEFT));
+            }
+
+            double porcentajeAgotados = productosAgotados.isEmpty() ? 0 : ((double) productosAgotados.size() / obtenerTotalProductos(connection)) * 100;
+            document.add(new Paragraph("Productos Agotados: " + productosAgotados.size() + " productos (" + String.format("%.2f", porcentajeAgotados) + "%)")
+                    .setFont(fontNormal).setFontSize(8).setMarginBottom(10));
+
+            if (productosAgotados.isEmpty()) {
+                document.add(new Paragraph("No hay productos agotados.").setFont(fontItalic).setFontSize(8).setMarginBottom(5));
+            } else {
+                for (Producto p : productosAgotados) {
+                    document.add(new Paragraph("- " + p.getName()).setFont(fontNormal).setFontSize(7));
+                }
+            }
+
+            document.add(new Paragraph("\nEmpleados y Hora de apertura:").setFont(fontBold).setFontSize(9).setMarginBottom(5));
+            for (String[] emp : listaEmpleados) {
+                document.add(new Paragraph("- " + emp[0] + ": " + emp[1] + " - " + emp[2])
+                        .setFont(fontNormal).setFontSize(7));
+            }
+
+            document.add(new Paragraph("\nCierre y facturación:").setFont(fontBold).setFontSize(9).setMarginBottom(5));
+            document.add(new Paragraph(LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")))
+                    .setFont(fontNormal).setFontSize(7));
+
+            document.add(new Paragraph("------------------------------").setFont(fontNormal).setFontSize(6).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("Sistema Licorera CR La 70").setFont(fontBold).setFontSize(7).setTextAlignment(TextAlignment.CENTER));
+
+            document.close();
+
+            StringBuilder gastosNA = new StringBuilder();
+            for (String[] gasto : listaGastos) {
+                if (gasto[1].equalsIgnoreCase("n/a")) {
+                    gastosNA.append("\n- ").append(gasto[0]).append(": $").append(gasto[1]).append(" pesos");
+                }
+            }
+
+         /*   String numeroDestino = "+573112599560";
+            String mensaje = "*[Licorera CR]* \u00a1Hola! se ha generado la liquidaci\u00f3n del d\u00eda de hoy por un total de: $ " +
+                    FormatterHelpers.formatearMoneda(totalVentas) + " pesos.\nPuedes consultar los detalles en los res\u00famenes adjuntos en Google Drive: https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
+
+            if (!gastosNA.isEmpty()) {
+                mensaje += "\n\n*Gastos del día:*" + gastosNA;
+            }
+
+            enviarMensaje(numeroDestino, mensaje);*/
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorPago,double totalFacturado) throws IOException {
+    private static int obtenerTotalProductos(Connection conn) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT COUNT(*) FROM productos");
+             ResultSet rs = stmt.executeQuery()) {
+            return rs.next() ? rs.getInt(1) : 0;
+        }
+    }
+
+    public static void guardarTotalFacturadoEnArchivo(Map<String, Double> totalesPorPago, double totalFacturado) throws IOException {
+        Map<String, Integer> productosVendidos = obtenerProductosVendidos();
+
+        LocalDate fechaActual = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        String carpetaPath = System.getProperty("user.home") + "\\Calculadora del Administrador\\Realizo";
+        File carpeta = new File(carpetaPath);
+        if (!carpeta.exists() && !carpeta.mkdirs()) {
+            System.err.println("No se pudo crear la carpeta 'Realizo'.");
+            return;
+        }
+
+        String nombreArchivo = carpetaPath + "\\REALIZO_" + fechaActual.format(formatter) + EMPTY + LocalTime.now().format(DateTimeFormatter.ofPattern("HH-mm-ss")) + ".pdf";
+
+        try (Connection conn = DriverManager.getConnection(DatabaseUserManager.URL)) {
+            double totalGastos = 0.0;
+            List<String[]> listaGastos = new ArrayList<>();
+
+            try (PreparedStatement stmt = conn.prepareStatement("SELECT descripcion, monto FROM gastos"); ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String descripcion = rs.getString("descripcion");
+                    double monto = rs.getDouble("monto");
+                    listaGastos.add(new String[]{descripcion, String.valueOf(monto)});
+                    totalGastos += monto;
+                }
+            }
+
+            float anchoMm = 48;
+            float altoTotalMm = 250 + (productosVendidos.size() * 12) + 40;
+            float anchoPuntos = anchoMm * 2.83465f;
+            float altoPuntos = altoTotalMm * 2.83465f;
+
+            PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
+            PdfWriter writer = new PdfWriter(nombreArchivo);
+            PdfDocument pdfDoc = new PdfDocument(writer);
+            Document document = new Document(pdfDoc, pageSize);
+
+            PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+            PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+
+            document.setMargins(FIVE, FIVE, FIVE, 10 * HEIGHT_DOTS);
+
+            document.add(new Paragraph("Total Generado Durante el Día")
+                    .setFont(fontBold).setFontSize(12).setTextAlignment(TextAlignment.CENTER).setMarginBottom(10));
+            document.add(new Paragraph(fechaActual.format(formatter) + "\n" + LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")))
+                    .setFont(fontNormal).setFontSize(10).setTextAlignment(TextAlignment.CENTER));
+            document.add(new Paragraph("______________________").setFont(fontNormal).setFontSize(8).setMarginBottom(10));
+
+            NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
+            document.add(new Paragraph("Realizo: $" + formatCOP.format(totalFacturado) + " pesos")
+                    .setFont(fontBold).setFontSize(12).setTextAlignment(TextAlignment.LEFT).setMarginBottom(5));
+
+            document.add(new Paragraph("\nTotales por Forma de Pago:")
+                    .setFont(fontBold).setFontSize(10).setMarginBottom(5));
+            if (totalesPorPago != null && !totalesPorPago.isEmpty()) {
+                for (Map.Entry<String, Double> entry : totalesPorPago.entrySet()) {
+                    document.add(new Paragraph(entry.getKey() + ": $" + formatCOP.format(entry.getValue()))
+                            .setFont(fontNormal).setFontSize(10).setMarginBottom(3));
+                }
+            } else {
+                document.add(new Paragraph("No hay datos de pagos registrados.")
+                        .setFont(fontNormal).setFontSize(10).setMarginBottom(5));
+            }
+
+            document.add(new Paragraph("______________________").setFont(fontNormal).setFontSize(8).setMarginBottom(10));
+
+            if (totalGastos > 0) {
+                document.add(new Paragraph("Total en GASTOS: $" + FormatterHelpers.formatearMoneda(totalGastos) + " pesos")
+                        .setFont(fontBold).setFontSize(8).setTextAlignment(TextAlignment.LEFT).setMarginBottom(10));
+                document.add(new Paragraph("Detalle de GASTOS:")
+                        .setFont(fontBold).setFontSize(9).setTextAlignment(TextAlignment.LEFT).setMarginBottom(5));
+                for (String[] gasto : listaGastos) {
+                    document.add(new Paragraph("- " + gasto[0] + ": $" + FormatterHelpers.formatearMoneda(Double.parseDouble(gasto[1])) + " pesos")
+                            .setFont(fontNormal).setFontSize(7).setTextAlignment(TextAlignment.LEFT));
+                }
+            }
+
+            document.add(new Paragraph("Cierre de Caja")
+                    .setFont(fontBold).setFontSize(10).setTextAlignment(TextAlignment.LEFT).setMarginBottom(2));
+            document.add(new Paragraph("Resumen de las ventas:")
+                    .setFont(fontNormal).setFontSize(8).setMarginBottom(5));
+            document.add(new Paragraph("_______________").setFont(fontNormal).setFontSize(10).setMarginBottom(5));
+
+            document.add(new Paragraph("Productos Vendidos:")
+                    .setFont(fontBold).setFontSize(10).setMarginBottom(5));
+            if (productosVendidos != null && !productosVendidos.isEmpty()) {
+                for (Map.Entry<String, Integer> entry : productosVendidos.entrySet()) {
+                    document.add(new Paragraph("- " + entry.getKey() + ": X" + entry.getValue())
+                            .setFont(fontNormal).setFontSize(8).setMarginBottom(2));
+                }
+            } else {
+                document.add(new Paragraph("No se registraron ventas en este periodo.")
+                        .setFont(fontNormal).setFontSize(8).setMarginBottom(5));
+            }
+            document.add(new Paragraph("_______________").setFont(fontNormal).setFontSize(10).setMarginTop(5).setMarginBottom(5));
+
+            InputStream fontStream = FacturacionUserManager.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
+            byte[] fontBytes = fontStream.readAllBytes();
+            PdfFont lobsterFont = PdfFontFactory.createFont(fontBytes, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
+            document.add(new Paragraph("Licorera CR La 70")
+                    .setFont(lobsterFont).setFontSize(10).setTextAlignment(TextAlignment.CENTER));
+
+            document.close();
+            String outputType = ConfigAdminManager.getOutputType();
+            if ("IMPRESORA".equals(outputType)) {
+                imprimirPDF(nombreArchivo);
+            } else {
+                abrirPDF(nombreArchivo);
+            }
+
+            limpiarCantidadVendida();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+   /* public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorPago,double totalFacturado) throws IOException {
 
 
         Map<String, Integer> productosVendidos = obtenerProductosVendidos();
@@ -577,7 +830,7 @@ public class FacturacionUserManager {
             float anchoPuntos = anchoMm * 2.83465f;
             float altoPuntos = altoTotalMm * 2.83465f;
 
-// Crear el PDF con la altura ajustada dinámicamente
+            // Crear el PDF con la altura ajustada dinámicamente
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
             PdfWriter writer = new PdfWriter(nombreArchivo);
             PdfDocument pdfDoc = new PdfDocument(writer);
@@ -747,8 +1000,7 @@ public class FacturacionUserManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
+    }*/
 
     // Método para limpiar la carpeta de facturas
     public static void limpiarFacturas() {
@@ -777,7 +1029,7 @@ public class FacturacionUserManager {
         }
     }
 
-    public static Map<String, Integer> obtenerProductosVendidos() {
+   /* public static Map<String, Integer> obtenerProductosVendidos() {
         Map<String, Integer> productosVendidos = new HashMap<>();
 
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
@@ -838,9 +1090,38 @@ public class FacturacionUserManager {
         }
 
         return productosVendidos;
+    }*/
+
+
+    public static Map<String, Integer> obtenerProductosVendidos() {
+        Map<String, Integer> productosVendidos = new HashMap<>();
+
+        String sql = "SELECT nombreProducto, SUM(cantidadVendida) AS cantidadTotal " +
+                "FROM Ventas GROUP BY nombreProducto";
+
+        try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL);
+             PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                String nombreProducto = rs.getString("nombreProducto");
+                int cantidadVendida = rs.getInt("cantidadTotal");
+
+                // Solo agregar productos que tienen una cantidad mayor a 0
+                if (cantidadVendida > 0) {
+                    productosVendidos.put(nombreProducto, cantidadVendida);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return productosVendidos;
     }
 
-    public static void limpiarCantidadVendida() {
+
+   /* public static void limpiarCantidadVendida() {
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
@@ -881,6 +1162,20 @@ public class FacturacionUserManager {
 
           //  System.out.println("Se ha limpiado la columna 'Cantidad Vendida'.");
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }*/
+
+    public static void limpiarCantidadVendida() {
+        String sql = "UPDATE Ventas SET cantidadVendida = 0";
+
+        try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL);
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            int rowsUpdated = stmt.executeUpdate();
+            System.out.println("Se han limpiado las cantidades vendidas para " + rowsUpdated + " productos.");
+
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }

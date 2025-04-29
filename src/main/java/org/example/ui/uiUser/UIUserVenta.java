@@ -1,9 +1,11 @@
 package org.example.ui.uiUser;
 
 import org.apache.poi.ss.usermodel.*;
+import org.example.manager.userDBManager.DatabaseUserManager;
 import org.example.manager.userManager.ExcelUserManager;
 import org.example.manager.userManager.ProductoUserManager;
 import org.example.manager.userManager.VentaMesaUserManager;
+import org.example.model.Mesa;
 import org.example.model.Producto;
 import org.example.utils.FormatterHelpers;
 
@@ -20,13 +22,15 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.*;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import static org.example.manager.userManager.ExcelUserManager.actualizarCantidadStockExcel;
-import static org.example.manager.userManager.ExcelUserManager.cargarProductosMesaDesdeExcel;
+//import static org.example.manager.userManager.ExcelUserManager.actualizarCantidadStockExcel;
+//import static org.example.manager.userManager.ExcelUserManager.cargarProductosMesaDesdeExcel;
+import static org.example.manager.userDBManager.DatabaseUserManager.connect;
 import static org.example.manager.userManager.FacturacionUserManager.generarFacturadeCompra;
 import static org.example.manager.userManager.ProductoUserManager.getProductListWithQuantities;
 import static org.example.ui.UIHelpers.*;
@@ -279,8 +283,8 @@ public class UIUserVenta {
 
 
                 // Cargar los productos previamente guardados en la mesa desde Excel
-                List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
-
+              //  List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
+                List<String[]> productosPrevios = DatabaseUserManager.cargarProductosMesaDesdeBD(mesaID);
                 // Sumar el total de los productos previamente cargados
                 if (!productosPrevios.isEmpty()) {
                     for (String[] productoPrevio : productosPrevios) {
@@ -434,12 +438,12 @@ public class UIUserVenta {
                 }
 
                 // Guardar la compra en Excel con el tipo de pago seleccionado
-                ExcelUserManager excelUserManager = new ExcelUserManager();
-                excelUserManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total, dateTime, tipoPagoSeleccionado[0]);
+                //ExcelUserManager excelUserManager = new ExcelUserManager();
+                //excelUserManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total, dateTime, tipoPagoSeleccionado[0]);
+                DatabaseUserManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total, dateTime, tipoPagoSeleccionado[0]);
 
-
-
-                try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
+                //TODO: Guardar en BD
+               /* try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
                      Workbook workbook = WorkbookFactory.create(fis)) {
 
                     Sheet mesasSheet = workbook.getSheet("mesas");
@@ -473,6 +477,36 @@ public class UIUserVenta {
                             workbook.write(fos);
                         }
                     }
+                }*/
+
+
+                try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL)) {
+
+                    // Actualizar estado de la mesa, productos y total en la base de datos
+                    String sqlUpdateMesa = "UPDATE Mesas SET estado = ?, productos = ?, total = ? WHERE mesaID = ?";
+
+                    try (PreparedStatement pstmt = connection.prepareStatement(sqlUpdateMesa)) {
+
+                        // Establecer valores para la actualización
+                        pstmt.setString(1, "Libre");  // Cambiar el estado de la mesa a "Libre"
+                        pstmt.setString(2, "");       // Limpiar productos
+                        pstmt.setDouble(3, 0.0);      // Establecer total a 0.0
+                        pstmt.setString(4, mesaID);   // Usar el ID de la mesa para la condición WHERE
+
+                        // Ejecutar la actualización
+                        int rowsUpdated = pstmt.executeUpdate();
+                        if (rowsUpdated > 0) {
+                            System.out.println("Mesa " + mesaID + " actualizada correctamente.");
+                        } else {
+                            System.out.println("No se encontró la mesa con ID " + mesaID);
+                        }
+
+                    } catch (SQLException es) {
+                        es.printStackTrace();
+                    }
+
+                } catch (SQLException es) {
+                    es.printStackTrace();
                 }
 
                 // Mostramos el dialogo de confirmación
@@ -487,14 +521,13 @@ public class UIUserVenta {
 
                 // Actualizar las cantidades en el stock de Excel
                // actualizarCantidadStockExcel(productosComprados, mesaID);
+                DatabaseUserManager.actualizarCantidadStockExcel(productosComprados, mesaID);
 
 
 
 
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(compraDialog, INVALID_MONEY, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
-            } catch (IOException ex) {
-                ex.printStackTrace();
             }
             // Limpiar el carrito antes de iniciar el proceso de compra de la mesa actual
             productoUserManager.limpiarCarrito();
@@ -503,6 +536,41 @@ public class UIUserVenta {
         });
 
         return confirmarCompraButton;
+    }
+
+    public static List<String[]> cargarProductosPorMesa(String mesaID) {
+        List<String[]> productos = new ArrayList<>();
+
+        String query = """
+        SELECT p.nombre, v.cantidad, p.precio
+        FROM ventas v
+        JOIN productos p ON v.productoID = p.productoID
+        WHERE v.mesaID = ?
+    """;
+
+        try (Connection conn = connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, mesaID);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                String nombre = rs.getString("nombre");
+                int cantidad = rs.getInt("cantidad");
+                double precio = rs.getDouble("precio");
+
+                productos.add(new String[]{
+                        nombre,
+                        "$" + cantidad,
+                        "$" + precio
+                });
+            }
+
+        } catch (SQLException e) {
+            System.err.println("❌ Error al cargar productos de la mesa: " + e.getMessage());
+        }
+
+        return productos;
     }
 
 
@@ -1014,8 +1082,10 @@ public class UIUserVenta {
 
                 // Guardar la compra en Excel
                 ExcelUserManager excelUserManager = new ExcelUserManager();
-                excelUserManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total, dateTime ,tipoPagoSeleccionado[0]);
-                try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
+                //excelUserManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total, dateTime ,tipoPagoSeleccionado[0]);
+
+                DatabaseUserManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total, dateTime ,tipoPagoSeleccionado[0]);
+                /*try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
                      Workbook workbook = WorkbookFactory.create(fis)) {
 
                     Sheet mesasSheet = workbook.getSheet("mesas");
@@ -1053,8 +1123,30 @@ public class UIUserVenta {
                     throw new RuntimeException(ex);
                 } catch (IOException ex) {
                     throw new RuntimeException(ex);
-                }
+                }*/
+                // Actualizar estado de la mesa, productos y total en la base de datos
+                String sqlUpdateMesa = "UPDATE Mesas SET estado = ?, productos = ?, total = ? WHERE mesaID = ?";
 
+                try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL);
+                     PreparedStatement pstmt = connection.prepareStatement(sqlUpdateMesa)) {
+
+                    // Establecer los valores a actualizar
+                    pstmt.setString(1, "Libre");  // Cambiar estado de la mesa a "Libre"
+                    pstmt.setString(2, "");       // Limpiar la lista de productos
+                    pstmt.setDouble(3, 0.0);      // Establecer el total de la mesa a 0
+                    pstmt.setString(4, mesaID);   // ID de la mesa a actualizar
+
+                    // Ejecutar la actualización
+                    int rowsUpdated = pstmt.executeUpdate();
+                    if (rowsUpdated > 0) {
+                        System.out.println("Mesa " + mesaID + " actualizada correctamente.");
+                    } else {
+                        System.out.println("No se encontró la mesa con ID " + mesaID);
+                    }
+
+                } catch (SQLException es) {
+                    es.printStackTrace();
+                }
                 // Mostramos el dialogo de confirmación
                 int respuesta = JOptionPane.showConfirmDialog(null, PRINT_BILL, COMFIRM_TITLE, JOptionPane.YES_NO_OPTION);
                 NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
@@ -1083,7 +1175,10 @@ public class UIUserVenta {
                         mensaje,
                         "Compra Exitosa",
                         JOptionPane.INFORMATION_MESSAGE
-                );                actualizarCantidadStockExcel(cantidadTotalPorProducto, mesaID);
+                );
+                //actualizarCantidadStockExcel(cantidadTotalPorProducto, mesaID);
+                DatabaseUserManager.actualizarCantidadStockBD(cantidadTotalPorProducto, mesaID);
+
                 productoUserManager.limpiarCarrito();
                 // Cerrar la ventana actual (si es un JDialog)
                 SwingUtilities.invokeLater(() -> {
@@ -1143,7 +1238,7 @@ public class UIUserVenta {
 
                 // Verificar si la tabla está vacía
                 if (rowCount == 0) {
-                    limpiarMesaEnExcel(mesaID);  // Limpia la mesa en Excel si no hay productos
+                    limpiarMesaEnBaseDeDatos(mesaID);  // Limpia la mesa en Excel si no hay productos
                     productoUserManager.limpiarCarrito();  // Limpia el carrito de esta mesa
                     JOptionPane.showMessageDialog(null, "La mesa " + mesaID + " ha sido limpiada.");
                     SwingUtilities.invokeLater(() -> {
@@ -1170,7 +1265,7 @@ public class UIUserVenta {
                 LocalDateTime dateTime = LocalDateTime.now();
 
                 // Guardar la compra en la pestaña "mesas"
-                try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
+               /* try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
                      Workbook workbook = WorkbookFactory.create(fis)) {
 
                     Sheet mesasSheet = workbook.getSheet("mesas");
@@ -1262,12 +1357,81 @@ public class UIUserVenta {
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(null, "Error al guardar la compra.", "Error", JOptionPane.ERROR_MESSAGE);
             }
-        });
+        });*/
+                // Conexión con la base de datos
+                String sqlUpdateMesa = "UPDATE Mesas SET estado = ?, productos = ?, total = ? WHERE mesaID = ?";
 
+                try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL);
+                     PreparedStatement pstmt = connection.prepareStatement(sqlUpdateMesa)) {
+
+                    // Cambiar el estado de la mesa a "Ocupada"
+                    pstmt.setString(1, "Ocupada");
+
+                    // Almacenar los productos comprados como una cadena de texto
+                    StringBuilder listaProductos = new StringBuilder();
+                    for (Map.Entry<String, Integer> entry : productosComprados.entrySet()) {
+                        String nombreProducto = entry.getKey();
+                        int cantidadComprada = entry.getValue();
+                        Producto producto = productoUserManager.getProductByName(nombreProducto);
+                        double precioUnitario = producto.getPrice();
+                        double precioTotal = precioUnitario * cantidadComprada;
+
+                        listaProductos.append(nombreProducto)
+                                .append(" x")
+                                .append(cantidadComprada)
+                                .append(" $")
+                                .append(precioUnitario)
+                                .append(" = ")
+                                .append(precioTotal)
+                                .append("\n");
+                    }
+                    pstmt.setString(2, listaProductos.toString());  // Productos comprados
+
+                    // Poner el total en la columna de Total
+                    pstmt.setDouble(3, total);
+
+                    // Establecer el ID de la mesa
+                    pstmt.setString(4, mesaID);
+
+                    // Ejecutar la actualización
+                    int rowsUpdated = pstmt.executeUpdate();
+                    if (rowsUpdated > 0) {
+                        System.out.println("Compra guardada correctamente para la mesa: " + mesaID);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Mesa " + mesaID + " no encontrada en la base de datos.", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+
+                    // Mostrar mensaje de confirmación
+                    JOptionPane.showMessageDialog(null, "Compra guardada para la mesa: " + mesaID + ".");
+
+                    // Limpiar la tabla y el carrito de la mesa
+                    tableModel.setRowCount(0);
+                    productoUserManager.limpiarCarrito();
+
+                    // Cerrar la ventana actual y volver al menú principal
+                    SwingUtilities.invokeLater(() -> {
+                        Window window = SwingUtilities.getWindowAncestor(saveCompraButton);
+                        if (window != null) {
+                            window.dispose();
+                        }
+                        mainUser();
+                    });
+
+                } catch (SQLException es) {
+                    es.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error al guardar la compra en la base de datos.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+
+
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, "Error al guardar la compra.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
         return saveCompraButton;
     }
 
-    // Método auxiliar para limpiar la mesa en el archivo Excel cuando no hay productos
+   /* // Método auxiliar para limpiar la mesa en el archivo Excel cuando no hay productos
     private static void limpiarMesaEnExcel(String mesaID) {
         try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -1313,6 +1477,33 @@ public class UIUserVenta {
 
         } catch (IOException ex) {
             ex.printStackTrace();
+        }
+    }*/
+
+    // Método auxiliar para limpiar la mesa en la base de datos cuando no hay productos
+    private static void limpiarMesaEnBaseDeDatos(String mesaID) {
+        // Conexión con la base de datos
+        String sqlUpdateMesa = "UPDATE Mesas SET estado = ?, productos = ?, total = ? WHERE mesaID = ?";
+
+        try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL);
+             PreparedStatement pstmt = connection.prepareStatement(sqlUpdateMesa)) {
+
+            // Establecer los valores a actualizar
+            pstmt.setString(1, "Libre");   // Cambiar el estado de la mesa a "Libre"
+            pstmt.setString(2, "");        // Limpiar productos (cadena vacía)
+            pstmt.setDouble(3, 0.0);       // Establecer total a 0
+            pstmt.setString(4, mesaID);    // Usar el ID de la mesa para la condición WHERE
+
+            // Ejecutar la actualización
+            int rowsUpdated = pstmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                System.out.println("Mesa " + mesaID + " actualizada correctamente.");
+            } else {
+                System.out.println("No se encontró la mesa con ID " + mesaID);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

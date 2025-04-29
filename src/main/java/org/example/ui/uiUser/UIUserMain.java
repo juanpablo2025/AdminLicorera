@@ -1,6 +1,7 @@
 package org.example.ui.uiUser;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import org.example.manager.userDBManager.DatabaseUserManager;
 import org.example.manager.userManager.ExcelUserManager;
 import org.example.manager.userManager.FacturacionUserManager;
 
@@ -12,6 +13,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.InputStream;
 import java.net.URL;
+import java.sql.SQLException;
 
 import static org.example.ui.uiAdmin.MainAdminUi.*;
 import static org.example.ui.uiUser.UIUserFacturas.getFacturasPanel;
@@ -20,8 +22,17 @@ import static org.example.ui.uiUser.UIUserMesas.showPanelMesas;
 
 public class UIUserMain {
 
-    private static String nombreEmpleado = ExcelUserManager.obtenerUltimoEmpleado().toUpperCase();
-        public static Color fondoPrincipal = new Color(250, 240, 230);
+    private static String nombreEmpleado;// ExcelUserManager.obtenerUltimoEmpleado().toUpperCase();
+
+    static {
+        try {
+            nombreEmpleado = DatabaseUserManager.obtenerUltimoEmpleado();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Color fondoPrincipal = new Color(250, 240, 230);
 
     public static void mainUser() {
         try {
@@ -327,7 +338,7 @@ public class UIUserMain {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "main");
             }  catch (Exception ex) {
-                JOptionPane.showMessageDialog(null, "Ocurrió un error al registrar el gasto.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Ocurrió un error al Facturar.", "Error", JOptionPane.ERROR_MESSAGE);
                 ex.printStackTrace();
             }
         });

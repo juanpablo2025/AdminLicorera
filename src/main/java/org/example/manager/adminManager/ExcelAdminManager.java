@@ -19,11 +19,11 @@ import static org.example.ui.uiAdmin.UIAdminProducts.updateProductTable;
 import static org.example.utils.Constants.*;
 
 public class ExcelAdminManager {
-    public static final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
+   /* public static final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
     public static final String DIRECTORY_PATH = System.getProperty("user.home") + "\\Calculadora del Administrador";
     public static final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
 
-    public static void updateProduct(Producto productoActualizado) {
+   /* public static void updateProduct(Producto productoActualizado) {
         try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
              Workbook workbook = WorkbookFactory.create(fis)) {
 
@@ -306,5 +306,5 @@ public class ExcelAdminManager {
             e.printStackTrace();
             return false;
         }
-    }
+    }*/
 }

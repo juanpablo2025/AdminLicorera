@@ -29,7 +29,7 @@ import static org.example.manager.userManager.FacturacionUserManager.*;
 import static org.example.utils.Constants.*;
 
 public class ExcelUserManager {
-
+/*
     public static final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
     public static final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Calculadora del Administrador";
     public static final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
@@ -84,6 +84,16 @@ public class ExcelUserManager {
         gastosHeader.createCell(3).setCellValue("Precio Compra");
         gastosHeader.createCell(4).setCellValue("Fecha y Hora");
 
+
+        // Crear hoja de gastos
+        Sheet reabastecimientoSheet = workbook.createSheet("Gastos");
+        Row reabastecimientoHeader = reabastecimientoSheet.createRow(0);
+        reabastecimientoHeader.createCell(0).setCellValue("ID Producto");
+        reabastecimientoHeader.createCell(1).setCellValue("Nombre Producto");
+        reabastecimientoHeader.createCell(2).setCellValue("Cantidad");
+        reabastecimientoHeader.createCell(3).setCellValue("Precio Compra");
+        reabastecimientoHeader.createCell(4).setCellValue("Fecha y Hora");
+
         // crear hoja de mesas
 
         // Verificar si la pestaña "Mesas" ya existe
@@ -96,8 +106,8 @@ public class ExcelUserManager {
             headerRow.createCell(2).setCellValue("Productos");
             headerRow.createCell(3).setCellValue("Total");
 
-            // Crear 10 mesas por defecto
-            for (int i = 1; i <= 10; i++) {
+            // Crear 15 mesas por defecto
+            for (int i = 1; i <= 15; i++) {
                 Row row = mesasSheet.createRow(i);
                 row.createCell(0).setCellValue("Mesa " + i);
                 row.createCell(1).setCellValue("Libre");  // Estado inicial
@@ -299,7 +309,7 @@ public class ExcelUserManager {
                 }*/
 
                 // 3️⃣ Calcular el total por método de pago
-                Map<String, Double> totalPorFormaPago = new HashMap<>();
+              /*  Map<String, Double> totalPorFormaPago = new HashMap<>();
                 for (int i = 1; i <= purchasesSheet.getLastRowNum(); i++) {
                     Row row = purchasesSheet.getRow(i);
                     if (row != null) {
@@ -947,7 +957,7 @@ public class ExcelUserManager {
                 throw new RuntimeException(e);
             }*/
 
-        } catch (IOException e) {
+    /*    } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -976,5 +986,5 @@ public class ExcelUserManager {
             e.printStackTrace();
         }
         return "No se encontró un nombre de empleado";
-    }
+    }*/
 }

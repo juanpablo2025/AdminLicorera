@@ -15,6 +15,12 @@
     </properties>
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.43.2.0</version> <!-- o la versión más reciente -->
+        </dependency>
         <!-- Apache POI para manejo de archivos Excel -->
         <dependency>
             <groupId>org.apache.poi</groupId>

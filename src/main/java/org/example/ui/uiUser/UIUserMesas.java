@@ -1,5 +1,6 @@
 package org.example.ui.uiUser;
 
+import org.example.manager.userDBManager.DatabaseUserManager;
 import org.example.model.Mesa;
 
 import javax.swing.*;
@@ -10,10 +11,14 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.example.manager.userDBManager.DatabaseUserManager.agregarMesaABD;
+import static org.example.manager.userDBManager.DatabaseUserManager.cargarProductosMesaDesdeBD;
 import static org.example.manager.userManager.ExcelUserManager.*;
+
 import static org.example.ui.uiUser.UIUserVenta.showVentaMesaDialog;
 
 public class UIUserMesas {
@@ -67,8 +72,8 @@ public class UIUserMesas {
               //  System.out.println("Atendiendo: " + tituloMesa);
 
                 // Cargar productos de la mesa desde Excel
-                List<String[]> productosMesa = cargarProductosMesaDesdeExcel(tituloMesa);
-
+              //  List<String[]> productosMesa = cargarProductosMesaDesdeExcel(tituloMesa);
+                List<String[]> productosMesa = cargarProductosMesaDesdeBD(tituloMesa);
                 // Asegurarse de que mainPanel tiene CardLayout
                 if (!(mainPanel.getLayout() instanceof CardLayout)) {
                     mainPanel.setLayout(new CardLayout());
@@ -133,7 +138,9 @@ public class UIUserMesas {
 
         JPanel gridMesasPanel = new JPanel(new GridLayout(0, 5, 4, 4));
         gridMesasPanel.setBackground(fondoPrincipal);
-        ArrayList<Mesa> mesas = cargarMesasDesdeExcel();
+        //ArrayList<Mesa> mesas = cargarMesasDesdeExcel();
+        ArrayList<Mesa> mesas = DatabaseUserManager.cargarMesasDesdeDB();
+
 
         for (int i = 0; i < mesas.size(); i++) {
             Mesa mesa = mesas.get(i);
@@ -181,7 +188,12 @@ public class UIUserMesas {
             gridMesasPanel.add(nuevaMesaPanel);
             gridMesasPanel.revalidate();
             gridMesasPanel.repaint();
-            agregarMesaAExcel(nuevaMesa);
+            //agregarMesaAExcel(nuevaMesa);
+            try {
+                agregarMesaABD(nuevaMesa);
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
         });
 
         JPanel bottomPanel = new JPanel();
