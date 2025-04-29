@@ -8,6 +8,8 @@ import org.example.ui.uiUser.UIUserMesas;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.*;
 import java.awt.*;
@@ -25,6 +27,8 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
+
 import static org.example.ui.uiAdmin.GastosAdminUI.productoAdminManager;
 
 
@@ -34,7 +38,6 @@ public class UIAdminProducts {
 
     // Panel principal con tabla y botones
     public static JPanel getAdminProductListPanel() {
-
         JPanel productListPanel = new JPanel(new BorderLayout());
         productListPanel.setBackground(new Color(250, 240, 230));
         productListPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -74,14 +77,47 @@ public class UIAdminProducts {
         };
 
         JTable productTable = new JTable(tableModel);
+        productTable.setFont(new Font("Arial", Font.PLAIN, 18));
+        productTable.setRowHeight(28);
+        productTable.setBackground(new Color(250, 240, 230));
+        productTable.setSelectionBackground(new Color(173, 216, 230));
+        productTable.setSelectionForeground(Color.BLACK);
+        productTable.setFillsViewportHeight(true);
 
-        // 🔧 Renderer personalizado para colorear filas
+        // 🎯 CREAR EL SORTER PARA FILTRAR
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
+        productTable.setRowSorter(sorter);
+
+        // 🎯 CREAR LA BARRA DE BÚSQUEDA
+        JTextField searchField = new JTextField();
+        searchField.setPreferredSize(new Dimension(600, 35));
+        searchField.setFont(new Font("Arial", Font.PLAIN, 18));
+
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            private void updateFilter() {
+                String text = searchField.getText();
+                if (text.trim().length() == 0) {
+                    sorter.setRowFilter(null);
+                } else {
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(text), 1)); // Solo filtra por "Nombre"
+                }
+            }
+
+            @Override public void insertUpdate(DocumentEvent e) { updateFilter(); }
+            @Override public void removeUpdate(DocumentEvent e) { updateFilter(); }
+            @Override public void changedUpdate(DocumentEvent e) { updateFilter(); }
+        });
+
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        searchPanel.setBackground(new Color(250, 240, 230));
+        searchPanel.add(searchField);
+
+        // RENDERER personalizado para colores en celdas (mantienes el tuyo)
         DefaultTableCellRenderer customRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-                Color fondo = new Color(250, 240, 230); // Fondo por defecto
+                Color fondo = new Color(250, 240, 230);
                 Color texto = Color.BLACK;
 
                 if (!isSelected) {
@@ -91,38 +127,32 @@ public class UIAdminProducts {
                                 ? (Integer) cantidadObj
                                 : Integer.parseInt(cantidadObj.toString());
 
-                        if (cantidad <= -1) {  // 🔧 Condición: cantidad menor o igual a -1
-                            fondo = new Color(255, 150, 150); // Fondo rojo
-                            texto = Color.BLACK;              // Texto blanco
+                        if (cantidad <= -1) {
+                            fondo = new Color(255, 150, 150);
+                            texto = Color.BLACK;
                         } else if (cantidad == 0) {
-                            fondo = new Color(255, 200, 100); // Naranja claro para 0
+                            fondo = new Color(255, 200, 100);
                             texto = Color.BLACK;
                         }
-
                     } catch (Exception e) {
                         fondo = Color.WHITE;
                     }
-
                     cell.setBackground(fondo);
                     ((JLabel) cell).setForeground(texto);
-
                 } else {
                     cell.setBackground(table.getSelectionBackground());
                     ((JLabel) cell).setForeground(table.getSelectionForeground());
                 }
 
-                // Alineación
                 if (column == 2 || column == 3) {
                     ((JLabel) cell).setHorizontalAlignment(SwingConstants.CENTER);
                 } else {
                     ((JLabel) cell).setHorizontalAlignment(SwingConstants.LEFT);
                 }
-
                 return cell;
             }
         };
 
-        // 🔧 Asignar el renderer a todas las columnas
         for (int i = 0; i < productTable.getColumnCount(); i++) {
             productTable.getColumnModel().getColumn(i).setCellRenderer(customRenderer);
         }
@@ -131,13 +161,6 @@ public class UIAdminProducts {
         productTable.getColumnModel().getColumn(0).setMinWidth(0);
         productTable.getColumnModel().getColumn(0).setMaxWidth(0);
         productTable.getColumnModel().getColumn(0).setWidth(0);
-
-        productTable.setFont(new Font("Arial", Font.PLAIN, 18));
-        productTable.setRowHeight(40);
-        productTable.setBackground( new Color(250, 240, 230));
-        productTable.setSelectionBackground(new Color(173, 216, 230));
-        productTable.setSelectionForeground(Color.BLACK);
-        productTable.setFillsViewportHeight(true);
 
         JTableHeader header = productTable.getTableHeader();
         header.setForeground(new Color(201, 41, 41));
@@ -154,7 +177,27 @@ public class UIAdminProducts {
         }
 
         JScrollPane scrollPane = new JScrollPane(productTable);
-        productListPanel.add(titleLabel, BorderLayout.NORTH);
+
+
+
+        // 🧩 Panel de top (titulo + barra de búsqueda)
+        JPanel topPanel = new JPanel();
+        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
+        topPanel.setBackground(new Color(250, 240, 230));
+
+// 🧩 Centrar título
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        topPanel.add(titleLabel);
+        topPanel.add(Box.createVerticalStrut(10)); // Espacio
+
+// 🧩 Centrar barra de búsqueda
+        searchField.setMaximumSize(new Dimension(300, 30)); // Limita el ancho de la barra
+        searchPanel.setBackground(new Color(250, 240, 230));
+        searchPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        topPanel.add(searchPanel);
+
+// 🔵 Agregar todo al productListPanel
+        productListPanel.add(topPanel, BorderLayout.NORTH);
         productListPanel.add(scrollPane, BorderLayout.CENTER);
         productListPanel.add(createButtonPanel(tableModel, productTable), BorderLayout.SOUTH);
 
@@ -201,13 +244,25 @@ public class UIAdminProducts {
 
             SwingUtilities.invokeLater(() -> {
                 int row = tableModel.getRowCount() - 1;
-                productTable.setRowSelectionInterval(row, row);
-                showEditProductDialog(tableModel, row,
-                        tableModel.getValueAt(row, 1),
-                        tableModel.getValueAt(row, 2),
-                        tableModel.getValueAt(row, 3),
-                        productTable);
-                productTable.clearSelection(); // si quieres limpiar después del diálogo
+                if (row < productTable.getRowCount()) {
+                    productTable.setRowSelectionInterval(row, row);
+
+                    boolean productoEditado = showEditProductDialog(tableModel, row,
+                            tableModel.getValueAt(row, 1),
+                            tableModel.getValueAt(row, 2),
+                            tableModel.getValueAt(row, 3),
+                            productTable);
+
+                    // 🚨 Si el usuario NO edita correctamente (o cancela), BORRAR la fila recién agregada
+                    if (!productoEditado) {
+                        tableModel.removeRow(row);
+                    }
+
+                    // 🔄 Forzar actualización de botones y selección
+                    productTable.clearSelection();
+                    productTable.revalidate();
+                    productTable.repaint();
+                }
             });
         });
 
@@ -298,7 +353,7 @@ public class UIAdminProducts {
     }
 
 
-    private static void showEditProductDialog(DefaultTableModel model, int row, Object nombre, Object cantidad, Object precio, JTable table) {
+    private static boolean showEditProductDialog(DefaultTableModel model, int row, Object nombre, Object cantidad, Object precio, JTable table) {
         JDialog dialog = new JDialog();
         dialog.setTitle("Editar Producto");
         dialog.setSize(520, 710);
@@ -436,6 +491,7 @@ public class UIAdminProducts {
         dialog.add(bottomPanel, BorderLayout.SOUTH);
         dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
+        return false;
     }
 
     public static void updateProductTable(JTable productTable) {

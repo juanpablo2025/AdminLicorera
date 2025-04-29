@@ -86,7 +86,7 @@ public class Constants {
     public static final String BILL_ID = "Factura ";
     public static final String BILL_FECHA_HORA = "Fecha y Hora: ";
     public static final String BILL_PRODUCTS = "Productos: ";
-    public static final String TOTAL_BILL = "TOTAL COMPRA: ";
+    public static final String TOTAL_BILL = "Total: ";
     public static final String PESOS = " Pesos";
     public static final String PESO_SIGN = "$ ";
     public static final String THANKS_BILL = "Gracias por su compra!";

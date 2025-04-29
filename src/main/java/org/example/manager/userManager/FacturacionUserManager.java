@@ -17,6 +17,7 @@ import com.itextpdf.layout.properties.UnitValue;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.manager.adminManager.ConfigAdminManager;
+import org.example.model.Factura;
 import org.example.model.Producto;
 import org.example.utils.FormatterHelpers;
 
@@ -65,6 +66,16 @@ public class FacturacionUserManager {
      * Luego, termina la ejecución del programa.
      */
     public static void facturarYSalir() throws IOException, InterruptedException {
+        // Verifica si hay ventas registradas antes de continuar
+        List<Factura> facturas = ExcelUserManager.getFacturas();  // Obtiene todas las facturas
+
+        if (facturas.isEmpty()) {
+            // Si no hay ventas, muestra un mensaje y no termina el día
+            JOptionPane.showMessageDialog(null, "No se pueden cerrar las ventas, ya que no hay ventas registradas.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;  // Salir del método sin proceder
+        }
+
+        // Si hay ventas, procede con la facturación
         excelUserManager.facturarYLimpiar();
 
         //TODO: validar que no este ocupada
@@ -134,22 +145,34 @@ public class FacturacionUserManager {
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(FIVE));*/
 
-            document.add(new Paragraph(LICORERA_NAME)
+            document.add(new Paragraph("Licorera CR")
                     .setFont(lobsterFont)
                     .setFontSize(13)
-                    .setTextAlignment(TextAlignment.CENTER));
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(-2)); // Margen inferior ajustado a 0
+
+            document.add(new Paragraph("La 70")
+                    .setFont(lobsterFont)
+                    .setFontSize(10)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginTop(-5)
+                    .setMarginBottom(-2));// Margen inferior ajustado a 0
+
             document.add(new Paragraph(NIT)
                     .setFont(fontNormal)
                     .setFontSize(SIX)
-                    .setTextAlignment(TextAlignment.CENTER));
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(-2)); // Margen inferior ajustado a 0
+
             document.add(new Paragraph(DIRECCION)
                     .setFont(fontNormal)
                     .setFontSize(SIX)
-                    .setTextAlignment(TextAlignment.CENTER));
+                    .setTextAlignment(TextAlignment.CENTER).setMarginBottom(-2)); // Margen inferior ajustado a 0
+
             document.add(new Paragraph(TELEFONO)
                     .setFont(fontNormal)
                     .setFontSize(SIX)
-                    .setTextAlignment(TextAlignment.CENTER));
+                    .setTextAlignment(TextAlignment.CENTER).setMarginBottom(-2)); // Margen inferior ajustado a 0
 
             document.add(new Paragraph(new String(new char[22]).replace(SLASH_ZERO, "_"))
                     .setFont(fontNormal)
@@ -165,18 +188,19 @@ public class FacturacionUserManager {
             document.add(new Paragraph(fechaFormateada)
                     .setFont(fontNormal)
                     .setFontSize(SIX)
-                    .setMarginBottom(FIVE)
+                    .setMarginBottom(1)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph("Tipo de Pago: " + tipoPago)
+            document.add(new Paragraph(tipoPago)
                     .setFont(fontNormal)
-                    .setFontSize(SIX)
-                    .setMarginBottom(FIVE)
+                    .setFontSize(8)
+                    .setBold()
+                    .setMarginBottom(5)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(BILL_PRODUCTS)
+          /*  document.add(new Paragraph(BILL_PRODUCTS)
                     .setFont(fontBold)
-                    .setFontSize(8));
+                    .setFontSize(8));*/
 
             // Crear un formateador de moneda para Colombia
             NumberFormat formatoColombiano = NumberFormat.getCurrencyInstance(new Locale("es", "CO"));
@@ -203,7 +227,7 @@ public class FacturacionUserManager {
                     // Agregar el producto al documento con el nuevo formato de precio
                     document.add(new Paragraph(productoConPrecioFormateado)
                             .setFont(fontNormal)
-                            .setFontSize(EIGHT));
+                            .setFontSize(6));
                 }}
 
             /*document.add(new Paragraph(new String(new char[30]).replace(SLASH_ZERO, "_"))
@@ -211,16 +235,24 @@ public class FacturacionUserManager {
                     .setFontSize(EIGHT)
                     .setMarginBottom(FIVE));*/
 
-            // Totales
+            /* Totales
             com.itextpdf.layout.element.Table table = new com.itextpdf.layout.element.Table(new float[]{THREE, TWO});
             table.setWidth(UnitValue.createPercentValue(ONE_HUNDRED));
-
+*/
             NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
             String formattedPrice = formatCOP.format(totalCompra);
-            addTableRow(table, TOTAL_BILL, PESO_SIGN + formattedPrice + PESOS);
+           // addTableRow(table, TOTAL_BILL, PESO_SIGN + formattedPrice + PESOS);
 
 
-            document.add(table);
+            //document.add(table);
+
+
+            document.add(new Paragraph(TOTAL_BILL + PESO_SIGN + formattedPrice + PESOS)
+                    .setFont(fontNormal) // Puedes ajustar la fuente
+                    .setFontSize(8)    // Puedes ajustar el tamaño de la fuente
+                    //.setTextAlignment(TextAlignment.ALIGN_RIGHT) // O la alineación que prefieras
+                    .setMarginBottom(2)
+                    .setBold()); // O el margen que necesites
 
             document.add(new Paragraph(new String(new char[22]).replace(SLASH_ZERO, "_"))
                     .setFont(fontNormal)
@@ -230,6 +262,7 @@ public class FacturacionUserManager {
             document.add(new Paragraph(THANKS_BILL)
                     .setFont(fontNormal)
                     .setFontSize(EIGHT)
+                    .setBold()
                     .setTextAlignment(TextAlignment.CENTER));
             document.add(new Paragraph("IVA incluido.")
                     .setFont(fontNormal)
@@ -743,7 +776,7 @@ public class FacturacionUserManager {
             } else {
                 abrirPDF(nombreArchivo);
             }
-            limpiarCantidadVendida();
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -846,15 +879,18 @@ public class FacturacionUserManager {
 
             // Abrir la hoja de productos
             Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
-
             if (sheet != null) {
-                // Identificar la columna "Cantidad Vendida"
+                // Obtener la fila de encabezado; generalmente es la primera (índice 0)
                 Row headerRow = sheet.getRow(0);
-                int cantidadVendidaCol = -1;
+                if (headerRow == null) {
+                    throw new IllegalStateException("La fila de encabezado no existe en la hoja de productos.");
+                }
 
+                int cantidadVendidaCol = -1;
+                // Recorrer las celdas del encabezado para encontrar la columna "Cantidad Vendida"
                 for (int i = 0; i < headerRow.getLastCellNum(); i++) {
                     Cell headerCell = headerRow.getCell(i);
-                    if (headerCell != null && "Cantidad Vendida".equalsIgnoreCase(headerCell.getStringCellValue())) {
+                    if (headerCell != null && "Cantidad Vendida".equalsIgnoreCase(headerCell.getStringCellValue().trim())) {
                         cantidadVendidaCol = i;
                         break;
                     }
@@ -864,22 +900,23 @@ public class FacturacionUserManager {
                     throw new IllegalStateException("No se encontró la columna 'Cantidad Vendida'.");
                 }
 
-                // Limpiar la columna "Cantidad Vendida"
+                // Limpiar la columna "Cantidad Vendida": asignamos 0 a cada celda de dicha columna
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) { // Saltar la fila de encabezado
                     Row row = sheet.getRow(i);
                     if (row != null) {
                         Cell cell = row.getCell(cantidadVendidaCol, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
-                        cell.setCellValue(0); // Establecer el valor a 0
+                        cell.setCellValue(0);
                     }
                 }
+            } else {
+                System.err.println("La hoja de productos no se encontró.");
             }
 
             // Guardar los cambios en el archivo Excel
             try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
                 workbook.write(fos);
             }
-
-          //  System.out.println("Se ha limpiado la columna 'Cantidad Vendida'.");
+            // System.out.println("Se ha limpiado la columna 'Cantidad Vendida'.");
         } catch (IOException e) {
             e.printStackTrace();
         }

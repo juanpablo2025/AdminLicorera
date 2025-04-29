@@ -325,6 +325,7 @@ public class ExcelUserManager {
 
                 crearArchivoFacturacionYGastos(purchasesSheet, gastosSheet, empleadosSheet, totalCompra, totalGastos, reabastecimientoSheet, totalReabastecimiento);
                 generarResumenDiarioEstilizadoPDF();
+                limpiarCantidadVendida();
 
                 // 2️⃣ Guardar archivo con datos antes de limpiar
                 try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
@@ -349,7 +350,7 @@ public class ExcelUserManager {
                     e.printStackTrace();
                     JOptionPane.showMessageDialog(null, "Error al guardar archivo limpio.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
-
+                limpiarCantidadVendida();
                 limpiarFacturas();
                 String nombreCapitalizado = nombreEmpleado.substring(0, 1).toUpperCase() + nombreEmpleado.substring(1).toLowerCase();
 
@@ -796,7 +797,6 @@ public class ExcelUserManager {
             e.printStackTrace();
         }
     }
-    // Método para eliminar mesas con ID mayor a 10
     public static void eliminarMesasConIdMayorA15() {
         try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -804,23 +804,53 @@ public class ExcelUserManager {
             Sheet mesasSheet = workbook.getSheet("Mesas"); // Nombre de la hoja donde se encuentran las mesas
 
             if (mesasSheet != null) {
-                // Iterar a través de las filas de la hoja de mesas
-                for (int i = mesasSheet.getLastRowNum(); i >= 1; i--) { // Comenzar desde la última fila
+                // Primero, verificar si alguna mesa con ID > 15 está ocupada.
+                boolean mesaOcupada = false;
+                for (int i = 1; i <= mesasSheet.getLastRowNum(); i++) {
                     Row row = mesasSheet.getRow(i);
                     if (row != null) {
-                        Cell idCell = row.getCell(0); // Suponiendo que el ID de la mesa está en la columna A (índice 0)
+                        Cell idCell = row.getCell(0); // Suponemos que el ID está en la columna A (índice 0)
                         if (idCell != null && idCell.getCellType() == CellType.STRING) {
-                            String mesaID = idCell.getStringCellValue(); // Obtener el ID de la mesa como String
+                            String mesaID = idCell.getStringCellValue();
                             if (mesaID.startsWith("Mesa ")) {
-                                // Extraer el número después de "Mesa "
+                                int idNumero = Integer.parseInt(mesaID.split(" ")[1]);
+                                if (idNumero > 15) {
+                                    // Suponemos que el estado de la mesa se encuentra en la columna B (índice 1)
+                                    Cell estadoCell = row.getCell(1);
+                                    if (estadoCell != null && estadoCell.getCellType() == CellType.STRING) {
+                                        String estado = estadoCell.getStringCellValue();
+                                        if ("ocupada".equalsIgnoreCase(estado.trim())) {
+                                            mesaOcupada = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (mesaOcupada) {
+                    JOptionPane.showMessageDialog(null, "No se limpiaron las mesas, ya que al menos una mesa con ID mayor a 15 está ocupada.", "Información", JOptionPane.INFORMATION_MESSAGE);
+                    return; // Cancelar la operación de limpieza
+                }
+
+                // Si no se encontró ninguna mesa ocupada, proceder a eliminar las mesas con ID mayor a 15.
+                for (int i = mesasSheet.getLastRowNum(); i >= 1; i--) { // Iteramos desde la última fila hacia arriba
+                    Row row = mesasSheet.getRow(i);
+                    if (row != null) {
+                        Cell idCell = row.getCell(0); // Suponemos que el ID de la mesa está en la columna A (índice 0)
+                        if (idCell != null && idCell.getCellType() == CellType.STRING) {
+                            String mesaID = idCell.getStringCellValue();
+                            if (mesaID.startsWith("Mesa ")) {
                                 int idNumero = Integer.parseInt(mesaID.split(" ")[1]);
                                 if (idNumero > 15) {
                                     mesasSheet.removeRow(row); // Eliminar la fila de la mesa
-                                    // Mover el resto de las filas hacia arriba
+                                    // Desplazar el resto de filas hacia arriba para llenar el vacío
                                     for (int j = i + 1; j <= mesasSheet.getLastRowNum(); j++) {
                                         Row nextRow = mesasSheet.getRow(j);
                                         if (nextRow != null) {
-                                            mesasSheet.shiftRows(j, j + 1, -1); // Desplazar filas hacia arriba
+                                            mesasSheet.shiftRows(j, j + 1, -1);
                                         }
                                     }
                                 }
@@ -833,9 +863,6 @@ public class ExcelUserManager {
                 try (FileOutputStream fos = new FileOutputStream(FILE_PATH.toString())) {
                     workbook.write(fos);
                 }
-
-                // JOptionPane.showMessageDialog(null, "Mesas con ID mayor a 10 han sido eliminadas.");
-
             } else {
                 JOptionPane.showMessageDialog(null, "La hoja de mesas no se encontró.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -845,7 +872,7 @@ public class ExcelUserManager {
     }
 
     // Método para obtener todas las facturas desde la hoja de "compras"
-    public List<Factura> getFacturas() {
+    public static List<Factura> getFacturas() {
         List<Factura> facturas = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
