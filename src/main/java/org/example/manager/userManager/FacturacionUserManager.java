@@ -12,6 +12,7 @@ import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import org.apache.poi.ss.usermodel.*;
@@ -249,7 +250,7 @@ public class FacturacionUserManager {
 
             document.add(new Paragraph(TOTAL_BILL + PESO_SIGN + formattedPrice + PESOS)
                     .setFont(fontNormal) // Puedes ajustar la fuente
-                    .setFontSize(8)    // Puedes ajustar el tamaño de la fuente
+                    .setFontSize(9)    // Puedes ajustar el tamaño de la fuente
                     //.setTextAlignment(TextAlignment.ALIGN_RIGHT) // O la alineación que prefieras
                     .setMarginBottom(2)
                     .setBold()); // O el margen que necesites
@@ -371,9 +372,9 @@ public class FacturacionUserManager {
             // Encabezado del PDF
             document.add(new Paragraph("Resumen Diario \n" + fechaActual.format(formatter) + " " + horaResumen.format(horaResumenFormatter))
                     .setFont(fontBold)
-                    .setFontSize(10)
+                    .setFontSize(13)
                     .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(10));
+                    .setMarginBottom(2));
 
             String textoTotal = "REALIZO DEL SISTEMA: $" + formatearMoneda(totalVentas) + " pesos";
 
@@ -392,7 +393,7 @@ public class FacturacionUserManager {
                     .setMarginBottom(5));*/
 
             // Mostrar el total de gastos
-            document.add(new Paragraph("Total en GASTOS: $" + formatearMoneda(totalGastos) + " pesos")
+            document.add(new Paragraph("GASTOS: $" + formatearMoneda(totalGastos) + " pesos")
                     .setFont(fontBold)
                     .setFontSize(8)
                     .setTextAlignment(TextAlignment.LEFT)
@@ -610,7 +611,7 @@ public class FacturacionUserManager {
             float anchoPuntos = anchoMm * 2.83465f;
             float altoPuntos = altoTotalMm * 2.83465f;
 
-// Crear el PDF con la altura ajustada dinámicamente
+            // Crear el PDF con la altura ajustada dinámicamente
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
             PdfWriter writer = new PdfWriter(nombreArchivo);
             PdfDocument pdfDoc = new PdfDocument(writer);
@@ -618,6 +619,10 @@ public class FacturacionUserManager {
 
             PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
             PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            InputStream fontStream = FacturacionUserManager.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
+            // Leer la fuente desde el InputStream
+            byte[] fontBytes = fontStream.readAllBytes();
+            PdfFont lobsterFont = PdfFontFactory.createFont(fontBytes, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
 
             // Ajustar margen izquierdo a 6mm (1cm equivalente)
             float margenIzquierdo = 10 * HEIGHT_DOTS;
@@ -625,75 +630,81 @@ public class FacturacionUserManager {
 
 
             // Encabezado del PDF
-            document.add(new Paragraph("Total Generado Durante el Día")
-                    .setFont(fontBold)
-                    .setFontSize(12)
+            document.add(new Paragraph("Realizo del Día")
+                    .setFont(lobsterFont)
+                    .setFontSize(15)
                     .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(10));
+                    .setMarginBottom(0));
 
             LocalTime horaNueva = LocalTime.now();
             DateTimeFormatter horaFormateada= DateTimeFormatter.ofPattern("HH:mm:ss");
             document.add(new Paragraph(fechaActual.format(formatter) + "\n" + horaNueva.format(horaFormateada))
                     .setFont(fontNormal)
-                    .setFontSize(10)
+                    .setFontSize(8)
+                    .setMarginBottom(-1)
                     .setTextAlignment(TextAlignment.CENTER));
 
             document.add(new Paragraph(new String(new char[22]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(8)
-                    .setMarginBottom(10));
+                    .setMarginBottom(2));
 
             // Detalles del total facturado
             NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
             String formattedPrice = formatCOP.format(totalFacturado);
-            document.add(new Paragraph("Realizo: $" + formattedPrice + " pesos")
+            document.add(new Paragraph("Total $ " + formattedPrice)
                     .setFont(fontBold)
                     .setFontSize(12)
                     .setTextAlignment(TextAlignment.LEFT)
                     .setMarginBottom(5));
 
 
-            document.add(new Paragraph("\nTotales por Forma de Pago:")
-                    .setFont(fontBold)
-                    .setFontSize(10)
-                    .setMarginBottom(5));
+
 
             if (totalesPorPago != null && !totalesPorPago.isEmpty()) {
                 for (Map.Entry<String, Double> entry : totalesPorPago.entrySet()) {
-                    String metodoPago = entry.getKey();
+                    String metodoPago = entry.getKey().replace(" - Transferencia", "");
                     double total = entry.getValue();
 
                     // Formateo del total en pesos colombianos
                     String totalFormateado = formatCOP.format(total);
 
-                    document.add(new Paragraph(metodoPago + ": $" + totalFormateado)
-                            .setFont(fontNormal)
-                            .setFontSize(10)
-                            .setMarginBottom(3));
+                    Paragraph pagoParrafo = new Paragraph()
+                            .add(new Text(metodoPago + ": ").setFont(fontNormal).setBold())
+                            .add(new Text("$ " + totalFormateado).setFont(fontNormal))
+                            .setFontSize(8)
+                            .setMarginBottom(2);
+
+                    document.add(pagoParrafo);
                 }
+
             } else {
                 document.add(new Paragraph("No hay datos de pagos registrados.")
                         .setFont(fontNormal)
-                        .setFontSize(10)
-                        .setMarginBottom(5));
+                        .setFontSize(8)
+                        .setMarginBottom(2));
             }
 
-            document.add(new Paragraph(new String(new char[22]).replace('\0', '_'))
-                    .setFont(fontNormal)
-                    .setFontSize(8)
-                    .setMarginBottom(10));
-            if (totalGastos > 0) {
-                document.add(new Paragraph("Total en GASTOS: $" + formatearMoneda(totalGastos) + " pesos")
-                        .setFont(fontBold)
-                        .setFontSize(8)
-                        .setTextAlignment(TextAlignment.LEFT)
-                        .setMarginBottom(10));
 
-                document.add(new Paragraph("Detalle de GASTOS:")
+
+            // Espacios para el cierre de caja
+            document.add(new Paragraph(new String(new char[18]).replace('\0', '_'))
+                    .setFont(fontNormal)
+                    .setFontSize(10)
+                    .setMarginBottom(5));
+
+            if (totalGastos > 0) {
+                document.add(new Paragraph("Gastos $ " + formatearMoneda(totalGastos))
                         .setFont(fontBold)
-                        .setFontSize(9)
+                        .setFontSize(10)
                         .setTextAlignment(TextAlignment.LEFT)
-                        .setMarginBottom(5));
+                        .setMarginBottom(0));
+
+                document.add(new Paragraph("Detalles")
+                        .setFont(fontBold)
+                        .setFontSize(7)
+                        .setTextAlignment(TextAlignment.LEFT)
+                        .setMarginBottom(0));
 
                 for (int i = 1; i <= gastosSheet.getLastRowNum(); i++) {
                     Row row = gastosSheet.getRow(i);
@@ -707,31 +718,14 @@ public class FacturacionUserManager {
                             continue; // Omitir si no es numérico
                         }
 
-                        document.add(new Paragraph("- " + producto + ": $" + formatearMoneda(precioGasto) + " pesos")
+                        document.add(new Paragraph(producto.toUpperCase() + " $ " + formatearMoneda(precioGasto))
                                 .setFont(fontNormal)
-                                .setFontSize(7)
+                                .setFontSize(6)
                                 .setTextAlignment(TextAlignment.LEFT));
                     }
                 }
             }
-            // Sección para el cierre de caja
-            document.add(new Paragraph("Cierre de Caja")
-                    .setFont(fontBold)
-                    .setFontSize(10)
-                    .setTextAlignment(TextAlignment.LEFT)
-                    .setMarginBottom(2));
-
-            document.add(new Paragraph("Resumen de las ventas:")
-                    .setFont(fontNormal)
-                    .setFontSize(8)
-                    .setMarginBottom(5));
-
-            // Espacios para el cierre de caja
-            document.add(new Paragraph(new String(new char[15]).replace('\0', '_'))
-                    .setFont(fontNormal)
-                    .setFontSize(10)
-                    .setMarginBottom(5));
-            document.add(new Paragraph("Productos Vendidos:")
+            document.add(new Paragraph("Vendidos")
                     .setFont(fontBold)
                     .setFontSize(10)
                     .setMarginBottom(5));
@@ -741,10 +735,10 @@ public class FacturacionUserManager {
                     String producto = entry.getKey();
                     int cantidad = entry.getValue();
 
-                    document.add(new Paragraph("- " + producto + ": " + " X"+ cantidad)
+                    document.add(new Paragraph( producto + " x"+ cantidad)
                             .setFont(fontNormal)
-                            .setFontSize(8)
-                            .setMarginBottom(2));
+                            .setFontSize(6)
+                            .setMarginBottom(0));
                 }
             } else {
                 document.add(new Paragraph("No se registraron ventas en este periodo.")
@@ -755,19 +749,23 @@ public class FacturacionUserManager {
             document.add(new Paragraph(new String(new char[15]).replace('\0', '_'))
                     .setFont(fontNormal)
                     .setFontSize(10)
-                    .setMarginTop(5)
-                    .setMarginBottom(5));
+                    .setMarginTop(2)
+                    .setMarginBottom(2));
 
             // Agradecimiento o información adicional
 
-            InputStream fontStream = FacturacionUserManager.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
-            // Leer la fuente desde el InputStream
-            byte[] fontBytes = fontStream.readAllBytes();
-            PdfFont lobsterFont = PdfFontFactory.createFont(fontBytes, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
-            document.add(new Paragraph("Licorera CR La 70")
+            document.add(new Paragraph("Licorera CR")
+                    .setFont(lobsterFont)
+                    .setFontSize(13)
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginBottom(-2)); // Margen inferior ajustado a 0
+
+            document.add(new Paragraph("La 70")
                     .setFont(lobsterFont)
                     .setFontSize(10)
-                    .setTextAlignment(TextAlignment.CENTER));
+                    .setTextAlignment(TextAlignment.CENTER)
+                    .setMarginTop(-5)
+                    .setMarginBottom(-2));// Margen inferior ajustado a 0
 
             document.close();
             String outputType = ConfigAdminManager.getOutputType();

@@ -78,7 +78,7 @@ public class UIAdminProducts {
 
         JTable productTable = new JTable(tableModel);
         productTable.setFont(new Font("Arial", Font.PLAIN, 18));
-        productTable.setRowHeight(28);
+        productTable.setRowHeight(35);
         productTable.setBackground(new Color(250, 240, 230));
         productTable.setSelectionBackground(new Color(173, 216, 230));
         productTable.setSelectionForeground(Color.BLACK);
@@ -90,7 +90,7 @@ public class UIAdminProducts {
 
         // 🎯 CREAR LA BARRA DE BÚSQUEDA
         JTextField searchField = new JTextField();
-        searchField.setPreferredSize(new Dimension(600, 35));
+        searchField.setPreferredSize(new Dimension(800, 35));
         searchField.setFont(new Font("Arial", Font.PLAIN, 18));
 
         searchField.getDocument().addDocumentListener(new DocumentListener() {
@@ -268,15 +268,18 @@ public class UIAdminProducts {
 
         JButton editButton = createStyledButton("Editar", new Color(76, 175, 80), new Color(56, 142, 60), 18);
         editButton.setEnabled(false);
+
         editButton.addActionListener(e -> {
-            int selectedRow = productTable.getSelectedRow();
-            if (selectedRow != -1) {
-                Object nombre = tableModel.getValueAt(selectedRow, 1);
-                Object cantidad = tableModel.getValueAt(selectedRow, 2);
-                Object precio = tableModel.getValueAt(selectedRow, 3);
-                showEditProductDialog(tableModel, selectedRow, nombre, cantidad, precio, productTable);
-            }
+                int viewRow = productTable.getSelectedRow();
+                if (viewRow != -1) {
+                    int modelRow = productTable.convertRowIndexToModel(viewRow);
+                    Object nombre = tableModel.getValueAt(modelRow, 1);
+                    Object cantidad = tableModel.getValueAt(modelRow, 2);
+                    Object precio = tableModel.getValueAt(modelRow, 3);
+                    showEditProductDialog(tableModel, modelRow, nombre, cantidad, precio, productTable);
+                }
         });
+
 
         JButton saveButton = createStyledButton("Guardar Cambios", new Color(0, 204, 136), new Color(0, 153, 102), 18);
         saveButton.addActionListener(e -> saveProducts(tableModel, productTable));
@@ -284,10 +287,11 @@ public class UIAdminProducts {
         JButton reabastecimientoButton = createStyledButton("Reabastecer", new Color(228, 185, 42), new Color(255, 193, 7), 22);
         reabastecimientoButton.setEnabled(false);
         reabastecimientoButton.addActionListener(e -> {
-            int selectedRow = productTable.getSelectedRow();
-            if (selectedRow != -1) {
-                String nombre = (String) tableModel.getValueAt(selectedRow, 1);
-                int cantidad = (Integer) tableModel.getValueAt(selectedRow, 2);
+            int viewRow = productTable.getSelectedRow();
+            if (viewRow != -1) {
+                int modelRow = productTable.convertRowIndexToModel(viewRow); // ✅ usa el índice real
+                String nombre = (String) tableModel.getValueAt(modelRow, 1);
+                int cantidad = Integer.parseInt(tableModel.getValueAt(modelRow, 2).toString());
                 showReabastecimientoDialog(productTable, nombre, cantidad);
             }
         });

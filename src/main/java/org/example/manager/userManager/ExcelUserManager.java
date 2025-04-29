@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 import static org.example.manager.userManager.FacturacionUserManager.*;
@@ -262,32 +264,27 @@ public class ExcelUserManager {
             Sheet reabastecimientoSheet = workbook.getSheet("Reabastecimiento");
 
             if (purchasesSheet != null) {
-                // Mapa para almacenar las cantidades vendidas por producto
                 Map<String, Integer> productosVendidos = new HashMap<>();
 
-                // Sumar las cantidades vendidas por producto
-                for (int i = 1; i <= purchasesSheet.getLastRowNum(); i++) { // Suponiendo que la fila 0 es el encabezado
+                Pattern pattern = Pattern.compile("(.+?)\\s+x(\\d+)", Pattern.CASE_INSENSITIVE);
+
+                for (int i = 1; i <= purchasesSheet.getLastRowNum(); i++) {
                     Row row = purchasesSheet.getRow(i);
                     if (row != null) {
-                        Cell nombreProductoCell = row.getCell(0); // Columna 0: Nombre del producto
-                        Cell cantidadCell = row.getCell(1); // Columna 1: Cantidad vendida
+                        Cell celdaProducto = row.getCell(0); // Asumiendo que todo está en la columna 0
+                        if (celdaProducto != null && celdaProducto.getCellType() == CellType.STRING) {
+                            String texto = celdaProducto.getStringCellValue().trim();
 
-                        if (nombreProductoCell != null && cantidadCell != null) {
-                            String nombreProducto = nombreProductoCell.getStringCellValue().trim();
+                            Matcher matcher = pattern.matcher(texto);
+                            while (matcher.find()) {
+                                String nombreProducto = matcher.group(1).trim();
+                                int cantidadVendida = Integer.parseInt(matcher.group(2).trim());
 
-                            int cantidadVendida = 0;
-                            if (cantidadCell.getCellType() == CellType.NUMERIC) {
-                                cantidadVendida = (int) cantidadCell.getNumericCellValue();
-                            } else if (cantidadCell.getCellType() == CellType.STRING) {
-                                try {
-                                    cantidadVendida = Integer.parseInt(cantidadCell.getStringCellValue());
-                                } catch (NumberFormatException e) {
-                                    System.err.println("Error al parsear cantidad de la fila: " + i);
-                                }
+                                productosVendidos.put(nombreProducto, productosVendidos.getOrDefault(nombreProducto, 0) + cantidadVendida);
                             }
 
-                            if (cantidadVendida > 0) {
-                                productosVendidos.put(nombreProducto, productosVendidos.getOrDefault(nombreProducto, 0) + cantidadVendida);
+                            if (!matcher.find()) {
+                                System.err.println("Valor inválido en fila " + i + ": \"" + texto + "\"");
                             }
                         }
                     }
