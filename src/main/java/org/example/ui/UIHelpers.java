@@ -9,12 +9,12 @@ import org.example.utils.FormatterHelpers;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.AbstractBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.Font;
@@ -51,7 +51,7 @@ public class UIHelpers {
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
         button.setContentAreaFilled(false);
-        button.setUI(new RoundedButtonUI(70));
+        button.setUI(new RoundedButtonUI(50));
         button.addActionListener(listener);
 
         JPanel panel = new JPanel();
@@ -60,10 +60,10 @@ public class UIHelpers {
 
         JLabel iconLabel = new JLabel(icon);
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        iconLabel.setBorder(BorderFactory.createEmptyBorder(4, 0, 2, 0));
+        iconLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 1, 0));
 
         JSeparator separator = new JSeparator();
-        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
+        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 4));
         separator.setForeground(new Color(200, 170, 100));
 
         JLabel textLabel = new JLabel(text);
@@ -81,7 +81,7 @@ public class UIHelpers {
 
             // Crear la fuente desde el InputStream
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            customFont = customFont.deriveFont(Font.ITALIC, 22); // Ajustar tamaño
+            customFont = customFont.deriveFont(Font.ITALIC, 18); // Ajustar tamaño
 
             // Aplicar la fuente al JLabel
             textLabel.setFont(customFont);
@@ -204,15 +204,73 @@ public class UIHelpers {
     }
 
 
+    public static JComboBox<String> createProductAdminComboBox() {
+        JComboBox<String> productComboBox = new JComboBox<>();
+        productComboBox.setEditable(true);
+        productComboBox.setFont(new Font("Arial", Font.BOLD, 18));
+
+        JTextField comboBoxEditor = (JTextField) productComboBox.getEditor().getEditorComponent();
+
+        // Admin: No filtrar por stock
+        List<String> productList = productoUserManager.getProducts().stream()
+                .map(Producto::getName)
+                .sorted(String::compareToIgnoreCase)
+                .toList();
+
+        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
+        model.addElement("Busca un producto");
+        productList.forEach(model::addElement);
+        productComboBox.setModel(model);
+        productComboBox.setSelectedItem("Busca un producto");
+
+        comboBoxEditor.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (comboBoxEditor.getText().equals("Busca un producto")) {
+                    comboBoxEditor.setText("");
+                    comboBoxEditor.setForeground(Color.BLACK);
+                }
+            }
+        });
+
+        comboBoxEditor.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                String input = comboBoxEditor.getText().trim();
+                DefaultComboBoxModel<String> filteredModel = new DefaultComboBoxModel<>();
+
+                if (input.isEmpty()) {
+                    filteredModel.addElement("Busca un producto");
+                    productList.forEach(filteredModel::addElement);
+                } else {
+                    productList.stream()
+                            .filter(product -> product.toLowerCase().contains(input.toLowerCase()))
+                            .forEach(filteredModel::addElement);
+                }
+
+                productComboBox.setModel(filteredModel);
+                comboBoxEditor.setText(input);
+                productComboBox.showPopup();
+            }
+        });
+
+        return productComboBox;
+    }
+
+
     public static JPanel createInputPanel(JTable table, VentaMesaUserManager ventaMesaUserManager) {
-        JPanel inputPanel = new JPanel(new BorderLayout());
-        inputPanel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
-        inputPanel.setPreferredSize(new Dimension(450, 400));
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        inputPanel.setBackground(new Color(28, 28, 28));
 
         Font labelFont = new Font("Arial", Font.BOLD, 18);
 
-        // Panel de búsqueda
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 10));
+        // 🟦 Search Panel
+        JPanel searchPanel = new JPanel();
+        searchPanel.setLayout(new BoxLayout(searchPanel, BoxLayout.X_AXIS));
+        searchPanel.setBackground(new Color(28, 28, 28));
+        searchPanel.setMaximumSize(new Dimension(400, 50));
 
         JTextField searchField = new JTextField() {
             @Override
@@ -228,32 +286,32 @@ public class UIHelpers {
             }
         };
         searchField.setFont(new Font("Arial", Font.PLAIN, 20));
-        searchField.setPreferredSize(new Dimension(420, 40));
-        searchPanel.add(searchField);
-        searchPanel.setBackground(new Color(28,28,28));
+        searchField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        searchField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
         searchField.setForeground(Color.black);
+        searchPanel.add(searchField);
+        inputPanel.add(searchPanel);
 
-        inputPanel.add(searchPanel, BorderLayout.NORTH);
-
-        // Spinner de cantidad (agrega esto arriba del searchPanel)
-        JPanel quantityPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 13, 1));
+        // 🟦 Quantity Panel
+        JPanel quantityPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         quantityPanel.setBackground(new Color(28, 28, 28));
+        quantityPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+
         JLabel quantityLabel = new JLabel("Cantidad x");
         quantityLabel.setForeground(Color.WHITE);
         quantityLabel.setFont(labelFont);
 
         SpinnerNumberModel model = new SpinnerNumberModel(1, 1, 999, 1);
         JSpinner cantidadSpinner = new JSpinner(model);
-
         JComponent editor = cantidadSpinner.getEditor();
         JFormattedTextField spinnerTextField = ((JSpinner.DefaultEditor) editor).getTextField();
 
         spinnerTextField.setColumns(3);
-        spinnerTextField.setPreferredSize(new Dimension(400, 40));
         spinnerTextField.setFont(new Font("Arial", Font.PLAIN, 20));
-
-
-        // 👇 Esta línea fuerza sincronización en tiempo real al escribir
+        spinnerTextField.setPreferredSize(new Dimension(80, 40));
         spinnerTextField.getDocument().addDocumentListener(new DocumentListener() {
             void update() {
                 SwingUtilities.invokeLater(() -> {
@@ -265,52 +323,43 @@ public class UIHelpers {
                     spinnerTextField.setCaretPosition(Math.min(caret, spinnerTextField.getText().length()));
                 });
             }
-
-
             @Override public void insertUpdate(DocumentEvent e) { update(); }
             @Override public void removeUpdate(DocumentEvent e) { update(); }
             @Override public void changedUpdate(DocumentEvent e) { update(); }
         });
-        quantityPanel.add(quantityLabel, BorderLayout.WEST);
+        quantityPanel.add(quantityLabel);
         quantityPanel.add(cantidadSpinner);
         inputPanel.add(quantityPanel);
 
-        // Panel de productos dinámico
+        // 🟦 Scrollable Product Panel
         JPanel productPanel = new JPanel(new GridLayout(0, 2, 2, 5));
+        productPanel.setBackground(new Color(28, 28, 28));
         JScrollPane scrollPane = new JScrollPane(productPanel);
-        scrollPane.setPreferredSize(new Dimension(500, 365));
-        inputPanel.add(scrollPane, BorderLayout.SOUTH);
-        productPanel.setBackground(new Color(28,28,28));
-
-        List<Producto> productList = productoUserManager.getProducts().stream()
-                .toList();
-        // ⏩ Aumentar la velocidad del scroll
+        scrollPane.setPreferredSize(new Dimension(400, 300)); // se adapta en pack()
         scrollPane.getVerticalScrollBar().setUnitIncrement(30);
 
-        // 🎨 Personalizar la apariencia de la barra de desplazamiento
         scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
-            @Override
-            protected void configureScrollBarColors() {
-                this.thumbColor = new Color(28,28,28); // Color del "pulgar"
-                this.trackColor = new Color(200, 200, 200); // Color del fondo de la barra
+            @Override protected void configureScrollBarColors() {
+                this.thumbColor = new Color(28,28,28);
+                this.trackColor = new Color(200, 200, 200);
             }
-
-            @Override
-            protected JButton createDecreaseButton(int orientation) {
+            @Override protected JButton createDecreaseButton(int orientation) {
                 return createInvisibleButton();
             }
-
-            @Override
-            protected JButton createIncreaseButton(int orientation) {
+            @Override protected JButton createIncreaseButton(int orientation) {
                 return createInvisibleButton();
             }
-
             private JButton createInvisibleButton() {
                 JButton button = new JButton();
-                button.setPreferredSize(new Dimension(0, 0)); // Oculta los botones de la barra
+                button.setPreferredSize(new Dimension(0, 0));
                 return button;
             }
         });
+
+        inputPanel.add(scrollPane);
+
+        // 🎯 Cargar productos
+        List<Producto> productList = productoUserManager.getProducts();
 
         // 📌 Aumentar el grosor de la barra de desplazamiento
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(15, 0));
@@ -373,6 +422,8 @@ public class UIHelpers {
                                 .map(word -> word.isEmpty() ? "" : Character.toUpperCase(word.charAt(0)) + word.substring(1))
                                 .collect(Collectors.joining(" "));
 
+                        card.setToolTipText(formattedName);
+
                         namePanel.setLayout(new BorderLayout());
                         namePanel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8)); // Espaciado interno
 
@@ -423,8 +474,8 @@ public class UIHelpers {
                                     }
 
                                     if (img != null) {
-                                        Image scaledImg = img.getScaledInstance(200, 150, Image.SCALE_SMOOTH);
-                                        return makeRoundedImage(scaledImg, 200, 150);
+                                        Image scaledImg = img.getScaledInstance(180, 150, Image.SCALE_SMOOTH);
+                                        return makeRoundedImage(scaledImg, 180, 150);
 
                                     }
                                 } catch (Exception e) {
@@ -485,7 +536,7 @@ public class UIHelpers {
             productPanel.repaint();
         };
 
-        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            searchField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) { updateProducts.run(); }
             @Override
@@ -651,11 +702,18 @@ public class UIHelpers {
 
         // Ajustar tamaño de columnas
         TableColumnModel columnModel = table.getColumnModel();
-        columnModel.getColumn(0).setPreferredWidth(250); // Producto (Más grande)
-        columnModel.getColumn(1).setPreferredWidth(50);  // Cantidad
-        columnModel.getColumn(2).setPreferredWidth(80);  // Precio Unitario
-        columnModel.getColumn(3).setPreferredWidth(80);  // Total
-        columnModel.getColumn(4).setPreferredWidth(80); // Botón Quitar
+        columnModel.getColumn(0).setPreferredWidth(250);
+        columnModel.getColumn(1).setPreferredWidth(50);
+        columnModel.getColumn(2).setPreferredWidth(80);
+        columnModel.getColumn(3).setPreferredWidth(80);
+
+        TableColumn quitarColumn = columnModel.getColumn(4);
+        quitarColumn.setPreferredWidth(100);
+        quitarColumn.setMinWidth(100);
+        quitarColumn.setMaxWidth(100);
+
+// Evitar que se puedan mover las columnas
+        table.getTableHeader().setReorderingAllowed(false);
 
         // Centrar texto de las columnas Cantidad, Unid. $, y Total $
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();

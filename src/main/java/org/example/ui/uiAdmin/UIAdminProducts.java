@@ -678,7 +678,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
 
 
 
-        JComboBox<String> searchBox = UIHelpers.createProductComboBox();
+        JComboBox<String> searchBox = UIHelpers.createProductAdminComboBox();
         searchBox.setPreferredSize(new Dimension(400, 35));
         searchBox.setMaximumSize(new Dimension(400, 35));
         searchBox.setFont(new Font("Arial", Font.PLAIN, 16));

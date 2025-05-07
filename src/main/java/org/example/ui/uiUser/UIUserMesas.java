@@ -79,7 +79,11 @@ public class UIUserMesas {
 
                 // Agregar el nuevo panel de venta de mesa si no está agregado ya
                 mainPanel.add(new VentaMesaPanel(productosMesa, tituloMesa, mainPanel,mainFrame), "VentaMesaPanel");
-
+                mainPanel.setBorder(BorderFactory.createCompoundBorder(
+                        new LineBorder(new Color(100, 100, 100), 0, true),
+                        new EmptyBorder(10, 20, 20, 20)
+                ));
+                mainPanel.setBackground(fondoPrincipal);
                 // Mostrar el panel de ventas
                 cl.show(mainPanel, "VentaMesaPanel");
             }

@@ -3,6 +3,8 @@ package org.example.utils;
 import org.json.JSONObject;
 
 import javax.swing.*;
+import java.awt.*;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -15,15 +17,15 @@ import java.util.Arrays;
 
 public class Updater {
 
-    private static final String CURRENT_VERSION = "v1.0.9";
+    private static final String CURRENT_VERSION = "v1.1.0";
     private static final String TEMP_EXE_NAME = "update_temp.exe";
     private static final String APP_EXE_NAME = "Licorera CR.exe";
     private static final String GITHUB_API_URL = "https://api.github.com/repos/juanpablo2025/AdminLicorera/releases/latest";
 
     private static JFrame progressFrame;
+    private static JProgressBar progressBar;
 
     public static void checkForUpdates() {
-
         if (!hayConexionInternet()) {
             System.out.println("Sin conexión a internet, se omite la búsqueda de actualizaciones.");
             return;
@@ -35,7 +37,7 @@ public class Updater {
 
             if (isNewVersion(remoteVersion, CURRENT_VERSION)) {
                 showProgressWindow();
-                downloadFile(downloadUrl, TEMP_EXE_NAME);
+                downloadFileWithProgress(downloadUrl, TEMP_EXE_NAME);
                 createUpdateScript();
                 hideProgressWindow();
                 launchUpdateScript();
@@ -47,13 +49,12 @@ public class Updater {
         }
     }
 
-
     public static boolean hayConexionInternet() {
         try {
             URL url = new URL("https://github.com");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("HEAD");
-            connection.setConnectTimeout(3000); // 3 segundos
+            connection.setConnectTimeout(3000);
             connection.setReadTimeout(3000);
             int responseCode = connection.getResponseCode();
             return (200 <= responseCode && responseCode <= 399);
@@ -74,9 +75,25 @@ public class Updater {
         return remote.compareTo(local) > 0;
     }
 
-    private static void downloadFile(String fileURL, String saveAs) throws IOException {
-        try (InputStream in = new URL(fileURL).openStream()) {
-            Files.copy(in, Paths.get(saveAs), StandardCopyOption.REPLACE_EXISTING);
+    private static void downloadFileWithProgress(String fileURL, String saveAs) throws IOException {
+        URL url = new URL(fileURL);
+        HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+        int contentLength = httpConn.getContentLength();
+
+        try (InputStream in = httpConn.getInputStream();
+             FileOutputStream out = new FileOutputStream(saveAs)) {
+
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            int downloaded = 0;
+
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+                downloaded += bytesRead;
+                final int progress = (int) ((downloaded / (float) contentLength) * 100);
+
+                SwingUtilities.invokeLater(() -> progressBar.setValue(progress));
+            }
         }
     }
 
@@ -96,15 +113,27 @@ public class Updater {
         new ProcessBuilder("cmd", "/c", "start", "update_launcher.bat").start();
     }
 
-    private static JWindow showProgressWindow() {
-        JWindow window = new JWindow();
+    private static void showProgressWindow() {
+        progressFrame = new JFrame("Actualizando");
+        progressFrame.setUndecorated(true);
+        progressBar = new JProgressBar(0, 100);
+        progressBar.setStringPainted(true);
+        progressBar.setValue(0);
+
         JLabel label = new JLabel("Descargando actualización...", SwingConstants.CENTER);
-        window.getContentPane().add(label);
-        window.setSize(300, 80);
-        window.setLocationRelativeTo(null);
-        window.setAlwaysOnTop(true);
-        window.setVisible(true);
-        return window;
+        label.setFont(new Font("Segoe UI", Font.BOLD, 16)); // Fuente más grande
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(label, BorderLayout.NORTH);
+        panel.add(progressBar, BorderLayout.CENTER);
+
+        progressFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        progressFrame.setSize(350, 50);
+        progressFrame.setLocationRelativeTo(null);
+        progressFrame.setAlwaysOnTop(true);
+        progressFrame.setContentPane(panel);
+        progressFrame.setVisible(true);
+
     }
 
     private static void hideProgressWindow() {

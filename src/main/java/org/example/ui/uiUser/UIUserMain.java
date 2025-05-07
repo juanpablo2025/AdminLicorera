@@ -43,9 +43,13 @@ public class UIUserMain {
             JPanel mainPanel = new JPanel(new BorderLayout());
             mainPanel.setBackground(new Color(245, 245, 245));
 
-            JPanel sidebarPanel = new JPanel(new BorderLayout());
-            sidebarPanel.setPreferredSize(new Dimension(240, frame.getHeight()));
-            sidebarPanel.setBackground(fondoPrincipal);
+            JPanel sidebarPanel = new JPanel();
+            sidebarPanel.setLayout(new BoxLayout(sidebarPanel, BoxLayout.Y_AXIS));
+
+            sidebarPanel.add(Box.createVerticalStrut(5));
+
+
+
 
             // Panel dinámico para cambiar vistas
             JPanel contentPanel = new JPanel(new CardLayout());
@@ -118,8 +122,8 @@ public class UIUserMain {
                     int panelWidth = sidebarPanel.getWidth();
                     int panelHeight = sidebarPanel.getHeight();
 
-                    int buttonWidth = (int) (panelWidth * 0.9);  // 90% del ancho del sidebar
-                    int buttonHeight = (int) (panelHeight * 0.14); // 12% del alto del sidebar
+                    int buttonWidth = (int) (panelWidth * 1.0);  // 90% del ancho del sidebar
+                    int buttonHeight = (int) (panelHeight * 0.13); // 12% del alto del sidebar
 
                     Dimension buttonSize = new Dimension(buttonWidth, buttonHeight);
 
@@ -138,9 +142,9 @@ public class UIUserMain {
                 }
             });
 
-            Dimension buttonSize = new Dimension(200, 70);
+            Dimension buttonSize = new Dimension(100, 60);
 
-            JButton listaProductosButton = createButton("Lista de Productos", resizeIcon("/icons/lista-de_productos.png"), e -> {
+            JButton listaProductosButton = createButton("Inventario", resizeIcon("/icons/lista-de_productos.png"), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "productos");
             });
@@ -157,7 +161,7 @@ public class UIUserMain {
             });
             salirButton.setMaximumSize(buttonSize);
 
-            JButton moreOptionsButton =  createButton("Ventas Realizadas", resizeIcon("/icons/admin/beneficios.png"), e -> {
+            JButton moreOptionsButton =  createButton("Facturas", resizeIcon("/icons/admin/beneficios.png"), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "Facturas");
             });
