@@ -59,9 +59,9 @@ public class MainAdminUi {
             JPanel mainPanel = new JPanel(new BorderLayout());
             mainPanel.setBackground(new Color(245, 245, 245));
 
-            JPanel sidebarPanel = new JPanel(new BorderLayout());
-            sidebarPanel.setPreferredSize(new Dimension(240, frame.getHeight()));
-            sidebarPanel.setBackground(new Color(200, 200, 200));
+            JPanel sidebarPanel = new JPanel();
+            sidebarPanel.setLayout(new BoxLayout(sidebarPanel, BoxLayout.Y_AXIS));
+            sidebarPanel.add(Box.createVerticalStrut(5));
 
             JPanel contentPanel = new JPanel(new CardLayout());
             contentPanel.add(getAdminProductListPanel(), "productos");
@@ -77,21 +77,35 @@ public class MainAdminUi {
             buttonPanel.setBackground(new Color(245, 245, 245));
             buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 10, 50));
 
-            // Panel superior con logo
+            // Panel superior con logo y nombre del empleado centrados
             JPanel logoPanel = new JPanel();
             logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.Y_AXIS));
-            logoPanel.setBackground(new Color(200, 200, 200));
+            logoPanel.setBackground(fondoPrincipal);
 
             ImageIcon logoIcon = new ImageIcon(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png"));
             Image imgLogo = logoIcon.getImage().getScaledInstance(130, 130, Image.SCALE_SMOOTH);
             JLabel logoLabel = new JLabel(new ImageIcon(imgLogo));
             logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+            // **Añadir efectos al pasar el mouse**
             logoLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
+                    // **Obtener el CardLayout y mostrar el panel "mesas"**
                     CardLayout layout = (CardLayout) contentPanel.getLayout();
-                    layout.show(contentPanel, "mesas");
+                    layout.show(contentPanel, "productos");
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    logoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Cambia el cursor a "mano"
+                    logoLabel.setBorder(BorderFactory.createLineBorder(new Color(250, 240, 230), 1)); // Borde amarillo al pasar el mouse
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    logoLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); // Restaurar cursor normal
+                    logoLabel.setBorder(null); // Eliminar borde al salir
                 }
             });
 
@@ -100,7 +114,7 @@ public class MainAdminUi {
             employeeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             try {
                 InputStream fontStream = UIUserMain.class.getClassLoader().getResourceAsStream("Pacifico-Regular.ttf");
-                Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 32);
+                Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 26);
                 employeeLabel.setFont(customFont);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -108,26 +122,30 @@ public class MainAdminUi {
 
             sidebarPanel.add(employeeLabel, BorderLayout.NORTH);
 
-            logoPanel.add(Box.createVerticalStrut(10));
+            logoPanel.add(Box.createVerticalStrut(1));
             logoPanel.add(logoLabel);
-            logoPanel.add(Box.createVerticalStrut(10));
+            logoPanel.add(Box.createVerticalStrut(1));
             logoPanel.add(employeeLabel);
-            logoPanel.add(Box.createVerticalStrut(10));
+            logoPanel.add(Box.createVerticalStrut(1));
             sidebarPanel.add(logoPanel, BorderLayout.NORTH);
 
             JPanel buttonsPanel = new JPanel();
             buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
-            buttonsPanel.setBackground(new Color(200, 200, 200));
+           // buttonsPanel.setBackground(new Color(200, 200, 200));
 
+            // Agregar ComponentListener para cambiar tamaño dinámicamente
             sidebarPanel.addComponentListener(new ComponentAdapter() {
                 @Override
                 public void componentResized(ComponentEvent e) {
                     int panelWidth = sidebarPanel.getWidth();
                     int panelHeight = sidebarPanel.getHeight();
-                    int buttonWidth = (int) (panelWidth * 0.9);
-                    int buttonHeight = (int) (panelHeight * 0.14);
+
+                    int buttonWidth = (int) (panelWidth * 1.0);  // 90% del ancho del sidebar
+                    int buttonHeight = (int) (panelHeight * 0.13);  // 12% del alto del sidebar
+
                     Dimension buttonSize = new Dimension(buttonWidth, buttonHeight);
 
+                    // Ajustar tamaño de todos los botones dentro de buttonsPanel
                     for (Component comp : buttonsPanel.getComponents()) {
                         if (comp instanceof JButton) {
                             comp.setPreferredSize(buttonSize);
@@ -135,25 +153,31 @@ public class MainAdminUi {
                             comp.setMinimumSize(buttonSize);
                         }
                     }
+
+                    // Forzar revalidación y repintado
                     buttonsPanel.revalidate();
                     buttonsPanel.repaint();
                 }
             });
 
-            Dimension buttonSize = new Dimension(200, 70);
-            JButton listaProductosButton = createButton("Lista de Productos", resizeIcon("/icons/lista-de_productos.png"), e -> {
+            Dimension buttonSize = new Dimension(100, 60);
+
+            JButton listaProductosButton = createButton("Inventario", resizeIcon("/icons/lista-de_productos.png"), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "productos");
             });
+            listaProductosButton.setMaximumSize(buttonSize);
             JButton gastosButton = createButton("Facturas", resizeIcon("/icons/Facturar.png"), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "facturas");
             });
-            JButton configButton = createButton("Configuracion", resizeIcon("/icons/obrero.png"), e -> {
+            gastosButton.setMaximumSize(buttonSize);
+            JButton configButton = createButton("Configuración", resizeIcon("/icons/obrero.png"), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "configuracion");
 
             });
+            configButton.setMaximumSize(buttonSize);
 
             JButton moreOptionsButton = createButton("Mesas", resizeIcon("/icons/mesa-redonda.png"), e -> {
                 if (hayRegistroDeHoy()) {
@@ -163,9 +187,10 @@ public class MainAdminUi {
                 }
                 frame.dispose();
             });
+            moreOptionsButton.setMaximumSize(buttonSize);
 
             moreOptionsButton.setFont(new Font("Arial", Font.BOLD, 16));
-            moreOptionsButton.setPreferredSize(new Dimension(150, 50));
+            //moreOptionsButton.setPreferredSize(new Dimension(150, 50));
 
             buttonsPanel.add(moreOptionsButton);
             buttonsPanel.add(Box.createVerticalStrut(5));

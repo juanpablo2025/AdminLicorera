@@ -165,6 +165,45 @@ public class UIConfigAdmin {
             printerComboBox.setEnabled(outputComboBox.getSelectedItem().equals("IMPRESORA"));
         });
 
+        // Facturación electrónica
+        gbc.gridy++;
+        JCheckBox feCheckBox = new JCheckBox("Activar facturación electrónica");
+        feCheckBox.setFont(feCheckBox.getFont().deriveFont(Font.PLAIN, 14f));
+        feCheckBox.setSelected(ConfigAdminManager.isElectronicBillingEnabled());
+        panel.add(feCheckBox, gbc);
+
+        gbc.gridy++;
+        JLabel userLabel = new JLabel("Usuario Siigo:");
+        panel.add(userLabel, gbc);
+        gbc.gridy++;
+        JTextField userField = new JTextField(ConfigAdminManager.getSiigoUsername(), 20);
+        panel.add(userField, gbc);
+
+        gbc.gridy++;
+        JLabel keyLabel = new JLabel("Clave API:");
+        panel.add(keyLabel, gbc);
+        gbc.gridy++;
+        JTextField keyField = new JTextField(ConfigAdminManager.getSiigoAccessKey(), 20);
+        panel.add(keyField, gbc);
+
+        gbc.gridy++;
+        JLabel clientIdLabel = new JLabel("Client ID:");
+        panel.add(clientIdLabel, gbc);
+        gbc.gridy++;
+        JTextField clientIdField = new JTextField(ConfigAdminManager.getSiigoClientId(), 20);
+        panel.add(clientIdField, gbc);
+
+        gbc.gridy++;
+        JLabel clientSecretLabel = new JLabel("Client Secret:");
+        panel.add(clientSecretLabel, gbc);
+        gbc.gridy++;
+        JTextField clientSecretField = new JTextField(ConfigAdminManager.getSiigoClientSecret(), 20);
+        panel.add(clientSecretField, gbc);
+
+        outputComboBox.addActionListener(e -> {
+            printerComboBox.setEnabled(outputComboBox.getSelectedItem().equals("IMPRESORA"));
+        });
+
         gbc.gridy++;
         JButton saveButton = new JButton("Guardar configuración");
         saveButton.setPreferredSize(new Dimension(200, 35));
@@ -178,6 +217,11 @@ public class UIConfigAdmin {
             ConfigAdminManager.setSelectedDataphone((String) dataphoneComboBox.getSelectedItem());
             ConfigAdminManager.setMessageSendingEnabled(enableMessageCheckBox.isSelected());
             ConfigAdminManager.setTrmEnabled(trmCheckBox.isSelected());
+            ConfigAdminManager.setElectronicBillingEnabled(feCheckBox.isSelected());
+            ConfigAdminManager.setSiigoUsername(userField.getText().trim());
+            ConfigAdminManager.setSiigoAccessKey(keyField.getText().trim());
+            ConfigAdminManager.setSiigoClientId(clientIdField.getText().trim());
+            ConfigAdminManager.setSiigoClientSecret(clientSecretField.getText().trim());
             JOptionPane.showMessageDialog(panel, "Configuración guardada con éxito.");
         });
         panel.add(saveButton, gbc);

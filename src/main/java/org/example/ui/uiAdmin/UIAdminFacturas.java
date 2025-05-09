@@ -16,8 +16,12 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
 
+import static org.example.manager.userManager.FacturacionUserManager.generarFacturadeCompra;
 import static org.example.ui.UIHelpers.createButton;
 import static org.example.ui.uiAdmin.MainAdminUi.mainAdmin;
 import static org.example.ui.uiUser.UIUserMain.mainUser;
@@ -125,9 +129,9 @@ public class UIAdminFacturas {
 
                 // Color de fondo normal
                 if (getModel().isPressed()) {
-                    g2.setColor(new Color(255, 193, 7)); // Amarillo oscuro al presionar
+                    g2.setColor(new Color(255, 111, 97)); // Amarillo oscuro al presionar
                 } else {
-                    g2.setColor(new Color(228, 185, 42)); // Amarillo Material Design
+                    g2.setColor(new Color(201, 41, 41)); // Amarillo Material Design
                 }
 
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
@@ -169,9 +173,73 @@ public class UIAdminFacturas {
             }
         });
 
+           // **Botón ImprimirButton**
+           JButton reprintButton = new JButton("Imprimir") {
+               @Override
+               protected void paintComponent(Graphics g) {
+                   Graphics2D g2 = (Graphics2D) g;
+                   g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+                   // Sombra del botón
+                   g2.setColor(new Color(0, 0, 0, 30));
+                   g2.fillRoundRect(2, 4, getWidth() - 4, getHeight() - 4, 40, 40);
+
+                   // Color de fondo amarillo
+                   if (getModel().isPressed()) {
+                       g2.setColor(new Color(0, 201, 87)); // Amarillo oscuro al presionar
+                   } else {
+                       g2.setColor(new Color(0, 240, 100)); // Amarillo brillante
+                   }
+                   g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
+                   super.paintComponent(g);
+               }
+           };
+
+           // Acción al presionar el botón de reimprimir
+           reprintButton.addActionListener(e -> {
+               int selectedRow = facturasTable.getSelectedRow(); // Obtener la fila seleccionada
+               if (selectedRow != -1) {
+                   // Obtener los datos de la factura seleccionada
+                   String facturaId = facturasTable.getValueAt(selectedRow, 0).toString();
+                   String productosStr = facturasTable.getValueAt(selectedRow, 1).toString();
+                   double totalCompra = Double.parseDouble(facturasTable.getValueAt(selectedRow, 2).toString());
+                   String fechaHoraStr = facturasTable.getValueAt(selectedRow, 3).toString();
+
+                   // Convertir la cadena de productos a una lista usando saltos de línea como delimitador
+                   List<String> productos = Arrays.asList(productosStr.split("\\n"));
+
+                   // Convertir la fecha y hora a LocalDateTime
+                   DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+                   LocalDateTime fechaHora = LocalDateTime.parse(fechaHoraStr, formatter);
+
+
+                   // Verificar si la lista de productos no está vacía
+                   if (productos.isEmpty()) {
+                       JOptionPane.showMessageDialog(facturasPanel, "No hay productos en esta factura.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                       return;
+                   }
+
+                   // Llamar a la función para generar el PDF con todos los productos de la factura seleccionada
+                   generarFacturadeCompra(facturaId, productos, totalCompra, fechaHora, " ");
+
+               } else {
+                   JOptionPane.showMessageDialog(facturasPanel, "Por favor selecciona una factura.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+               }
+           });
+           // **Estilizar el botón**
+           reprintButton.setPreferredSize(new Dimension(150, 40));
+           reprintButton.setFont(new Font("Arial", Font.BOLD, 22));
+           reprintButton.setForeground(Color.WHITE);
+           reprintButton.setFocusPainted(false);
+           reprintButton.setContentAreaFilled(false);
+           reprintButton.setBorderPainted(false);
+           reprintButton.setOpaque(false);
+
         // Añadir el botón de eliminación
         JPanel buttonPanel = new JPanel();
+        buttonPanel.add(reprintButton);
         buttonPanel.add(eliminarButton);
+
         facturasPanel.add(titleLabel, BorderLayout.NORTH);
         facturasPanel.add(buttonPanel, BorderLayout.SOUTH);
 

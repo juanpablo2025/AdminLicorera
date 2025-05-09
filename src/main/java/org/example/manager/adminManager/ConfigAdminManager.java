@@ -109,4 +109,49 @@ public class ConfigAdminManager {
         properties.setProperty("selected_dataphone", selectedItem);
         saveProperties();
     }
+
+    public static void setSiigoAccessKey(String trim) {
+        properties.setProperty("siigo_access_key", trim);
+        saveProperties();
+    }
+
+    public static void setElectronicBillingEnabled(boolean selected) {
+        properties.setProperty("electronic_billing_enabled", String.valueOf(selected));
+        saveProperties();
+    }
+
+    public static void setSiigoUsername(String trim) {
+        properties.setProperty("siigo_username", trim);
+        saveProperties();
+    }
+
+    public static void setSiigoClientId(String trim) {
+        properties.setProperty("siigo_client_id", trim);
+        saveProperties();
+    }
+
+    public static void setSiigoClientSecret(String trim) {
+        properties.setProperty("siigo_client_secret", trim);
+        saveProperties();
+    }
+
+    public static boolean isElectronicBillingEnabled() {
+        return Boolean.parseBoolean(properties.getProperty("electronic_billing_enabled", "false"));
+     }
+
+    public static String getSiigoUsername() {
+        return properties.getProperty("siigo_username", "default_username");
+    }
+
+    public static String getSiigoAccessKey() {
+        return properties.getProperty("siigo_access_key", "default_access_key");
+    }
+
+    public static String getSiigoClientId() {
+        return properties.getProperty("siigo_client_id", "default_client_id");
+    }
+
+    public static String getSiigoClientSecret() {
+        return properties.getProperty("siigo_client_secret", "default_client_secret");
+    }
 }

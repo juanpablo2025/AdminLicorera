@@ -1,11 +1,14 @@
 package org.example.ui.uiUser;
 
 import org.apache.poi.ss.usermodel.*;
+import org.example.manager.adminManager.ConfigAdminManager;
 import org.example.manager.userManager.ExcelUserManager;
 import org.example.manager.userManager.ProductoUserManager;
 import org.example.manager.userManager.VentaMesaUserManager;
 import org.example.model.Producto;
 import org.example.utils.FormatterHelpers;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
@@ -1137,6 +1140,14 @@ public class UIUserVenta {
                     return;
 
                 }
+               /* if (ConfigAdminManager.isElectronicBillingEnabled()) {
+                    JSONObject clienteSiigo = UIUserVenta.mostrarDialogoFactura(frame);
+                    if (clienteSiigo != null) {
+                        // Usar clienteSiigo en la creación de la factura
+                        mostrarDialogoFactura(frame);
+                    }
+                }*/
+
 
                 // Guardar la compra en Excel
                 ExcelUserManager excelUserManager = new ExcelUserManager();
@@ -1393,6 +1404,80 @@ public class UIUserVenta {
 
         return saveCompraButton;
     }
+
+
+
+
+
+    public static JSONObject mostrarDialogoFactura(JFrame parentFrame) {
+        JTextField nombreField = new JTextField(20);
+        JTextField apellidoField = new JTextField(20);
+        JTextField identificacionField = new JTextField(15);
+        JTextField direccionField = new JTextField(30);
+        JTextField ciudadField = new JTextField("11001"); // Bogotá
+        JTextField estadoField = new JTextField("11");    // Cundinamarca
+        JTextField paisField = new JTextField("CO");
+        JTextField telefonoField = new JTextField("3001234567");
+        JTextField correoField = new JTextField(25);
+
+        JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
+        panel.add(new JLabel("Nombre:"));
+        panel.add(nombreField);
+        panel.add(new JLabel("Apellido:"));
+        panel.add(apellidoField);
+        panel.add(new JLabel("Identificación:"));
+        panel.add(identificacionField);
+        panel.add(new JLabel("Dirección:"));
+        panel.add(direccionField);
+        panel.add(new JLabel("Ciudad (Código):"));
+        panel.add(ciudadField);
+        panel.add(new JLabel("Departamento (Código):"));
+        panel.add(estadoField);
+        panel.add(new JLabel("País (Código):"));
+        panel.add(paisField);
+        panel.add(new JLabel("Teléfono:"));
+        panel.add(telefonoField);
+        panel.add(new JLabel("Correo electrónico:"));
+        panel.add(correoField);
+
+        int result = JOptionPane.showConfirmDialog(parentFrame, panel, "Datos de Facturación Electrónica",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result == JOptionPane.OK_OPTION) {
+            JSONObject customer = new JSONObject()
+                    .put("person_type", "Person")
+                    .put("id_type", "13")
+                    .put("identification", identificacionField.getText().trim())
+                    .put("branch_office", 0)
+                    .put("name", new JSONArray().put(nombreField.getText().trim()).put(apellidoField.getText().trim()))
+                    .put("address", new JSONObject()
+                            .put("address", direccionField.getText().trim())
+                            .put("city", new JSONObject()
+                                    .put("country_code", paisField.getText().trim())
+                                    .put("state_code", estadoField.getText().trim())
+                                    .put("city_code", ciudadField.getText().trim())
+                            )
+                    )
+                    .put("phones", new JSONArray()
+                            .put(new JSONObject().put("number", telefonoField.getText().trim()))
+                    )
+                    .put("contacts", new JSONArray()
+                            .put(new JSONObject()
+                                    .put("first_name", nombreField.getText().trim())
+                                    .put("last_name", apellidoField.getText().trim())
+                                    .put("email", correoField.getText().trim())
+                            )
+                    );
+            return customer;
+        } else {
+            return null;
+        }
+    }
+
+
+
+
+
 
     // Método auxiliar para limpiar la mesa en el archivo Excel cuando no hay productos
     private static void limpiarMesaEnExcel(String mesaID) {

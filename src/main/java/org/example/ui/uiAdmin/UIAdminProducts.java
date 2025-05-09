@@ -15,6 +15,8 @@ import javax.swing.table.*;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -89,17 +91,37 @@ public class UIAdminProducts {
         productTable.setRowSorter(sorter);
 
         // 🎯 CREAR LA BARRA DE BÚSQUEDA
-        JTextField searchField = new JTextField();
-        searchField.setPreferredSize(new Dimension(800, 35));
+        JTextField searchField = new JTextField("Busca un producto...");
+        searchField.setForeground(Color.GRAY);
+        searchField.setPreferredSize(new Dimension(760, 35));
         searchField.setFont(new Font("Arial", Font.PLAIN, 18));
+
+// Focus events para limpiar/restaurar el texto
+        searchField.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (searchField.getText().equals("Busca un producto...")) {
+                    searchField.setText("");
+                    searchField.setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (searchField.getText().trim().isEmpty()) {
+                    searchField.setText("Busca un producto...");
+                    searchField.setForeground(Color.GRAY);
+                }
+            }
+        });
 
         searchField.getDocument().addDocumentListener(new DocumentListener() {
             private void updateFilter() {
                 String text = searchField.getText();
-                if (text.trim().length() == 0) {
+                if (text.trim().isEmpty() || text.equals("Busca un producto...")) {
                     sorter.setRowFilter(null);
                 } else {
-                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(text), 1)); // Solo filtra por "Nombre"
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(text), 1));
                 }
             }
 
@@ -108,7 +130,7 @@ public class UIAdminProducts {
             @Override public void changedUpdate(DocumentEvent e) { updateFilter(); }
         });
 
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         searchPanel.setBackground(new Color(250, 240, 230));
         searchPanel.add(searchField);
 
@@ -185,18 +207,18 @@ public class UIAdminProducts {
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
         topPanel.setBackground(new Color(250, 240, 230));
 
-// 🧩 Centrar título
+        // 🧩 Centrar título
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         topPanel.add(titleLabel);
         topPanel.add(Box.createVerticalStrut(10)); // Espacio
 
-// 🧩 Centrar barra de búsqueda
+        // 🧩 Centrar barra de búsqueda
         searchField.setMaximumSize(new Dimension(300, 30)); // Limita el ancho de la barra
         searchPanel.setBackground(new Color(250, 240, 230));
         searchPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         topPanel.add(searchPanel);
 
-// 🔵 Agregar todo al productListPanel
+        // 🔵 Agregar todo al productListPanel
         productListPanel.add(topPanel, BorderLayout.NORTH);
         productListPanel.add(scrollPane, BorderLayout.CENTER);
         productListPanel.add(createButtonPanel(tableModel, productTable), BorderLayout.SOUTH);
@@ -776,7 +798,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         gbc.gridy = 0;
 
         gbc.gridy++;
-        JLabel quantityLabel = new JLabel("Cantidad:");
+        JLabel quantityLabel = new JLabel("Cantidad");
         quantityLabel.setFont(new Font("Arial", Font.BOLD, 16));
         centerPanel.add(quantityLabel, gbc);
 
