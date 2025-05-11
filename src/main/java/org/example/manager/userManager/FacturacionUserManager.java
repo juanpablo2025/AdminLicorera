@@ -551,13 +551,13 @@ public class FacturacionUserManager {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            String numeroDestino = "+573112599560";  //"+573146704316" Número al que quieres enviar el mensaje
+            String[] numeros = { "+573226094632","+573112599560"};  //"+573146704316" Número al que quieres enviar el mensaje
             String mensaje = "*[Licorera CR]* ¡Hola! se ha generado la liquidación del día de hoy por un total de: $ "
                     + FormatterHelpers.formatearMoneda(totalVentas) + " pesos.\nPuedes consultar los detalles en los resúmenes adjuntos en Google Drive: https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
             if (!gastosNA.isEmpty()) {
                 mensaje += "\n\n*Gastos del d\u00eda:*" + gastosNA;
             }
-           enviarMensaje(numeroDestino,mensaje);
+           enviarMensaje(numeros,mensaje);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -920,7 +920,7 @@ public class FacturacionUserManager {
         }
     }
 
-    private static final String INSTANCE_ID = "instance115037";  // Reemplazar con tu instancia de UltraMsg
+    /*private static final String INSTANCE_ID = "instance115037";  // Reemplazar con tu instancia de UltraMsg
     private static final String TOKEN = "w0xz1xtb14195z9u";  // Reemplazar con tu token de UltraMsg
     private static final String API_URL = "https://api.ultramsg.com/" + INSTANCE_ID + "/messages/chat";
 
@@ -946,6 +946,26 @@ public class FacturacionUserManager {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
         System.out.println("Respuesta del servidor: " + response.body());
+    }*/
+
+    public static void enviarMensaje(String[] numeros, String mensaje) throws IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
+
+        for (String numero : numeros) {
+            String url = String.format("https://api.callmebot.com/whatsapp.php?phone=%s&text=%s&apikey=2596189",
+                    URLEncoder.encode(numero, StandardCharsets.UTF_8),
+                    URLEncoder.encode(mensaje, StandardCharsets.UTF_8)
+            );
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("Enviado a " + numero + " → Respuesta: " + response.body());
+        }
     }
+
 }
 
