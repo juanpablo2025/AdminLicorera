@@ -1,6 +1,7 @@
 package org.example.manager.userManager;
 
 
+import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.printing.PDFPageable;
 import org.example.manager.adminManager.ConfigAdminManager;
@@ -28,7 +29,7 @@ public class PrintUserManager {
     public static void imprimirPDF(String pdfFilePath) {
         try {
             // Cargar el archivo PDF
-            PDDocument document = PDDocument.load(new File(pdfFilePath));
+            PDDocument document = Loader.loadPDF(new File(pdfFilePath));
 
             // Obtener la impresora guardada en config.properties
             String printerName = ConfigAdminManager.getPrinterName();
