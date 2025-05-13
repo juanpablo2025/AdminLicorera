@@ -1,17 +1,13 @@
-package org.example.ui.uiUser;
+package org.example.ui.uiuser;
 
-import org.example.manager.userManager.FacturasUserManager;
+import org.example.manager.usermanager.FacturasUserManager;
 import org.example.model.Factura;
 import org.example.ui.UIHelpers;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -19,29 +15,24 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import static org.example.manager.userManager.FacturacionUserManager.generarFacturadeCompra;
-import static org.example.manager.userManager.PrintUserManager.abrirPDF;
-import static org.example.manager.userManager.PrintUserManager.imprimirPDF;
-import static org.example.ui.UIHelpers.createDialog;
-import static org.example.ui.uiUser.UIUserMain.mainUser;
+import static org.example.manager.usermanager.FacturacionUserManager.generarFacturadeCompra;
+import static org.example.utils.Constants.ARIAL_FONT;
 
 public class UIUserFacturas {
+
+    private UIUserFacturas() {}
 
     public static JPanel getFacturasPanel() {
         JPanel facturasPanel = new JPanel(new BorderLayout());
         facturasPanel.setBackground(new Color(250, 240, 230));
         facturasPanel.setBorder(new EmptyBorder(20, 20, 20, 20)); // Margen de 20px en todos los lados
 
-
-        JLabel titleLabel = new JLabel("Facturas", JLabel.CENTER);
+        JLabel titleLabel = new JLabel("Facturas", SwingConstants.CENTER);
         titleLabel.setForeground(new Color(36, 36, 36));
         try {
 
-
             // Cargar la fuente desde los recursos dentro del JAR
             InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
-
 
             // Crear la fuente desde el InputStream
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
@@ -50,7 +41,6 @@ public class UIUserFacturas {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
 
         // Obtener las facturas del gestor de facturas
         FacturasUserManager facturasUserManager = new FacturasUserManager();
@@ -90,13 +80,13 @@ public class UIUserFacturas {
         facturasTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
         // Establecer la fuente y el tamaño
-        Font font = new Font("Arial", Font.PLAIN, 18);
+        Font font = new Font(ARIAL_FONT, Font.PLAIN, 18);
         facturasTable.setFont(font);
         facturasTable.setRowHeight(30);
 
         // Establecer la fuente para el encabezado
         JTableHeader header = facturasTable.getTableHeader();
-        header.setFont(new Font("Arial", Font.BOLD, 20));
+        header.setFont(new Font(ARIAL_FONT, Font.BOLD, 20));
         header.setBackground(new Color(28,28,28));
         header.setForeground(Color.BLACK);
 
@@ -182,13 +172,12 @@ public class UIUserFacturas {
         });
         // **Estilizar el botón**
         reprintButton.setPreferredSize(new Dimension(150, 40));
-        reprintButton.setFont(new Font("Arial", Font.BOLD, 22));
+        reprintButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
         reprintButton.setForeground(Color.WHITE);
         reprintButton.setFocusPainted(false);
         reprintButton.setContentAreaFilled(false);
         reprintButton.setBorderPainted(false);
         reprintButton.setOpaque(false);
-
 
         // **Botón Cerrar**
         JButton closeButton = new JButton("Volver") {
@@ -214,7 +203,7 @@ public class UIUserFacturas {
 
         // **Estilizar el botón**
         closeButton.setPreferredSize(new Dimension(150, 40));
-        closeButton.setFont(new Font("Arial", Font.BOLD, 22));
+        closeButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
         closeButton.setForeground(Color.WHITE);
 
         closeButton.setFocusPainted(false);

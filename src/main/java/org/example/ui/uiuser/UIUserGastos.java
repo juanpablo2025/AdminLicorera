@@ -1,19 +1,17 @@
-package org.example.ui.uiUser;
+package org.example.ui.uiuser;
 
-import org.example.manager.userManager.GastosUserManager;
+import org.example.manager.usermanager.GastosUserManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.InputStream;
 import java.net.URL;
 
-import static org.example.ui.UIHelpers.createDialog;
-import static org.example.ui.uiUser.UIUserMain.mainUser;
-
+import static org.example.utils.Constants.ARIAL_FONT;
 
 public class UIUserGastos {
+
+    private UIUserGastos() {}
 
     public static JPanel createGastosPanel(JPanel contentPanel) {
         JPanel gastosPanel = new JPanel(new BorderLayout());
@@ -23,7 +21,7 @@ public class UIUserGastos {
         // Cargar fuente personalizada una sola vez
         Font customFont = loadCustomFont("Lobster-Regular.ttf", 36f);
         if (customFont == null) {
-            customFont = new Font("Arial", Font.BOLD, 36); // Fuente de respaldo
+            customFont = new Font(ARIAL_FONT, Font.BOLD, 36); // Fuente de respaldo
         }
 
         // Panel del título
@@ -31,7 +29,7 @@ public class UIUserGastos {
         titlePanel.setBackground(new Color(250, 240, 230));
         titlePanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 30, 0));
 
-        JLabel titleLabel = new JLabel("Registrar Gastos", JLabel.CENTER);
+        JLabel titleLabel = new JLabel("Registrar Gastos", SwingConstants.CENTER);
         titleLabel.setFont(customFont.deriveFont(Font.BOLD, 50f)); // Aplicar negrita y tamaño 50
         titleLabel.setForeground(new Color(36, 36, 36));
         titlePanel.add(titleLabel, BorderLayout.CENTER);
@@ -56,15 +54,15 @@ public class UIUserGastos {
             if (imageUrl != null) {
                 ImageIcon originalIcon = new ImageIcon(imageUrl);
                 Image scaledImage = originalIcon.getImage().getScaledInstance(230, 230, Image.SCALE_SMOOTH);
-                JLabel logoLabel = new JLabel(new ImageIcon(scaledImage), JLabel.CENTER);
+                JLabel logoLabel = new JLabel(new ImageIcon(scaledImage), SwingConstants.CENTER);
                 imagePanel.add(logoLabel, BorderLayout.CENTER);
             } else {
-                JLabel missingLabel = new JLabel("Imagen no encontrada", JLabel.CENTER);
+                JLabel missingLabel = new JLabel("Imagen no encontrada", SwingConstants.CENTER);
                 missingLabel.setFont(customFont.deriveFont(14f));
                 imagePanel.add(missingLabel, BorderLayout.CENTER);
             }
         } catch (Exception e) {
-            JLabel errorLabel = new JLabel("Error cargando imagen", JLabel.CENTER);
+            JLabel errorLabel = new JLabel("Error cargando imagen", SwingConstants.CENTER);
             errorLabel.setFont(customFont.deriveFont(14f));
             imagePanel.add(errorLabel, BorderLayout.CENTER);
         }
@@ -97,7 +95,7 @@ public class UIUserGastos {
 
         gbcForm.gridx = 1;
         JTextField nombreGastoField = new JTextField(20);
-        nombreGastoField.setFont(new Font("Arial", Font.PLAIN, 18));
+        nombreGastoField.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
         nombreGastoField.setPreferredSize(new Dimension(300, 35));
         formPanel.add(nombreGastoField, gbcForm);
 
@@ -111,7 +109,7 @@ public class UIUserGastos {
 
         gbcForm.gridx = 1;
         JTextField precioField = new JTextField(20);
-        precioField.setFont(new Font("Arial", Font.PLAIN, 18));
+        precioField.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
         precioField.setPreferredSize(new Dimension(300, 35));
         formPanel.add(precioField, gbcForm);
 
@@ -121,7 +119,7 @@ public class UIUserGastos {
         gbcForm.gridwidth = 2;
         gbcForm.fill = GridBagConstraints.CENTER;
         JButton addGastoButton = new JButton("Confirmar");
-        addGastoButton.setFont(new Font("Arial", Font.BOLD, 22));
+        addGastoButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
         addGastoButton.setPreferredSize(new Dimension(405, 40));
         addGastoButton.setBackground(new Color(0, 201, 87));
         addGastoButton.setForeground(Color.WHITE);
@@ -134,7 +132,7 @@ public class UIUserGastos {
                 String input = precioField.getText().replace(".", "").replace(",", ".");
                 double precio = Double.parseDouble(input);
 
-                GastosUserManager.saveGasto(nombreGasto, 1, precio);
+                GastosUserManager.saveGasto(nombreGasto, precio);
                 JOptionPane.showMessageDialog(null, "Gasto registrado correctamente.");
                 nombreGastoField.setText("");
                 precioField.setText("");
@@ -156,7 +154,7 @@ public class UIUserGastos {
         gastosPanel.add(mainContentPanel, BorderLayout.CENTER);
 
         // Botón Volver
-        JButton backButton = createBackButton(contentPanel, customFont);
+        JButton backButton = createBackButton(contentPanel);
         JPanel bottomPanel = new JPanel();
         bottomPanel.setBackground(new Color(250, 240, 230));
         bottomPanel.add(backButton);
@@ -173,15 +171,13 @@ public class UIUserGastos {
                 return font.deriveFont(size);
             }
         } catch (Exception e) {
-            System.err.println("Error cargando fuente: " + e.getMessage());
+            e.printStackTrace();
         }
         return null;
     }
 
-
-
     // Método auxiliar para crear el botón Volver (opcional)
-    private static JButton createBackButton(JPanel contentPanel, Font customFont) {
+    private static JButton createBackButton(JPanel contentPanel) {
         // Botón "Volver"
         JButton backButton = new JButton("Volver") {
             @Override
@@ -197,7 +193,7 @@ public class UIUserGastos {
         };
 
         backButton.setPreferredSize(new Dimension(150, 40)); // Aumenta tamaño del botón
-        backButton.setFont(new Font("Arial", Font.BOLD, 22));
+        backButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
         backButton.setForeground(Color.WHITE);
         backButton.setBackground(new Color(250, 240, 230));
         backButton.setFocusPainted(false);

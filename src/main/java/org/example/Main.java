@@ -1,17 +1,18 @@
 package org.example;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import org.example.ui.uiUser.UIUserMain;
+import org.example.ui.uiuser.UIUserMain;
 import org.example.utils.Updater;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 
-import static org.example.manager.userManager.ExcelUserManager.*;
-import static org.example.manager.userManager.MainUserManager.crearDirectorios;
-import static org.example.ui.uiAdmin.MainAdminUi.adminPassword;
-import static org.example.ui.uiUser.UIUserMain.mainUser;
+import static org.example.manager.usermanager.ExcelUserManager.*;
+import static org.example.manager.usermanager.MainUserManager.crearDirectorios;
+import static org.example.ui.uiadmin.MainAdminUi.adminPassword;
+import static org.example.ui.uiuser.UIUserMain.mainUser;
+import static org.example.utils.Constants.ARIAL_FONT;
 
 
 public class Main {
@@ -31,7 +32,6 @@ public class Main {
         } else {
             Updater.checkForUpdates();
             mostrarLogin(); // Si no, mostrar el login
-
         }
     }
 
@@ -51,11 +51,9 @@ public class Main {
             // Redimensionar la imagen a 64x64 píxeles (ajusta según necesidad)
             Image scaledImage = icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
             frame.setIconImage(scaledImage);
-        } else {
-            System.out.println("⚠ Error: No se encontró el icono. Verifica la ruta.");
         }
         frame.setSize(400, 650);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setLayout(new GridBagLayout());
         frame.setResizable(false);
 
@@ -75,15 +73,15 @@ public class Main {
 
         // Etiqueta y campo de usuario
         JLabel userLabel = new JLabel("Encargado de caja");
-        userLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        userLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 20));
         userLabel.setForeground(Color.BLACK);
 
         JTextField userField = new JTextField(20);
-        userField.setFont(new Font("Arial", Font.PLAIN, 18));
+        userField.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
         userField.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
 
         JButton loginButton = new JButton("Iniciar Día");
-        loginButton.setFont(new Font("Arial", Font.BOLD, 20));
+        loginButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 20));
         loginButton.setBackground(Color.RED);
         loginButton.setForeground(Color.WHITE);
         loginButton.setFocusPainted(false);
@@ -130,10 +128,7 @@ public class Main {
             }
         });
 
-        adminButton.addActionListener(e -> {
-            adminPassword(frame);
-
-        });
+        adminButton.addActionListener(e -> adminPassword(frame));
     }
 }
 

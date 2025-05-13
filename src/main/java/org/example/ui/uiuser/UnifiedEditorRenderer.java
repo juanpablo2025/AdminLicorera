@@ -1,9 +1,7 @@
-package org.example.ui.uiUser;
+package org.example.ui.uiuser;
 
 
-import org.example.manager.userManager.ProductoUserManager;
-import org.example.manager.userManager.VentaMesaUserManager;
-
+import org.example.manager.usermanager.ProductoUserManager;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
@@ -12,22 +10,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import static org.example.utils.Constants.*;
-import static org.example.manager.userManager.ProductoUserManager.*;
 
 public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCellEditor, TableCellRenderer, ActionListener {
     private final JButton buttonRestar;
     private final JButton buttonEliminar;
     private final JSpinner spinner;
-    private final DefaultTableModel tableModel;
-    private final VentaMesaUserManager ventaMesaUserManager;
+
     private JTable currentTable;
     private int editingRow;
     private int editingColumn;
 
-    public UnifiedEditorRenderer(DefaultTableModel model, VentaMesaUserManager manager) {
-        this.tableModel = model;
-        this.ventaMesaUserManager = manager;
+    public UnifiedEditorRenderer() {
 
         buttonRestar = new JButton("-1");
         buttonRestar.setBackground(new Color(201, 79, 79));
@@ -107,28 +100,26 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
     @Override
     public void actionPerformed(ActionEvent e) {
         stopCellEditing();
-
+        DefaultTableModel tableModel = (DefaultTableModel) currentTable.getModel();
         if (editingRow >= 0 && editingRow < tableModel.getRowCount()) {
             Object cantidadObj = tableModel.getValueAt(editingRow, 1);
+            String action = e.getActionCommand();
 
-            switch (e.getActionCommand()) {
-                case "Restar":
-                    if (cantidadObj instanceof Integer) {
-                        int cantidadActual = (int) cantidadObj;
-                        if (cantidadActual > 1) {
-                            tableModel.setValueAt(cantidadActual - 1, editingRow, 1);
-                        } else {
-                            removeProductFromCart(editingRow);
-                            tableModel.removeRow(editingRow);
-                        }
-                        SwingUtilities.invokeLater(tableModel::fireTableDataChanged);
+            if ("Restar".equals(action)) {
+                if (cantidadObj instanceof Integer) {
+                    int cantidadActual = (int) cantidadObj;
+                    if (cantidadActual > 1) {
+                        tableModel.setValueAt(cantidadActual - 1, editingRow, 1);
+                    } else {
+                        removeProductFromCart(editingRow);
+                        tableModel.removeRow(editingRow);
                     }
-                    break;
-                case "Eliminar":
-                    removeProductFromCart(editingRow);
-                    tableModel.removeRow(editingRow);
                     SwingUtilities.invokeLater(tableModel::fireTableDataChanged);
-                    break;
+                }
+            } else if ("Eliminar".equals(action)) {
+                removeProductFromCart(editingRow);
+                tableModel.removeRow(editingRow);
+                SwingUtilities.invokeLater(tableModel::fireTableDataChanged);
             }
         }
     }

@@ -1,8 +1,8 @@
-package org.example.ui.uiAdmin;
+package org.example.ui.uiadmin;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import org.example.manager.adminManager.ConfigAdminManager;
-import org.example.ui.uiUser.UIUserMain;
+import org.example.manager.adminmanager.ConfigAdminManager;
+import org.example.ui.uiuser.UIUserMain;
 import org.json.JSONArray;
 import javax.swing.*;
 import java.awt.*;
@@ -14,14 +14,17 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import static org.example.Main.mostrarLogin;
-import static org.example.manager.userManager.ExcelUserManager.hayRegistroDeHoy;
+import static org.example.manager.usermanager.ExcelUserManager.hayRegistroDeHoy;
 import static org.example.ui.UIHelpers.createButton;
-import static org.example.ui.uiAdmin.UIAdminFacturas.getAdminBillsPanel;
-import static org.example.ui.uiAdmin.UIAdminProducts.getAdminProductListPanel;
-import static org.example.ui.uiAdmin.UIConfigAdmin.createPrinterConfigPanel;
-import static org.example.ui.uiUser.UIUserMain.*;
+import static org.example.ui.uiadmin.UIAdminFacturas.getAdminBillsPanel;
+import static org.example.ui.uiadmin.UIAdminProducts.getAdminProductListPanel;
+import static org.example.ui.uiadmin.UIConfigAdmin.createPrinterConfigPanel;
+import static org.example.ui.uiuser.UIUserMain.*;
+import static org.example.utils.Constants.*;
 
 public class MainAdminUi {
+
+    private MainAdminUi() {}
 
     public static void mainAdmin() {
         showAdminPanel();
@@ -33,15 +36,13 @@ public class MainAdminUi {
 
             JFrame frame = new JFrame("Ventas - Licorera CR");
             frame.setSize(1280, 720);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 
             // Cargar icono de la aplicación
             ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png"));
             if (icon.getImage() != null) {
                 frame.setIconImage(icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
-            } else {
-                System.out.println("⚠ Error: No se encontró el icono. Verifica la ruta.");
             }
 
             // Listener para manejar cierre de ventana
@@ -64,12 +65,11 @@ public class MainAdminUi {
             sidebarPanel.add(Box.createVerticalStrut(5));
 
             JPanel contentPanel = new JPanel(new CardLayout());
-            contentPanel.add(getAdminProductListPanel(), "productos");
+            contentPanel.add(getAdminProductListPanel(), PRODUCTOS);
             contentPanel.add(getAdminBillsPanel(), "facturas");
             contentPanel.add(createPrinterConfigPanel(), "configuracion");
 
-            JLabel titleLabel = new JLabel("Panel de Administración", JLabel.CENTER);
-            titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
+            JLabel titleLabel = new JLabel("Panel de Administración", SwingConstants.CENTER);            titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
             titleLabel.setForeground(new Color(50, 50, 50));
 
             // Panel de botones
@@ -84,30 +84,7 @@ public class MainAdminUi {
 
             ImageIcon logoIcon = new ImageIcon(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png"));
             Image imgLogo = logoIcon.getImage().getScaledInstance(130, 130, Image.SCALE_SMOOTH);
-            JLabel logoLabel = new JLabel(new ImageIcon(imgLogo));
-            logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-            // **Añadir efectos al pasar el mouse**
-            logoLabel.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    // **Obtener el CardLayout y mostrar el panel "mesas"**
-                    CardLayout layout = (CardLayout) contentPanel.getLayout();
-                    layout.show(contentPanel, "productos");
-                }
-
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    logoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Cambia el cursor a "mano"
-                    logoLabel.setBorder(BorderFactory.createLineBorder(new Color(250, 240, 230), 1)); // Borde amarillo al pasar el mouse
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    logoLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); // Restaurar cursor normal
-                    logoLabel.setBorder(null); // Eliminar borde al salir
-                }
-            });
+            JLabel logoLabel = getJLabel(imgLogo, contentPanel);
 
             JLabel employeeLabel = new JLabel("Administrador");
             employeeLabel.setForeground(Color.DARK_GRAY);
@@ -131,7 +108,6 @@ public class MainAdminUi {
 
             JPanel buttonsPanel = new JPanel();
             buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
-           // buttonsPanel.setBackground(new Color(200, 200, 200));
 
             // Agregar ComponentListener para cambiar tamaño dinámicamente
             sidebarPanel.addComponentListener(new ComponentAdapter() {
@@ -164,10 +140,10 @@ public class MainAdminUi {
 
             JButton listaProductosButton = createButton("Inventario", resizeIcon("/icons/lista-de_productos.png"), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
-                cl.show(contentPanel, "productos");
+                cl.show(contentPanel, PRODUCTOS);
             });
             listaProductosButton.setMaximumSize(buttonSize);
-            JButton gastosButton = createButton("Facturas", resizeIcon("/icons/Facturar.png"), e -> {
+            JButton gastosButton = createButton(FACTURAS, resizeIcon("/icons/Facturar.png"), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "facturas");
             });
@@ -189,8 +165,7 @@ public class MainAdminUi {
             });
             moreOptionsButton.setMaximumSize(buttonSize);
 
-            moreOptionsButton.setFont(new Font("Arial", Font.BOLD, 16));
-            //moreOptionsButton.setPreferredSize(new Dimension(150, 50));
+            moreOptionsButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
 
             buttonsPanel.add(moreOptionsButton);
             buttonsPanel.add(Box.createVerticalStrut(5));
@@ -213,6 +188,34 @@ public class MainAdminUi {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    private static JLabel getJLabel(Image imgLogo, JPanel contentPanel) {
+        JLabel logoLabel = new JLabel(new ImageIcon(imgLogo));
+        logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // **Añadir efectos al pasar el mouse**
+        logoLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // **Obtener el CardLayout y mostrar el panel "mesas"**
+                CardLayout layout = (CardLayout) contentPanel.getLayout();
+                layout.show(contentPanel, PRODUCTOS);
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                logoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Cambia el cursor a "mano"
+                logoLabel.setBorder(BorderFactory.createLineBorder(new Color(250, 240, 230), 1)); // Borde amarillo al pasar el mouse
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                logoLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); // Restaurar cursor normal
+                logoLabel.setBorder(null); // Eliminar borde al salir
+            }
+        });
+        return logoLabel;
     }
 
     public static void adminPassword(Frame frame) {

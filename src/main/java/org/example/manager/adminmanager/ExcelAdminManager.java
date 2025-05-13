@@ -1,21 +1,15 @@
-package org.example.manager.adminManager;
+package org.example.manager.adminmanager;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.model.Factura;
 import org.example.model.Producto;
-
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.example.ui.uiAdmin.UIAdminProducts.updateProductTable;
 import static org.example.utils.Constants.*;
 
 public class ExcelAdminManager {
@@ -24,7 +18,7 @@ public class ExcelAdminManager {
     public static final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
 
     public static void updateProduct(Producto productoActualizado) {
-        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
@@ -60,7 +54,7 @@ public class ExcelAdminManager {
                 newRow.createCell(5).setCellValue(productoActualizado.getFoto());
             }
 
-            try (FileOutputStream fos = new FileOutputStream(FILE_PATH.toString())) {
+            try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
                 workbook.write(fos);
             }
 
@@ -99,7 +93,7 @@ public class ExcelAdminManager {
 
     // Método para agregar un producto al archivo Excel
     public void addProduct(Producto product) {
-        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
@@ -111,7 +105,7 @@ public class ExcelAdminManager {
             row.createCell(2).setCellValue(product.getQuantity());
             row.createCell(3).setCellValue(product.getPrice());
 
-            try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH.toString())) {
+            try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH)) {
                 workbook.write(fileOut);
             }
         } catch (IOException e) {
@@ -122,7 +116,7 @@ public class ExcelAdminManager {
     // Método para leer los productos del archivo Excel
     public List<Producto> getProducts() {
         List<Producto> products = new ArrayList<>();
-        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
@@ -155,14 +149,13 @@ public class ExcelAdminManager {
         return null;
     }
 
-
     // Método para obtener todas las facturas desde la hoja de "compras"
     public List<Factura> getFacturas() {
         List<Factura> facturas = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
-            Sheet ventasSheet = workbook.getSheet("Ventas");
+            Sheet ventasSheet = workbook.getSheet(VENTAS);
             if (ventasSheet != null) {
                 for (int i = 1; i <= ventasSheet.getLastRowNum(); i++) {
                     Row row = ventasSheet.getRow(i);
@@ -189,7 +182,7 @@ public class ExcelAdminManager {
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
-            Sheet comprasSheet = workbook.getSheet("Ventas");
+            Sheet comprasSheet = workbook.getSheet(VENTAS);
             if (comprasSheet != null) {
                 for (int i = 1; i <= comprasSheet.getLastRowNum(); i++) {
                     Row row = comprasSheet.getRow(i);
@@ -202,7 +195,6 @@ public class ExcelAdminManager {
                     }
                 }
             }
-
             // Guardar el archivo actualizado
             try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
                 workbook.write(fos);
@@ -218,7 +210,7 @@ public class ExcelAdminManager {
             // Carga el archivo Excel y accede a las hojas "Ventas" y "Productos"
             FileInputStream file = new FileInputStream(FILE_PATH);
             Workbook workbook = new XSSFWorkbook(file);
-            Sheet ventasSheet = workbook.getSheet("Ventas");
+            Sheet ventasSheet = workbook.getSheet(VENTAS);
             Sheet productosSheet = workbook.getSheet("Productos");
 
             boolean facturaEliminada = false;
@@ -246,7 +238,6 @@ public class ExcelAdminManager {
                                 cantidad = Integer.parseInt(part.substring(1).trim()); // Convierte "x1" a 1
 
                                 // Sumar la cantidad eliminada a la hoja "Productos"
-                                boolean productoActualizado = false;
                                 for (int j = 1; j <= productosSheet.getLastRowNum(); j++) {
                                     Row productoRow = productosSheet.getRow(j);
                                     if (productoRow == null) continue;
@@ -260,20 +251,12 @@ public class ExcelAdminManager {
                                             Cell cantidadCell = productoRow.getCell(2); // Columna "Cantidad"
                                             int cantidadActual = (int) cantidadCell.getNumericCellValue();
                                             cantidadCell.setCellValue(cantidadActual + cantidad);
-                                            productoActualizado = true;
                                             break;
                                         }
                                     }
                                 }
-
-                                // Si el producto no se encuentra en la hoja "Productos", mostrar un mensaje detallado
-                                if (!productoActualizado) {
-                                  //  System.out.println("Producto no encontrado en hoja 'Productos': " + nombreProducto);
-                                }
-
                                 // Reiniciar para el siguiente producto
                                 nombreProducto = null;
-                                cantidad = 0;
 
                             } else if (!part.startsWith("$") && !part.equals("=")) {
                                 // Asume que este segmento es el nombre del producto si no es un símbolo de precio o total
@@ -287,7 +270,6 @@ public class ExcelAdminManager {
                     if (i < ventasSheet.getLastRowNum()) {
                         ventasSheet.shiftRows(i + 1, ventasSheet.getLastRowNum(), -1);
                     }
-
                     facturaEliminada = true;
                     break;
                 }

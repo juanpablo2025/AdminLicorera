@@ -11,20 +11,17 @@ import java.util.Base64;
 
 public class SiigoInvoice {
 
-
-
     private static final String AUTH_URL = "https://api.siigo.com/auth";
     private static final String INVOICE_URL = "https://api.siigo.com/v1/invoices";
-
-    private final String clientId = "TU_CLIENT_ID";
-    private final String clientSecret = "TU_CLIENT_SECRET";
-    private final String username = "TU_CORREO_SIIGO";
-    private final String accessKey = "TU_CLAVE_API";
+    private static final String CLIENT_ID = "TU_CLIENT_ID";
+    private static final String CLIENT_SECRET = "TU_CLIENT_SECRET";
+    private static final String CORREO_SIIGO = "TU_CORREO_SIIGO";
+    private static final String CLAVE_API = "TU_CLAVE_API";
 
     private String accessToken;
 
     public void authenticate() throws IOException {
-        String auth = clientId + ":" + clientSecret;
+        String auth = CLIENT_ID + ":" + CLIENT_SECRET;
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
 
         HttpURLConnection conn = (HttpURLConnection) new URL(AUTH_URL).openConnection();
@@ -34,8 +31,8 @@ public class SiigoInvoice {
         conn.setDoOutput(true);
 
         JSONObject authBody = new JSONObject();
-        authBody.put("username", username);
-        authBody.put("access_key", accessKey);
+        authBody.put("username", CORREO_SIIGO);
+        authBody.put("access_key", CLAVE_API);
 
         try (OutputStream os = conn.getOutputStream()) {
             os.write(authBody.toString().getBytes(StandardCharsets.UTF_8));

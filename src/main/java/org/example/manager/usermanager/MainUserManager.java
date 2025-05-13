@@ -1,8 +1,10 @@
-package org.example.manager.userManager;
+package org.example.manager.usermanager;
 
 import java.io.File;
 
 public class MainUserManager {
+
+    private MainUserManager() {}
 
     public static void crearDirectorios() {
         String documentosPath = System.getProperty("user.home") + "\\Calculadora del Administrador";
@@ -16,15 +18,6 @@ public class MainUserManager {
     }
 
     private static void crearDirectorioSiNoExiste(String path) {
-        File directorio = new File(path);
-        /*if (!directorio.exists()) {
-            if (directorio.mkdirs()) {
-                System.out.println("Directorio creado: " + path);
-            } else {
-                System.out.println("No se pudo crear el directorio: " + path);
-            }
-        } else {
-            System.out.println("El directorio ya existe: " + path);
-        }*/
+        new File(path);
     }
 }

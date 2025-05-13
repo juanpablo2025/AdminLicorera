@@ -1,4 +1,4 @@
-package org.example.manager.userManager;
+package org.example.manager.usermanager;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,14 +25,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-import static org.example.manager.userManager.FacturacionUserManager.*;
+import static org.example.manager.usermanager.FacturacionUserManager.*;
 
 import static org.example.utils.Constants.*;
 
 public class ExcelUserManager {
 
     public static final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
-    public static final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Calculadora del Administrador";
+    public static final String DIRECTORY_PATH =System.getProperty(FOLDER_PATH) + "\\Calculadora del Administrador";
     public static final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
     static LocalDateTime fechaHora = LocalDateTime.now();
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH_mm_ss");
@@ -65,7 +64,7 @@ public class ExcelUserManager {
         header.createCell(1).setCellValue(NOMBRE);
         header.createCell(2).setCellValue(CANTIDAD);
         header.createCell(3).setCellValue(PRECIO);
-        header.createCell(4).setCellValue("Cantidad Vendida");
+        header.createCell(4).setCellValue(CANTIDAD_VENDIDA);
         header.createCell(5 ).setCellValue("Foto");
 
         // Crear hoja de compras
@@ -86,12 +85,10 @@ public class ExcelUserManager {
         gastosHeader.createCell(3).setCellValue("Precio Compra");
         gastosHeader.createCell(4).setCellValue("Fecha y Hora");
 
-        // crear hoja de mesas
-
         // Verificar si la pestaña "Mesas" ya existe
-        Sheet mesasSheet = workbook.getSheet("Mesas");
+        Sheet mesasSheet = workbook.getSheet(MESAS_TITLE);
         if (mesasSheet == null) {
-            mesasSheet = workbook.createSheet("Mesas");
+            mesasSheet = workbook.createSheet(MESAS_TITLE);
             Row headerRow = mesasSheet.createRow(0);
             headerRow.createCell(0).setCellValue("Mesa ID");
             headerRow.createCell(1).setCellValue("Estado");
@@ -101,14 +98,14 @@ public class ExcelUserManager {
             // Crear 10 mesas por defecto
             for (int i = 1; i <= 10; i++) {
                 Row row = mesasSheet.createRow(i);
-                row.createCell(0).setCellValue("Mesa " + i);
+                row.createCell(0).setCellValue(MESA_TITLE + i);
                 row.createCell(1).setCellValue("Libre");  // Estado inicial
             }
         }
 
-        Sheet empleadosSheet = workbook.getSheet("Empleados");
+        Sheet empleadosSheet = workbook.getSheet(EMPLOYEES_SHEET_NAME);
         if (empleadosSheet == null) {
-            empleadosSheet = workbook.createSheet("Empleados");
+            empleadosSheet = workbook.createSheet(EMPLOYEES_SHEET_NAME);
             Row empleadosHeader = empleadosSheet.createRow(0);
             empleadosHeader.createCell(0).setCellValue("Nombre Empleado");
             empleadosHeader.createCell(1).setCellValue("Hora Inicio");
@@ -117,9 +114,8 @@ public class ExcelUserManager {
 
 
         // Guarda el archivo en la ruta especificada
-        try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH.toString())) {
+        try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH)) {
             workbook.write(fileOut);
-           // System.out.println("Archivo Excel creado: " + FILE_PATH.toString());
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -134,7 +130,7 @@ public class ExcelUserManager {
     // Método para leer los productos del archivo Excel
     public List<Producto> getProducts() {
         List<Producto> products = new ArrayList<>();
-        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
@@ -181,10 +177,11 @@ public class ExcelUserManager {
     }
 
     // Método para guardar una compra en el archivo Excel
-    public void savePurchase(String compraID, String productos, double total, LocalDateTime now, String tipoCompra) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-        String fechaFormateada = now.format(formatter);
-        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
+    public void savePurchase(String compraID, String productos, double total, String tipoCompra) {
+        DateTimeFormatter formatteo = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        String fechaFormateo = now.format(formatteo);
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet sheet = workbook.getSheet(PURCHASES_SHEET_NAME);
@@ -204,10 +201,10 @@ public class ExcelUserManager {
             row.createCell(ZERO).setCellValue(compraID);
             row.createCell(ONE).setCellValue(productos);  // Los productos se listan en líneas nuevas dentro de la misma celda
             row.createCell(TWO).setCellValue(total);
-            row.createCell(THREE).setCellValue(fechaFormateada);
+            row.createCell(THREE).setCellValue(fechaFormateo);
             row.createCell(FOUR).setCellValue(tipoCompra);
 
-            try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH.toString())) {
+            try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH)) {
                 workbook.write(fileOut);
             }
         } catch (IOException e) {
@@ -255,12 +252,12 @@ public class ExcelUserManager {
     }
 
     public void facturarYLimpiar() {
-        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet purchasesSheet = workbook.getSheet(PURCHASES_SHEET_NAME);
             Sheet gastosSheet = workbook.getSheet("Gastos"); // Asegúrate de que el nombre coincida
-            Sheet empleadosSheet = workbook.getSheet("Empleados");
+            Sheet empleadosSheet = workbook.getSheet(EMPLOYEES_SHEET_NAME);
             Sheet reabastecimientoSheet = workbook.getSheet("Reabastecimiento");
 
             if (purchasesSheet != null) {
@@ -271,7 +268,7 @@ public class ExcelUserManager {
                 for (int i = 1; i <= purchasesSheet.getLastRowNum(); i++) {
                     Row row = purchasesSheet.getRow(i);
                     if (row != null) {
-                        Cell celdaProducto = row.getCell(0); // Asumiendo que todo está en la columna 0
+                        Cell celdaProducto = row.getCell(0);
                         if (celdaProducto != null && celdaProducto.getCellType() == CellType.STRING) {
                             String texto = celdaProducto.getStringCellValue().trim();
 
@@ -283,17 +280,9 @@ public class ExcelUserManager {
                                 productosVendidos.put(nombreProducto, productosVendidos.getOrDefault(nombreProducto, 0) + cantidadVendida);
                             }
 
-                            if (!matcher.find()) {
-                                System.err.println("Valor inválido en fila " + i + ": \"" + texto + "\"");
-                            }
                         }
                     }
                 }
-
-               /* // Mostrar productos vendidos en consola para verificar
-                for (Map.Entry<String, Integer> entry : productosVendidos.entrySet()) {
-                  //  System.out.println("Producto: " + entry.getKey() + ", Cantidad Vendida: " + entry.getValue());
-                }*/
 
                 // 3️⃣ Calcular el total por método de pago
                 Map<String, Double> totalPorFormaPago = new HashMap<>();
@@ -330,7 +319,7 @@ public class ExcelUserManager {
                     guardarTotalFacturadoEnArchivo(totalPorFormaPago, totalFinal);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "Error al guardar archivo con datos.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Error al guardar archivo con datos.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
@@ -345,7 +334,7 @@ public class ExcelUserManager {
                     workbook.write(fos);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "Error al guardar archivo limpio.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Error al guardar archivo limpio.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
                 }
                 limpiarCantidadVendida();
                 limpiarFacturas();
@@ -378,9 +367,6 @@ public class ExcelUserManager {
 
         // Agregar una fila extra con el total al final de la hoja "Facturacion"
         agregarTotal(facturacionSheet, totalCompra, "Total Compra", redStyle);
-        LocalDateTime fechaHora = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH_mm_ss");
-        String fechaFormateada = fechaHora.format(formatter);
 
         // Crear la hoja "Gastos"
         String gastosHojaNombre = "Gastos_" + fechaFormateada;
@@ -578,9 +564,7 @@ public class ExcelUserManager {
 
     // Método para cargar las mesas desde el archivo Excel
     public static ArrayList<Mesa> cargarMesasDesdeExcel() {
-
-        final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
-        final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Calculadora del Administrador";
+        final String DIRECTORY_PATH =System.getProperty(FOLDER_PATH) + "\\Calculadora del Administrador";
         final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
 
         ArrayList<Mesa> mesas = new ArrayList<>();
@@ -588,7 +572,7 @@ public class ExcelUserManager {
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
-            Sheet mesasSheet = workbook.getSheet("Mesas"); // Acceder a la hoja llamada "mesas"
+            Sheet mesasSheet = workbook.getSheet(MESAS_TITLE); // Acceder a la hoja llamada "mesas"
             if (mesasSheet != null) {
                 for (int i = 1; i <= mesasSheet.getLastRowNum(); i++) { // Empezamos en la fila 1 (saltamos el encabezado)
                     Row row = mesasSheet.getRow(i);
@@ -602,7 +586,7 @@ public class ExcelUserManager {
 
                         // Leer el estado de la mesa (columna 1)
                         String estado = row.getCell(1).getStringCellValue();
-                        Mesa mesa = new Mesa("Mesa "+id);
+                        Mesa mesa = new Mesa(MESA_TITLE +id);
                         mesa.setOcupada(estado.equalsIgnoreCase("Ocupada"));
                         mesas.add(mesa);
                     }
@@ -622,7 +606,7 @@ public class ExcelUserManager {
         return Integer.parseInt(numeroTexto);
     }
 
-    public static void actualizarCantidadStockExcel(Map<String, Integer> productosComprados, String mesaID) {
+    public static void actualizarCantidadStockExcel(Map<String, Integer> productosComprados) {
         try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
@@ -704,7 +688,6 @@ public class ExcelUserManager {
     }
 
     public static List<String[]> cargarProductosMesaDesdeExcel(String mesaID) {
-        final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
         final String DIRECTORY_PATH = System.getProperty("user.home") + "\\Calculadora del Administrador";
         final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
 
@@ -713,7 +696,7 @@ public class ExcelUserManager {
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
-            Sheet sheet = workbook.getSheet("Mesas"); // Asegúrate de tener una hoja "mesas" en el archivo Excel
+            Sheet sheet = workbook.getSheet(MESAS_TITLE); // Asegúrate de tener una hoja "mesas" en el archivo Excel
             if (sheet != null) {
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) { // Recorrer las filas de la hoja, empezando en la fila 1
                     Row row = sheet.getRow(i);
@@ -744,8 +727,6 @@ public class ExcelUserManager {
                                             productosMesa.add(detallesProducto); // Añadir el producto a la lista
                                         }
                                     }
-                                } else {
-                                  //  System.out.println("Celda de productos está vacía o no es de tipo String.");
                                 }
                                 break; // Una vez encontrados los productos de la mesa, no necesitamos seguir buscando
                             }
@@ -762,17 +743,16 @@ public class ExcelUserManager {
 
 
     public static void agregarMesaAExcel(Mesa nuevaMesa) {
-        final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
         final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Calculadora del Administrador";
         final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
         String filePath = FILE_PATH; // Reemplaza con la ruta correcta
         try (FileInputStream fis = new FileInputStream(filePath);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
-            Sheet mesasSheet = workbook.getSheet("Mesas");
+            Sheet mesasSheet = workbook.getSheet(MESAS_TITLE);
             if (mesasSheet == null) {
                 // Si no existe la hoja "mesas", crearla
-                mesasSheet = workbook.createSheet("Mesas");
+                mesasSheet = workbook.createSheet(MESAS_TITLE);
                 // Crear encabezado si es una hoja nueva
                 Row headerRow = mesasSheet.createRow(0);
                 headerRow.createCell(0).setCellValue("ID");
@@ -782,7 +762,7 @@ public class ExcelUserManager {
             // Agregar nueva fila con los datos de la nueva mesa
             int newRowNum = mesasSheet.getLastRowNum() + 1; // La última fila más uno
             Row newRow = mesasSheet.createRow(newRowNum);
-            newRow.createCell(0).setCellValue("Mesa " + nuevaMesa.getId()); // ID de la mesa
+            newRow.createCell(0).setCellValue(MESA_TITLE + nuevaMesa.getId()); // ID de la mesa
             newRow.createCell(1).setCellValue(nuevaMesa.isOcupada() ? "Ocupada" : "Libre"); // Estado de la mesa
 
             // Escribir los cambios en el archivo
@@ -795,10 +775,10 @@ public class ExcelUserManager {
         }
     }
     public static void eliminarMesasConIdMayorA15() {
-        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
-            Sheet mesasSheet = workbook.getSheet("Mesas"); // Nombre de la hoja donde se encuentran las mesas
+            Sheet mesasSheet = workbook.getSheet(MESAS_TITLE); // Nombre de la hoja donde se encuentran las mesas
 
             if (mesasSheet != null) {
                 // Primero, verificar si alguna mesa con ID > 15 está ocupada.
@@ -857,7 +837,7 @@ public class ExcelUserManager {
                 }
 
                 // Guardar los cambios en el archivo Excel
-                try (FileOutputStream fos = new FileOutputStream(FILE_PATH.toString())) {
+                try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
                     workbook.write(fos);
                 }
             } else {
@@ -911,10 +891,10 @@ public class ExcelUserManager {
     public static boolean hayRegistroDeHoy() {
         LocalDate fechaTurno = getFechaTurnoActivo();
 
-        try (FileInputStream fis = new FileInputStream(FILE_PATH.toString());
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
-            Sheet sheet = workbook.getSheet("Empleados");
+            Sheet sheet = workbook.getSheet(EMPLOYEES_SHEET_NAME);
             if (sheet != null) {
                 for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                     Row row = sheet.getRow(i);
@@ -946,9 +926,9 @@ public class ExcelUserManager {
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             // Obtener o crear la hoja de empleados
-            Sheet empleadosSheet = workbook.getSheet("Empleados");
+            Sheet empleadosSheet = workbook.getSheet(EMPLOYEES_SHEET_NAME);
             if (empleadosSheet == null) {
-                empleadosSheet = workbook.createSheet("Empleados");
+                empleadosSheet = workbook.createSheet(EMPLOYEES_SHEET_NAME);
                 // Crear fila de encabezado
                 Row empleadosHeader = empleadosSheet.createRow(0);
                 empleadosHeader.createCell(0).setCellValue("Nombre Empleado");
@@ -966,22 +946,18 @@ public class ExcelUserManager {
             // Guardar cambios en el archivo
             try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
                 workbook.write(fos);
-               // enviarMensaje("+573226094632","El empleado " + nombreUsuario + " ha comenzado su jornada laboral a las " + horaInicio + " del día " + fechaInicio);
-            } /*catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }*/
-
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     public static String obtenerUltimoEmpleado() {
-        String EMPLEADOS_SHEET_NAME = "Empleados";
+        String employeesheet = "Empleados";
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
-            Sheet empleadosSheet = workbook.getSheet(EMPLEADOS_SHEET_NAME);
+            Sheet empleadosSheet = workbook.getSheet(employeesheet);
             if (empleadosSheet == null) return "No hay empleados registrados";
 
             for (int i = empleadosSheet.getLastRowNum(); i >= 0; i--) {

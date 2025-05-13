@@ -1,9 +1,12 @@
-package org.example.manager.adminManager;
+package org.example.manager.adminmanager;
 
 import java.io.*;
 import java.util.Properties;
 
 public class ConfigAdminManager {
+
+    private ConfigAdminManager() {}
+
     public static final String DIRECTORY_PATH = System.getProperty("user.home") + "\\Calculadora del Administrador";
     private static final String CONFIG_FILE = DIRECTORY_PATH + "\\config.properties";
     private static Properties properties = new Properties();
@@ -53,7 +56,7 @@ public class ConfigAdminManager {
                 }
             }
         } catch (IOException e) {
-            //System.out.println("Error al crear el archivo de configuración: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -62,7 +65,7 @@ public class ConfigAdminManager {
             properties.load(input);
             messageSendingEnabled = Boolean.parseBoolean(properties.getProperty("message_sending_enabled", "true"));
         } catch (IOException e) {
-            //System.out.println("No se pudo cargar el archivo de configuración: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -97,7 +100,7 @@ public class ConfigAdminManager {
         try (OutputStream output = new FileOutputStream(CONFIG_FILE)) {
             properties.store(output, "Configuración de la Aplicación");
         } catch (IOException e) {
-            //System.out.println("Error al guardar la configuración: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

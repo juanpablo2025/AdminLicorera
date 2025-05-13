@@ -1,11 +1,10 @@
-package org.example.manager.userManager;
+package org.example.manager.usermanager;
 
 
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.printing.PDFPageable;
-import org.example.manager.adminManager.ConfigAdminManager;
-
+import org.example.manager.adminmanager.ConfigAdminManager;
 import javax.print.*;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
@@ -14,6 +13,8 @@ import java.io.IOException;
 
 
 public class PrintUserManager {
+
+    private PrintUserManager() {}
 
     public static void abrirPDF(String pdfFilePath) {
         try {
@@ -49,27 +50,17 @@ public class PrintUserManager {
                 selectedPrintService = PrintServiceLookup.lookupDefaultPrintService();
             }
 
-            // Si no hay impresoras disponibles, mostrar mensaje de error
-            if (selectedPrintService == null) {
-                System.out.println("No hay impresoras disponibles.");
-                return;
-            }
-
             // Crear un trabajo de impresión sin mostrar cuadro de diálogo
             PrinterJob printerJob = PrinterJob.getPrinterJob();
             printerJob.setPrintService(selectedPrintService);
             printerJob.setPageable(new PDFPageable(document));
 
             // Realizar la impresión
-                printerJob.print();
+            printerJob.print();
             // Cerrar el documento
             document.close();
-        } catch (IOException e) {
+        } catch (IOException | PrinterException e) {
             e.printStackTrace();
-            System.out.println("Error al cargar el archivo PDF.");
-        } catch (PrinterException e) {
-            e.printStackTrace();
-            System.out.println("Error al imprimir el archivo PDF.");
         }
     }
 

@@ -1,19 +1,15 @@
-package org.example.ui.uiAdmin;
+package org.example.ui.uiadmin;
 
-import org.example.manager.adminManager.FacturasAdminManager;
-import org.example.manager.adminManager.GastosAdminManager;
-import org.example.manager.userManager.GastosUserManager;
+import org.example.manager.adminmanager.FacturasAdminManager;
 import org.example.model.Factura;
 import org.example.ui.UIHelpers;
-import org.example.ui.uiUser.UIUserMesas;
+import org.example.ui.uiuser.UIUserMesas;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -21,19 +17,19 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.example.manager.userManager.FacturacionUserManager.generarFacturadeCompra;
-import static org.example.ui.UIHelpers.createButton;
-import static org.example.ui.uiAdmin.MainAdminUi.mainAdmin;
-import static org.example.ui.uiUser.UIUserMain.mainUser;
+import static org.example.manager.usermanager.FacturacionUserManager.generarFacturadeCompra;
+import static org.example.utils.Constants.ARIAL_FONT;
 
 public class UIAdminFacturas {
+
+    private UIAdminFacturas() {}
 
        public static JPanel getAdminBillsPanel() {
         JPanel facturasPanel = new JPanel(new BorderLayout());
         facturasPanel.setBackground(new Color(250, 240, 230));
         facturasPanel.setBorder(new EmptyBorder(20, 20, 20, 20)); // Margen de 20px en todos los lados
 
-        JLabel titleLabel = new JLabel("Facturas", JLabel.CENTER);
+        JLabel titleLabel = new JLabel("Facturas", SwingConstants.CENTER);
         titleLabel.setForeground(new Color(36, 36, 36));
         try {
 
@@ -79,13 +75,13 @@ public class UIAdminFacturas {
         facturasTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
         // Establecer la fuente y el tamaño
-        Font font = new Font("Arial", Font.PLAIN, 18);
+        Font font = new Font(ARIAL_FONT, Font.PLAIN, 18);
         facturasTable.setFont(font);
         facturasTable.setRowHeight(30);
 
         // Establecer la fuente para el encabezado
         JTableHeader header = facturasTable.getTableHeader();
-        header.setFont(new Font("Arial", Font.BOLD, 20));
+        header.setFont(new Font(ARIAL_FONT, Font.BOLD, 20));
         header.setBackground(new Color(28,28,28));
         header.setForeground(Color.BLACK);
 

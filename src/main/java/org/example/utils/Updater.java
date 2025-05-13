@@ -12,12 +12,13 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 
 public class Updater {
 
-    private static final String CURRENT_VERSION = "v1.1.2";
+    private Updater() {}
+
+    private static final String CURRENT_VERSION = "v1.1.3";
     private static final String TEMP_EXE_NAME = "update_temp.exe";
     private static final String APP_EXE_NAME = "Licorera CR.exe";
     private static final String GITHUB_API_URL = "https://api.github.com/repos/juanpablo2025/AdminLicorera/releases/latest";
@@ -27,7 +28,6 @@ public class Updater {
 
     public static void checkForUpdates() {
         if (!hayConexionInternet()) {
-            System.out.println("Sin conexión a internet, se omite la búsqueda de actualizaciones.");
             return;
         }
         try {
@@ -103,14 +103,14 @@ public class Updater {
                 "timeout /t 2 > nul",
                 "taskkill /F /IM \"" + APP_EXE_NAME + "\" >nul 2>&1",
                 "move /Y \"" + TEMP_EXE_NAME + "\" \"" + APP_EXE_NAME + "\"",
-                "start \"\" /min powershell -WindowStyle Hidden -Command \"Start-Process -FilePath 'Licorera CR.exe'\"",
+                "start \"\" /min powershell -WindowStyle Hidden -Command \"Start-Process -WindowStyle Minimized -FilePath 'Licorera CR.exe\"\n'\"",
                 "exit"
         ));
         Files.write(Paths.get("update_launcher.bat"), script.getBytes(StandardCharsets.UTF_8));
     }
 
     private static void launchUpdateScript() throws IOException {
-        new ProcessBuilder("cmd", "/c", "start", "update_launcher.bat").start();
+        new ProcessBuilder("powershell", "-WindowStyle", "Hidden", "-Command", "Start-Process -FilePath update_launcher.bat -WindowStyle Hidden").start();
     }
 
     private static void showProgressWindow() {
@@ -127,7 +127,7 @@ public class Updater {
         panel.add(label, BorderLayout.NORTH);
         panel.add(progressBar, BorderLayout.CENTER);
 
-        progressFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        progressFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         progressFrame.setSize(350, 50);
         progressFrame.setLocationRelativeTo(null);
         progressFrame.setAlwaysOnTop(true);

@@ -1,4 +1,4 @@
-package org.example.manager.userManager;
+package org.example.manager.usermanager;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -14,15 +14,18 @@ import java.time.format.DateTimeFormatter;
 
 public class GastosUserManager {
 
-    public static void saveGasto(String nombreGasto, int i, double precio) {
+    private GastosUserManager() {
+    }
+
+    public static void saveGasto(String nombreGasto, double precio) {
         try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
             // Crear la pestaña de gastos si no existe
-            String GASTOS_SHEET_NAME = "Gastos";
-            Sheet gastosSheet = workbook.getSheet(GASTOS_SHEET_NAME);
+            String gastosSheetName = "Gastos";
+            Sheet gastosSheet = workbook.getSheet(gastosSheetName);
             if (gastosSheet == null) {
                 // Crear la hoja de gastos
-                gastosSheet = workbook.createSheet(GASTOS_SHEET_NAME);
+                gastosSheet = workbook.createSheet(gastosSheetName);
 
                 // Crear fila de encabezado
                 Row headerRow = gastosSheet.createRow(0);
@@ -45,9 +48,7 @@ public class GastosUserManager {
             // Guardar los cambios en el archivo Excel
             try (FileOutputStream fos = new FileOutputStream(ExcelUserManager.FILE_PATH)) {
                 workbook.write(fos);
-                System.out.println("Reabastecimiento registrado en la pestaña de gastos.");
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }

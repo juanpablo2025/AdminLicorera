@@ -1,7 +1,6 @@
-package org.example.ui.uiUser;
+package org.example.ui.uiuser;
 
 import org.example.model.Mesa;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -12,13 +11,13 @@ import java.awt.event.MouseEvent;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.example.manager.userManager.ExcelUserManager.*;
-import static org.example.ui.uiUser.UIUserVenta.showVentaMesaDialog;
+import static org.example.manager.usermanager.ExcelUserManager.*;
+import static org.example.utils.Constants.ARIAL_FONT;
 
 public class UIUserMesas {
 
-
+    private UIUserMesas() {
+    }
 
     private static Color fondoPrincipal = new Color(250, 240, 230);
 
@@ -29,7 +28,7 @@ public class UIUserMesas {
 
         String idMesa = mesa.getId();
 
-        JLabel titleLabel = new JLabel("Mesa " + idMesa, JLabel.CENTER);
+        JLabel titleLabel = new JLabel("Mesa " + idMesa, SwingConstants.CENTER);
         titleLabel.setForeground(new Color(28, 28, 28));
         try {
 
@@ -51,20 +50,19 @@ public class UIUserMesas {
                 TitledBorder.CENTER, TitledBorder.TOP
         );
 
-        titledBorder.setTitleFont(new Font("Arial", Font.BOLD, 18));
+        titledBorder.setTitleFont(new Font(ARIAL_FONT, Font.BOLD, 18));
         mesaPanel.setBorder(titledBorder);
 
         mesaPanel.setBackground(mesa.isOcupada() ? new Color(255, 111, 97) : new Color(168, 230, 207));
 
         JLabel mesaLabel = new JLabel(mesa.isOcupada() ? "OCUPADA" : "LIBRE", SwingConstants.CENTER);
-        mesaLabel.setFont(new Font("Arial", Font.BOLD, 28));
+        mesaLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 28));
         mesaLabel.setForeground(Color.DARK_GRAY);
 
         mesaPanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         mesaPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-              //  System.out.println("Atendiendo: " + tituloMesa);
 
                 // Cargar productos de la mesa desde Excel
                 List<String[]> productosMesa = cargarProductosMesaDesdeExcel(tituloMesa);
@@ -88,7 +86,6 @@ public class UIUserMesas {
                 cl.show(mainPanel, "VentaMesaPanel");
             }
 
-
             @Override
             public void mouseEntered(MouseEvent e) {
                 TitledBorder newBorder = BorderFactory.createTitledBorder(
@@ -98,7 +95,7 @@ public class UIUserMesas {
                 );
                 mesaPanel.setBackground(mesa.isOcupada() ? new Color(255, 60, 60) : new Color(0, 201, 87));
 
-                newBorder.setTitleFont(new Font("Arial", Font.BOLD, 20)); // Cambiar fuente a 28
+                newBorder.setTitleFont(new Font(ARIAL_FONT, Font.BOLD, 20)); // Cambiar fuente a 28
                 mesaPanel.setBorder(newBorder);
                 mesaLabel.setForeground(Color.WHITE);
                 newBorder.setTitleColor(Color.white);
@@ -125,7 +122,7 @@ public class UIUserMesas {
                 new EmptyBorder(10, 20, 20, 20)
         ));
 
-        JLabel titleLabel = new JLabel("Mesas", JLabel.CENTER);
+        JLabel titleLabel = new JLabel("Mesas", SwingConstants.CENTER);
         titleLabel.setForeground(new Color (28, 28, 28));
         try {
             InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
@@ -146,6 +143,30 @@ public class UIUserMesas {
             gridMesasPanel.add(mesaPanel);
         }
 
+        JButton addMesaButton = getJButton();
+
+        addMesaButton.addActionListener(e -> {
+            String nuevoID = String.valueOf(mesas.size() + 1);
+            Mesa nuevaMesa = new Mesa(nuevoID);
+            mesas.add(nuevaMesa);
+            JPanel nuevaMesaPanel = crearMesaPanel(nuevaMesa, mainFrame, contentPanel);
+            gridMesasPanel.add(nuevaMesaPanel);
+            gridMesasPanel.revalidate();
+            gridMesasPanel.repaint();
+            agregarMesaAExcel(nuevaMesa);
+        });
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.add(addMesaButton);
+        bottomPanel.setBackground(new Color(250, 240, 230));// Color de fondo amarillo
+        mesasPanel.add(titleLabel, BorderLayout.NORTH);
+        mesasPanel.add(gridMesasPanel, BorderLayout.CENTER);
+        mesasPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        return mesasPanel;
+    }
+
+    private static JButton getJButton() {
         JButton addMesaButton = new JButton("Nueva Mesa") {
             @Override
             protected void paintComponent(Graphics g) {
@@ -170,31 +191,12 @@ public class UIUserMesas {
 
         // Estilos del botón
         addMesaButton.setPreferredSize(new Dimension(160, 40)); // Más grande
-        addMesaButton.setFont(new Font("Arial", Font.BOLD, 22)); // Fuente grande
+        addMesaButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22)); // Fuente grande
         addMesaButton.setForeground(Color.WHITE); // Texto negro
         addMesaButton.setFocusPainted(false);
         addMesaButton.setContentAreaFilled(false);
         addMesaButton.setBorderPainted(false);
         addMesaButton.setOpaque(false);
-
-        addMesaButton.addActionListener(e -> {
-            String nuevoID = String.valueOf(mesas.size() + 1);
-            Mesa nuevaMesa = new Mesa(nuevoID);
-            mesas.add(nuevaMesa);
-            JPanel nuevaMesaPanel = crearMesaPanel(nuevaMesa, mainFrame, contentPanel);
-            gridMesasPanel.add(nuevaMesaPanel);
-            gridMesasPanel.revalidate();
-            gridMesasPanel.repaint();
-            agregarMesaAExcel(nuevaMesa);
-        });
-
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.add(addMesaButton);
-        bottomPanel.setBackground(new Color(250, 240, 230));// Color de fondo amarillo
-        mesasPanel.add(titleLabel, BorderLayout.NORTH);
-        mesasPanel.add(gridMesasPanel, BorderLayout.CENTER);
-        mesasPanel.add(bottomPanel, BorderLayout.SOUTH);
-
-        return mesasPanel;
+        return addMesaButton;
     }
 }

@@ -1,8 +1,8 @@
-package org.example.ui.uiUser;
+package org.example.ui.uiuser;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import org.example.manager.userManager.ExcelUserManager;
-import org.example.manager.userManager.FacturacionUserManager;
+import org.example.manager.usermanager.ExcelUserManager;
+import org.example.manager.usermanager.FacturacionUserManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,18 +10,22 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import static org.example.ui.uiAdmin.MainAdminUi.*;
-import static org.example.ui.uiUser.UIUserFacturas.getFacturasPanel;
+import static org.example.ui.uiadmin.MainAdminUi.*;
+import static org.example.ui.uiuser.UIUserFacturas.getFacturasPanel;
 import static org.example.ui.UIHelpers.createButton;
-import static org.example.ui.uiUser.UIUserMesas.showPanelMesas;
+import static org.example.ui.uiuser.UIUserMesas.showPanelMesas;
+import static org.example.utils.Constants.*;
 
 public class UIUserMain {
 
-    private static String nombreEmpleado = ExcelUserManager.obtenerUltimoEmpleado().toUpperCase();
-        public static Color fondoPrincipal = new Color(250, 240, 230);
+    private UIUserMain() {}
+
+    private static final String EMPLOYEE_NAME = ExcelUserManager.obtenerUltimoEmpleado().toUpperCase();
+    public static final Color fondoPrincipal = new Color(250, 240, 230);
 
     public static void mainUser() {
         try {
@@ -32,13 +36,11 @@ public class UIUserMain {
             if (icon.getImage() != null) {
                 Image scaledImage = icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
                 frame.setIconImage(scaledImage);
-            } else {
-            //    System.out.println("⚠ Error: No se encontró el icono. Verifica la ruta.");
             }
 
             frame.setSize(1280, 720);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 
             JPanel mainPanel = new JPanel(new BorderLayout());
             mainPanel.setBackground(new Color(245, 245, 245));
@@ -48,14 +50,11 @@ public class UIUserMain {
 
             sidebarPanel.add(Box.createVerticalStrut(5));
 
-
-
-
             // Panel dinámico para cambiar vistas
             JPanel contentPanel = new JPanel(new CardLayout());
-            contentPanel.add(showPanelMesas(frame,contentPanel), "mesas");
+            contentPanel.add(showPanelMesas(frame,contentPanel), MESAS);
             contentPanel.add(UIUserProductList.getProductListPanel(), "productos");
-            contentPanel.add(getFacturasPanel(), "Facturas");
+            contentPanel.add(getFacturasPanel(), FACTURAS);
             contentPanel.add(UIUserGastos.createGastosPanel(contentPanel), "gastos");
             contentPanel.add(createFacturarPanel(contentPanel), "facturar");
 
@@ -75,7 +74,7 @@ public class UIUserMain {
                 public void mouseClicked(MouseEvent e) {
                     // **Obtener el CardLayout y mostrar el panel "mesas"**
                     CardLayout layout = (CardLayout) contentPanel.getLayout();
-                    layout.show(contentPanel, "mesas");
+                    layout.show(contentPanel, MESAS);
                 }
 
                 @Override
@@ -91,8 +90,7 @@ public class UIUserMain {
                 }
             });
 
-
-            JLabel employeeLabel = new JLabel(nombreEmpleado);
+            JLabel employeeLabel = new JLabel(EMPLOYEE_NAME);
             employeeLabel.setForeground(Color.DARK_GRAY);
             employeeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             try {
@@ -161,16 +159,14 @@ public class UIUserMain {
             });
             salirButton.setMaximumSize(buttonSize);
 
-            JButton moreOptionsButton =  createButton("Facturas", resizeIcon("/icons/admin/beneficios.png"), e -> {
+            JButton moreOptionsButton =  createButton(FACTURAS, resizeIcon("/icons/admin/beneficios.png"), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
-                cl.show(contentPanel, "Facturas");
+                cl.show(contentPanel, FACTURAS);
             });
             moreOptionsButton.setMaximumSize(buttonSize);
 
-            JButton moreOptionsButtons = createButton("Administrador", resizeIcon("/icons/obrero.png"), e -> {
-                adminPassword(frame);
+            JButton moreOptionsButtons = createButton("Administrador", resizeIcon("/icons/obrero.png"), e -> adminPassword(frame));
 
-            });
             moreOptionsButtons.setMaximumSize(buttonSize);
 
             buttonsPanel.add(Box.createVerticalStrut(5));
@@ -197,7 +193,6 @@ public class UIUserMain {
         }
     }
 
-
     public static ImageIcon resizeIcon(String path) {
         ImageIcon icon = new ImageIcon(UIUserMain.class.getResource(path));
         Image img = icon.getImage().getScaledInstance(85, 55, Image.SCALE_SMOOTH);
@@ -212,7 +207,7 @@ public class UIUserMain {
         // Cargar fuente personalizada una sola vez
         Font customFont = loadCustomFont("Lobster-Regular.ttf", 36f);
         if (customFont == null) {
-            customFont = new Font("Arial", Font.BOLD, 36); // Fuente de respaldo
+            customFont = new Font(ARIAL_FONT, Font.BOLD, 36); // Fuente de respaldo
         }
 
         // Panel del título
@@ -220,7 +215,7 @@ public class UIUserMain {
         titlePanel.setBackground(new Color(250, 240, 230));
         titlePanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 30, 0));
 
-        JLabel titleLabel = new JLabel("Finalizar Día", JLabel.CENTER);
+        JLabel titleLabel = new JLabel("Finalizar Día", SwingConstants.CENTER);
         titleLabel.setFont(customFont.deriveFont(Font.BOLD, 50f)); // Aplicar negrita y tamaño 50
         titleLabel.setForeground(new Color(36, 36, 36));
         titlePanel.add(titleLabel, BorderLayout.CENTER);
@@ -245,15 +240,15 @@ public class UIUserMain {
             if (imageUrl != null) {
                 ImageIcon originalIcon = new ImageIcon(imageUrl);
                 Image scaledImage = originalIcon.getImage().getScaledInstance(230, 230, Image.SCALE_SMOOTH);
-                JLabel logoLabel = new JLabel(new ImageIcon(scaledImage), JLabel.CENTER);
+                JLabel logoLabel = new JLabel(new ImageIcon(scaledImage), SwingConstants.CENTER);
                 imagePanel.add(logoLabel, BorderLayout.CENTER);
             } else {
-                JLabel missingLabel = new JLabel("Imagen no encontrada", JLabel.CENTER);
+                JLabel missingLabel = new JLabel("Imagen no encontrada", SwingConstants.CENTER);
                 missingLabel.setFont(customFont.deriveFont(14f));
                 imagePanel.add(missingLabel, BorderLayout.CENTER);
             }
         } catch (Exception e) {
-            JLabel errorLabel = new JLabel("Error cargando imagen", JLabel.CENTER);
+            JLabel errorLabel = new JLabel("Error cargando imagen", SwingConstants.CENTER);
             errorLabel.setFont(customFont.deriveFont(14f));
             imagePanel.add(errorLabel, BorderLayout.CENTER);
         }
@@ -291,27 +286,13 @@ public class UIUserMain {
         nombreGastoField.setPreferredSize(new Dimension(100, 35));
         formPanel.add(nombreGastoField, gbcForm);
 
-       /* // Campo Precio
-        JLabel precioLabel = new JLabel("Precio:");
-        precioLabel.setFont(labelFont);
-        precioLabel.setForeground(labelColor);
-        gbcForm.gridx = 0;
-        gbcForm.gridy = 1;
-        formPanel.add(precioLabel, gbcForm);
-
-        gbcForm.gridx = 1;
-        JTextField precioField = new JTextField(20);
-        precioField.setFont(labelFont.deriveFont(Font.PLAIN, 18f));
-        precioField.setPreferredSize(new Dimension(300, 35));
-        formPanel.add(precioField, gbcForm);*/
-
         // Botón Confirmar
         gbcForm.gridx = 0;
         gbcForm.gridy = 2;
         gbcForm.gridwidth = 2;
         gbcForm.fill = GridBagConstraints.CENTER;
         JButton addGastoButton = new JButton("Confirmar");
-        addGastoButton.setFont(new Font("Arial", Font.BOLD, 22));
+        addGastoButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
         addGastoButton.setPreferredSize(new Dimension(295, 40));
         addGastoButton.setBackground(new Color(0, 201, 87));
         addGastoButton.setForeground(Color.WHITE);
@@ -346,7 +327,7 @@ public class UIUserMain {
         gastosPanel.add(mainContentPanel, BorderLayout.CENTER);
 
         // Botón Volver
-        JButton backButton = createBackButton(contentPanel, customFont);
+        JButton backButton = createBackButton(contentPanel);
         JPanel bottomPanel = new JPanel();
         bottomPanel.setBackground(new Color(250, 240, 230));
         bottomPanel.add(backButton);
@@ -362,14 +343,14 @@ public class UIUserMain {
                 Font font = Font.createFont(Font.TRUETYPE_FONT, fontStream);
                 return font.deriveFont(size);
             }
-        } catch (Exception e) {
-            System.err.println("Error cargando fuente: " + e.getMessage());
+        } catch (IOException | FontFormatException e) {
+                e.printStackTrace();
         }
         return null;
     }
 
     // Método auxiliar para crear el botón Volver (opcional)
-    private static JButton createBackButton(JPanel contentPanel, Font customFont) {
+    private static JButton createBackButton(JPanel contentPanel) {
         // Botón "Volver"
         JButton backButton = new JButton("Volver") {
             @Override
@@ -385,7 +366,7 @@ public class UIUserMain {
         };
 
         backButton.setPreferredSize(new Dimension(150, 40)); // Aumenta tamaño del botón
-        backButton.setFont(new Font("Arial", Font.BOLD, 22));
+        backButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
         backButton.setForeground(Color.WHITE);
         backButton.setBackground(new Color(250, 240, 230));
         backButton.setFocusPainted(false);
@@ -394,12 +375,12 @@ public class UIUserMain {
         backButton.setOpaque(false);
         backButton.addActionListener(e -> {
             CardLayout cl = (CardLayout) contentPanel.getLayout();
-            cl.show(contentPanel, "mesas");
+            cl.show(contentPanel, MESAS);
         });
 
         backButton.addActionListener(e -> {
             CardLayout cl = (CardLayout) contentPanel.getLayout();
-            cl.show(contentPanel, "mesas");
+            cl.show(contentPanel, MESAS);
         });
         return backButton;
     }

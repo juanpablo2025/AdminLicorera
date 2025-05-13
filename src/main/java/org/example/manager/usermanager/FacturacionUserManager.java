@@ -1,6 +1,4 @@
-package org.example.manager.userManager;
-
-
+package org.example.manager.usermanager;
 
 import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.io.font.constants.StandardFonts;
@@ -10,18 +8,13 @@ import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
-import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.Paragraph;
 import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.properties.TextAlignment;
-import com.itextpdf.layout.properties.UnitValue;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.example.manager.adminManager.ConfigAdminManager;
+import org.example.manager.adminmanager.ConfigAdminManager;
 import org.example.model.Factura;
 import org.example.model.Producto;
-import org.example.utils.FormatterHelpers;
-
 import javax.swing.*;
 import java.io.*;
 import java.net.URI;
@@ -38,62 +31,42 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 
-import static org.example.manager.userManager.ExcelUserManager.*;
-import static org.example.manager.userManager.PrintUserManager.abrirPDF;
-import static org.example.manager.userManager.PrintUserManager.imprimirPDF;
+import static org.example.manager.usermanager.ExcelUserManager.*;
+import static org.example.manager.usermanager.PrintUserManager.abrirPDF;
+import static org.example.manager.usermanager.PrintUserManager.imprimirPDF;
 import static org.example.utils.Constants.*;
 import static org.example.utils.FormatterHelpers.formatearMoneda;
 
 public class FacturacionUserManager {
 
-    private static ExcelUserManager excelUserManager = new ExcelUserManager(); // Inicializar directamente
-
-    public static void setExcelUserManager(ExcelUserManager manager) {
-        excelUserManager = manager;
+    private FacturacionUserManager() {
     }
 
-    /**
-     * Método para verificar si el usuario ha ingresado la palabra correcta para facturar.
-     *
-     * @param input Texto ingresado por el usuario.
-     * @return true si la palabra es "Facturar", false en caso contrario.
-     */
+    private static ExcelUserManager excelUserManager = new ExcelUserManager(); // Inicializar directamente
+
     public static boolean verificarFacturacion(String input) {
         return "Facturar".equals(input);
     }
 
-    /**
-     * Realiza la facturación y limpieza de los datos.
-     * Luego, termina la ejecución del programa.
-     */
-    public static void facturarYSalir() throws IOException, InterruptedException {
+    public static void facturarYSalir() {
         // Verifica si hay ventas registradas antes de continuar
-        List<Factura> facturas = ExcelUserManager.getFacturas();  // Obtiene todas las facturas
+        List<Factura> facturas = getFacturas();  // Obtiene todas las facturas
 
         if (facturas.isEmpty()) {
             // Si no hay ventas, muestra un mensaje y no termina el día
             JOptionPane.showMessageDialog(null, "No se pueden cerrar las ventas, ya que no hay ventas registradas.", "Error", JOptionPane.ERROR_MESSAGE);
             return;  // Salir del método sin proceder
         }
-
         // Si hay ventas, procede con la facturación
         excelUserManager.facturarYLimpiar();
-
-        //TODO: validar que no este ocupada
         eliminarMesasConIdMayorA15();
-        //enviarMensaje("+573226094632", "Se ha realizado la facturación del día de hoy, por favor verifica el archivo en la carpeta de 'Facturas'.");
         System.exit(ZERO);
-        // Salir del programa después de la facturación
+
     }
 
-    /**
-     * Muestra un mensaje de error si la palabra ingresada es incorrecta.
-     */
     public static void mostrarErrorFacturacion() {
-        javax.swing.JOptionPane.showMessageDialog(null, ERROR_MENU, ERROR_TITLE, javax.swing.JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(null, ERROR_MENU, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
     }
-
-
 
     public static void generarFacturadeCompra(String ventaID, List<String> productos, double totalCompra, LocalDateTime fechaHora, String tipoPago) {
         try {
@@ -109,43 +82,28 @@ public class FacturacionUserManager {
             // Definir el ancho del papel basado en la configuración
             float anchoMm = paperSize.equals("48mm") ? 48 : (paperSize.equals("A4") ? 210 : 80);
             float anchoPuntos = anchoMm * WIDE_DOTS;  // Conversión de mm a puntos
-
             // Definir el alto dinámico según el número de productos
             float altoBaseMm = 130;   // Base mínima de la factura
             float altoPorProductoMm = 10;  // Espacio por cada producto
             float extraSpaceMm = 50;   // Espacio extra para el total y otras secciones
             float altoMinimoMm = 150;  // Mínimo para evitar recortes
 
-// Calcular la altura total garantizando un mínimo suficiente
+            // Calcular la altura total garantizando un mínimo suficiente
             float altoTotalMm = Math.max(altoBaseMm + (productos.size() * altoPorProductoMm) + extraSpaceMm, altoMinimoMm);
             float altoPuntos = altoTotalMm * HEIGHT_DOTS; // Conversión a puntos
 
-// Definir el tamaño de la página con el alto corregido
+            // Definir el tamaño de la página con el alto corregido
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
-
-
-
-            String nombreArchivo = System.getProperty("user.home") + "\\Calculadora del Administrador\\Facturas\\" + BILL_FILE + ventaID + PDF_FORMAT;
-            File pdfFile = new File(nombreArchivo);
+            String nombreArchivo = System.getProperty(FOLDER_PATH) + "\\Calculadora del Administrador\\Facturas\\" + BILL_FILE + ventaID + PDF_FORMAT;
             PdfWriter writer = new PdfWriter(nombreArchivo);
             PdfDocument pdfDoc = new PdfDocument(writer);
             Document document = new Document(pdfDoc, pageSize);
 
-            PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
             PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
             // Ajustar margen izquierdo a 10mm (1cm)
             float margenIzquierdo = 10 * HEIGHT_DOTS;
             document.setMargins(FIVE, FIVE, FIVE, margenIzquierdo);
-
-
-            /*/ Encabezado de la factura
-            document.add(new Paragraph(BILL_TITLE)
-                    .setFont(fontBold)
-                    .setFontSize(TWELVE)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(FIVE));*/
-
             document.add(new Paragraph("Licorera CR")
                     .setFont(lobsterFont)
                     .setFontSize(13)
@@ -199,13 +157,6 @@ public class FacturacionUserManager {
                     .setMarginBottom(5)
                     .setTextAlignment(TextAlignment.CENTER));
 
-          /*  document.add(new Paragraph(BILL_PRODUCTS)
-                    .setFont(fontBold)
-                    .setFontSize(8));*/
-
-            // Crear un formateador de moneda para Colombia
-            NumberFormat formatoColombiano = NumberFormat.getCurrencyInstance(new Locale("es", "CO"));
-
             // Agregar productos con formato de moneda colombiano
             for (String producto : productos) {
                 // Suponiendo que el formato de cada producto es "nombreProducto xCantidad $precioUnitario"
@@ -231,27 +182,12 @@ public class FacturacionUserManager {
                             .setFontSize(6));
                 }}
 
-            /*document.add(new Paragraph(new String(new char[30]).replace(SLASH_ZERO, "_"))
-                    .setFont(fontNormal)
-                    .setFontSize(EIGHT)
-                    .setMarginBottom(FIVE));*/
-
-            /* Totales
-            com.itextpdf.layout.element.Table table = new com.itextpdf.layout.element.Table(new float[]{THREE, TWO});
-            table.setWidth(UnitValue.createPercentValue(ONE_HUNDRED));
-*/
             NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
             String formattedPrice = formatCOP.format(totalCompra);
-           // addTableRow(table, TOTAL_BILL, PESO_SIGN + formattedPrice + PESOS);
-
-
-            //document.add(table);
-
 
             document.add(new Paragraph(TOTAL_BILL + PESO_SIGN + formattedPrice + PESOS)
                     .setFont(fontNormal) // Puedes ajustar la fuente
                     .setFontSize(9)    // Puedes ajustar el tamaño de la fuente
-                    //.setTextAlignment(TextAlignment.ALIGN_RIGHT) // O la alineación que prefieras
                     .setMarginBottom(2)
                     .setBold()); // O el margen que necesites
 
@@ -273,41 +209,28 @@ public class FacturacionUserManager {
             // Cerrar el documento
             document.close();
 
-            // Método para abrir el PDF después de generarlo
-            //abrirPDF(nombreArchivo);
-            //imprimirPDF(nombreArchivo);// Método para abrir el PDF después de generarlo
-
             if ("IMPRESORA".equals(outputType)) {
                 imprimirPDF(nombreArchivo);
             } else {
                 abrirPDF(nombreArchivo);
             }
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    private static void addTableRow(com.itextpdf.layout.element.Table table, String key, String value) {
-        table.addCell(new Paragraph(key).setFontSize(EIGHT));
-        table.addCell(new Paragraph(value).setFontSize(EIGHT));
-        table.setBorder(Border.NO_BORDER);
-    }
-
 
     public static void generarResumenDiarioEstilizadoPDF() {
         LocalDate fechaActual = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
         // Ruta del archivo
-        String carpetaPath = System.getProperty("user.home") + "\\Calculadora del Administrador\\Resumen del día";
+        String carpetaPath = System.getProperty(FOLDER_PATH) + "\\Calculadora del Administrador\\Resumen del día";
         File carpeta = new File(carpetaPath);
 
         // Crear la carpeta si no existe
         if (!carpeta.exists()) {
             boolean wasSuccessful = carpeta.mkdirs();
             if (!wasSuccessful) {
-                System.err.println("No se pudo crear la carpeta 'Resumen del día'.");
                 return; // Salir si no se puede crear la carpeta
             }
         }
@@ -321,12 +244,11 @@ public class FacturacionUserManager {
 
             // Obtener las hojas de compras, gastos y productos
             Sheet purchasesSheet = workbook.getSheet(PURCHASES_SHEET_NAME);
-            Sheet gastosSheet = workbook.getSheet("Gastos");
+            Sheet gastosSheet = workbook.getSheet(EXPENSES_SHEET_NAME);
             Sheet productsSheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
-            Sheet empleadosSheet = workbook.getSheet("Empleados");  // Hoja de empleados
+            Sheet empleadosSheet = workbook.getSheet("Empleados");
 
             // Obtener las hojas de compras, gastos y productos
-
             Sheet reabastecimientoSheet = workbook.getSheet("reabastecimiento");
             // Calcular totales
             double totalVentas = sumarTotalesCompras(purchasesSheet);
@@ -341,15 +263,19 @@ public class FacturacionUserManager {
 
             // Obtener configuración desde config.properties
             String paperSize = ConfigAdminManager.getPaperSize();
-            //String outputType = ConfigAdminManager.getOutputType();
-            //String printerName = ConfigAdminManager.getPrinterName();
 
             // Definir el ancho del papel basado en la configuración
-            float anchoMm = paperSize.equals("58mm") ? 58 : (paperSize.equals("A4") ? 210 : 80);
+            float anchoMm;
 
+            if ("58mm".equals(paperSize)) {
+                anchoMm = 58;
+            } else if ("A4".equals(paperSize)) {
+                anchoMm = 210;
+            } else {
+                anchoMm = 80;
+            }
 
             // Crear el PDF con tamaño de tarjeta
-            //float anchoMm = 100;  // Ancho de tarjeta (en mm)
             float altoMm = 200;  // Alto de tarjeta (en mm)
             float anchoPuntos = anchoMm * 2.83465f;
             float altoPuntos = altoMm * 2.83465f;
@@ -376,7 +302,7 @@ public class FacturacionUserManager {
                     .setTextAlignment(TextAlignment.CENTER)
                     .setMarginBottom(2));
 
-            String textoTotal = "REALIZO DEL SISTEMA: $" + formatearMoneda(totalVentas) + " pesos";
+            String textoTotal = "REALIZO DEL SISTEMA: $" + formatearMoneda(totalVentas) + PESOS;
 
             // Añadir el texto al documento PDF
             document.add(new Paragraph(textoTotal)
@@ -385,15 +311,8 @@ public class FacturacionUserManager {
                     .setTextAlignment(TextAlignment.LEFT)
                     .setMarginBottom(10));
 
-            /* Mostrar el total de ventas
-            document.add(new Paragraph("Total en VENTAS: $" + formatearMoneda(totalVentas)+ " pesos")
-                    .setFont(fontBold)
-                    .setFontSize(8)
-                    .setTextAlignment(TextAlignment.LEFT)
-                    .setMarginBottom(5));*/
-
             // Mostrar el total de gastos
-            document.add(new Paragraph("GASTOS: $" + formatearMoneda(totalGastos) + " pesos")
+            document.add(new Paragraph("GASTOS: $" + formatearMoneda(totalGastos) + PESOS)
                     .setFont(fontBold)
                     .setFontSize(8)
                     .setTextAlignment(TextAlignment.LEFT)
@@ -419,7 +338,7 @@ public class FacturacionUserManager {
                         // Si el valor no es numérico (por ejemplo, "N/A"), simplemente lo dejas en 0 o lo omites
                     }  // Precio de gasto
 
-                    document.add(new Paragraph("- " + producto + ": $" + formatearMoneda(precioGasto) + " pesos")
+                    document.add(new Paragraph("- " + producto + ": $" + formatearMoneda(precioGasto) + PESOS)
                             .setFont(fontNormal)
                             .setFontSize(7)
                             .setTextAlignment(TextAlignment.LEFT));
@@ -443,8 +362,8 @@ public class FacturacionUserManager {
                     try {
                         precioreabastecimiento = Double.parseDouble(precioTexto.replace(".", "").replace(",", "."));
                     } catch (NumberFormatException e) {
-                        // Si el valor no es numérico (por ejemplo, "N/A"), simplemente lo dejas en 0 o lo omites
-                    }  // Precio de gasto
+                        throw new RuntimeException(e);
+                    }
 
                     document.add(new Paragraph("- " + producto + ": $" + formatearMoneda(precioreabastecimiento) + " pesos")
                             .setFont(fontNormal)
@@ -475,7 +394,6 @@ public class FacturacionUserManager {
                             .setTextAlignment(TextAlignment.LEFT));
                 }
             }
-
 
             // Sección de Empleados y Horas de Inicio
             document.add(new Paragraph("\nEmpleados y Hora de apertura:")
@@ -525,10 +443,7 @@ public class FacturacionUserManager {
 
             // Cerrar el documento
             document.close();
-           // System.out.println("Archivo PDF de resumen creado: " + nombreArchivo);
-            FormatterHelpers.formatearMoneda(totalVentas);
-
-
+            formatearMoneda(totalVentas);
             // Agrega justo antes de construir el mensaje de WhatsApp
             DataFormatter formatteo = new DataFormatter();
             StringBuilder gastosNA = new StringBuilder();
@@ -552,38 +467,34 @@ public class FacturacionUserManager {
                 e.printStackTrace();
             }
             String[] numeros = { "+573226094632","+573112599560"};  //"+573146704316" Número al que quieres enviar el mensaje
-            String mensaje = "*[Licorera CR]* ¡Hola! se ha generado la liquidación del día de hoy por un total de: $ "
-                    + FormatterHelpers.formatearMoneda(totalVentas) + " pesos.\nPuedes consultar los detalles en los resúmenes adjuntos en Google Drive: https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
+            String mensaje = "*[Licorera CR]*\n¡Hola! se ha generado la liquidación del día de hoy por un total de: $ "
+                    + formatearMoneda(totalVentas) + " pesos.\nPuedes consultar los detalles en los resúmenes adjuntos en Google Drive: https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
             if (!gastosNA.isEmpty()) {
                 mensaje += "\n\n*Gastos del d\u00eda:*" + gastosNA;
             }
            enviarMensaje(numeros,mensaje);
-
         } catch (IOException e) {
             e.printStackTrace();
-
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt(); // ⚠️ Muy importante: restablece la interrupción
+            e.printStackTrace();
         }
     }
 
     public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorPago,double totalFacturado) throws IOException {
-
-
         Map<String, Integer> productosVendidos = obtenerProductosVendidos();
 
         LocalDate fechaActual = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         // Ruta del archivo
-        String carpetaPath = System.getProperty("user.home") + "\\Calculadora del Administrador\\Realizo";
+        String carpetaPath = System.getProperty(FOLDER_PATH) + "\\Calculadora del Administrador\\Realizo";
         File carpeta = new File(carpetaPath);
 
         // Crear la carpeta si no existe
         if (!carpeta.exists()) {
             boolean wasSuccessful = carpeta.mkdirs();
             if (!wasSuccessful) {
-                System.err.println("No se pudo crear la carpeta 'Realizo'.");
                 return; // Salir del método si no se puede crear la carpeta
             }
         }
@@ -594,12 +505,10 @@ public class FacturacionUserManager {
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
             Sheet gastosSheet = workbook.getSheet("Gastos");
-           // System.out.println("GastosSheet tiene " + gastosSheet.getLastRowNum() + " filas");
             for (int i = 1; i <= gastosSheet.getLastRowNum(); i++) {
                 Row row = gastosSheet.getRow(i);
                 if (row != null) {
-                    String raw = new DataFormatter().formatCellValue(row.getCell(3));
-                  //  System.out.println("Fila " + i + " valor gasto: " + raw);
+                     new DataFormatter().formatCellValue(row.getCell(3));
                 }
             }
             double totalGastos = restarTotalesGastos(gastosSheet);
@@ -658,9 +567,6 @@ public class FacturacionUserManager {
                     .setTextAlignment(TextAlignment.LEFT)
                     .setMarginBottom(5));
 
-
-
-
             if (totalesPorPago != null && !totalesPorPago.isEmpty()) {
                 for (Map.Entry<String, Double> entry : totalesPorPago.entrySet()) {
                     String metodoPago = entry.getKey().replace(" - Transferencia", "");
@@ -684,8 +590,6 @@ public class FacturacionUserManager {
                         .setFontSize(8)
                         .setMarginBottom(2));
             }
-
-
 
             // Espacios para el cierre de caja
             document.add(new Paragraph(new String(new char[18]).replace('\0', '_'))
@@ -753,7 +657,6 @@ public class FacturacionUserManager {
                     .setMarginBottom(2));
 
             // Agradecimiento o información adicional
-
             document.add(new Paragraph("Licorera CR")
                     .setFont(lobsterFont)
                     .setFontSize(13)
@@ -780,10 +683,9 @@ public class FacturacionUserManager {
         }
     }
 
-
     // Método para limpiar la carpeta de facturas
     public static void limpiarFacturas() {
-        String rutaFacturas = System.getProperty("user.home") +"\\Calculadora del Administrador\\Facturas";
+        String rutaFacturas = System.getProperty(FOLDER_PATH) +"\\Calculadora del Administrador\\Facturas";
         borrarContenidoCarpeta(rutaFacturas);
     }
 
@@ -797,14 +699,9 @@ public class FacturacionUserManager {
                     if (elemento.isDirectory()) {
                         borrarContenidoCarpeta(elemento.getPath()); // Llamada recursiva para eliminar el contenido del subdirectorio
                     }
-                    boolean deleted = elemento.delete(); // Borrar el archivo o directorio
-                    if (!deleted) {
-                      //  System.out.println("No se pudo eliminar: " + elemento.getPath());
-                    }
+                    elemento.delete(); // Borrar el archivo o directorio
                 }
             }
-        } else {
-          //  System.out.println("La carpeta no existe o no es un directorio: " + carpetaPath);
         }
     }
 
@@ -906,50 +803,22 @@ public class FacturacionUserManager {
                         cell.setCellValue(0);
                     }
                 }
-            } else {
-                System.err.println("La hoja de productos no se encontró.");
             }
-
             // Guardar los cambios en el archivo Excel
             try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
                 workbook.write(fos);
             }
-            // System.out.println("Se ha limpiado la columna 'Cantidad Vendida'.");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    /*private static final String INSTANCE_ID = "instance115037";  // Reemplazar con tu instancia de UltraMsg
-    private static final String TOKEN = "w0xz1xtb14195z9u";  // Reemplazar con tu token de UltraMsg
-    private static final String API_URL = "https://api.ultramsg.com/" + INSTANCE_ID + "/messages/chat";
-
-    public static void enviarMensaje(String numero, String mensaje) throws IOException, InterruptedException {
-
-
-        if (!ConfigAdminManager.isMessageSendingEnabled()) {
-           // System.out.println("Envío de mensajes desactivado. Mensaje no enviado.");
-            return;
-        }
-
-        HttpClient client = HttpClient.newHttpClient();
-        String data = "token=" + TOKEN +
-                "&to=" + URLEncoder.encode("+" + numero, StandardCharsets.UTF_8) +
-                "&body=" + URLEncoder.encode(mensaje, StandardCharsets.UTF_8);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(API_URL))
-                .header("Content-Type", "application/x-www-form-urlencoded")
-                .POST(HttpRequest.BodyPublishers.ofString(data))
-                .build();
-
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-        System.out.println("Respuesta del servidor: " + response.body());
-    }*/
-
     public static void enviarMensaje(String[] numeros, String mensaje) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
+
+        if (!ConfigAdminManager.isMessageSendingEnabled()) {
+            return;
+        }
 
         for (String numero : numeros) {
             String url = String.format("https://api.callmebot.com/whatsapp.php?phone=%s&text=%s&apikey=2596189",

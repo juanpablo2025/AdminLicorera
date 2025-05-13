@@ -1,4 +1,4 @@
-package org.example.manager.userManager;
+package org.example.manager.usermanager;
 
 import org.example.model.Producto;
 
@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.example.utils.Constants.MINUS_ONE;
-import static org.example.utils.Constants.ZERO;
 
 public class ProductoUserManager {
     private static ExcelUserManager excelUserManager = new ExcelUserManager();
@@ -33,7 +31,6 @@ public class ProductoUserManager {
         Map<String, Integer> productsAndQuantities = new HashMap<>();
 
         if (cartProducts.size() != cartQuantities.size()) {
-            System.err.println("Error: Las listas cartProducts y cartQuantities tienen tamaños diferentes.");
             return productsAndQuantities; // Retorna un mapa vacío si hay un problema
         }
 
@@ -72,8 +69,6 @@ public class ProductoUserManager {
         if (row >= 0 && row < cartProducts.size()) {
             cartProducts.remove(row);
             cartQuantities.remove(row);
-        } else {
-            System.err.println("Error: Índice fuera de rango al intentar eliminar producto del carrito.");
         }
     }
 

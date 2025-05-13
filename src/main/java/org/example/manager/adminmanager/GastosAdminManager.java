@@ -1,4 +1,4 @@
-package org.example.manager.adminManager;
+package org.example.manager.adminmanager;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -41,18 +41,15 @@ public class GastosAdminManager {
                 // Guardar la actualización de productos
                 try (FileOutputStream fos = new FileOutputStream(ExcelAdminManager.FILE_PATH)) {
                     workbook.write(fos);
-                   // System.out.println("Cantidad del producto actualizada exitosamente.");
                 }
-            } else {
-               // System.out.println("Producto no encontrado.");
             }
 
             // Crear la pestaña de gastos si no existe
-            String GASTOS_SHEET_NAME = "Reabastecimiento";
-            Sheet reabastecimientoSheet = workbook.getSheet(GASTOS_SHEET_NAME);
+            String gastosSheetName = "Reabastecimiento";
+            Sheet reabastecimientoSheet = workbook.getSheet(gastosSheetName);
             if (reabastecimientoSheet == null) {
                 // Crear la hoja de gastos
-                reabastecimientoSheet = workbook.createSheet(GASTOS_SHEET_NAME);
+                reabastecimientoSheet = workbook.createSheet(gastosSheetName);
 
                 // Crear fila de encabezado
                 Row headerRow = reabastecimientoSheet.createRow(0);
@@ -86,7 +83,6 @@ public class GastosAdminManager {
             // Guardar los cambios en el archivo Excel
             try (FileOutputStream fos = new FileOutputStream(ExcelAdminManager.FILE_PATH)) {
                 workbook.write(fos);
-                //System.out.println("Reabastecimiento registrado en la pestaña de reabastecimiento.");
             }
 
         } catch (IOException e) {
