@@ -6,11 +6,7 @@ import java.util.List;
 
 public class ProductoAdminManager {
 
-    private ExcelAdminManager excelAdminManager = new ExcelAdminManager();
-
-    public void addProduct(Producto product) {
-        excelAdminManager.addProduct(product);
-    }
+    private final ExcelAdminManager excelAdminManager = new ExcelAdminManager();
 
     public List<Producto> getProducts() {
         return excelAdminManager.getProducts();

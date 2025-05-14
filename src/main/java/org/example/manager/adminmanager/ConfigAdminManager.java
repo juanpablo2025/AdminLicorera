@@ -1,5 +1,7 @@
 package org.example.manager.adminmanager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.Properties;
 
@@ -7,9 +9,11 @@ public class ConfigAdminManager {
 
     private ConfigAdminManager() {}
 
+    private static final Logger logger =  LoggerFactory.getLogger(ConfigAdminManager.class);
+
     public static final String DIRECTORY_PATH = System.getProperty("user.home") + "\\Calculadora del Administrador";
     private static final String CONFIG_FILE = DIRECTORY_PATH + "\\config.properties";
-    private static Properties properties = new Properties();
+    private static final Properties properties = new Properties();
     private static boolean messageSendingEnabled;
 
     static {
@@ -40,12 +44,12 @@ public class ConfigAdminManager {
         try {
             File directory = new File(DIRECTORY_PATH);
             if (!directory.exists()) {
+
                 directory.mkdirs();
             }
 
             File configFile = new File(CONFIG_FILE);
             if (!configFile.exists()) {
-                configFile.createNewFile();
                 try (OutputStream output = new FileOutputStream(CONFIG_FILE)) {
                     properties.setProperty("paper_size", "80mm");
                     properties.setProperty("output_type", "PDF");
@@ -56,7 +60,8 @@ public class ConfigAdminManager {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al crear el archivo de configuración: {}", e.getMessage());
+
         }
     }
 
@@ -65,7 +70,9 @@ public class ConfigAdminManager {
             properties.load(input);
             messageSendingEnabled = Boolean.parseBoolean(properties.getProperty("message_sending_enabled", "true"));
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al cargar el archivo de configuración: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error inesperado al cargar el archivo de configuración: {}", e.getMessage());
         }
     }
 
@@ -100,7 +107,9 @@ public class ConfigAdminManager {
         try (OutputStream output = new FileOutputStream(CONFIG_FILE)) {
             properties.store(output, "Configuración de la Aplicación");
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al guardar el archivo de configuración: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error inesperado al guardar el archivo de configuración: {}", e.getMessage());
         }
     }
 

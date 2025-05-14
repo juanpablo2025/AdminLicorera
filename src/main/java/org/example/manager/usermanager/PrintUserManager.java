@@ -5,7 +5,12 @@ import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.printing.PDFPageable;
 import org.example.manager.adminmanager.ConfigAdminManager;
+import org.example.ui.uiadmin.UIAdminFacturas;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.print.*;
+import javax.swing.*;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
@@ -16,6 +21,9 @@ public class PrintUserManager {
 
     private PrintUserManager() {}
 
+    private static final Logger logger =  LoggerFactory.getLogger(PrintUserManager.class);
+
+
     public static void abrirPDF(String pdfFilePath) {
         try {
             File pdfFile = new File(pdfFilePath);
@@ -23,7 +31,7 @@ public class PrintUserManager {
                 Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + pdfFilePath);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al abrir el PDF: ", e);
         }
     }
 
@@ -60,7 +68,11 @@ public class PrintUserManager {
             // Cerrar el documento
             document.close();
         } catch (IOException | PrinterException e) {
-            e.printStackTrace();
+            logger.error("Error al imprimir el PDF: ", e);
+            JOptionPane.showMessageDialog(UIAdminFacturas.getAdminBillsPanel(), "Error al imprimir el PDF: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            logger.error("Error inesperado: ", e);
+            JOptionPane.showMessageDialog(UIAdminFacturas.getAdminBillsPanel(), "Error inesperado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

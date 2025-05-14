@@ -5,14 +5,10 @@ import java.util.List;
 
 public class FacturasAdminManager {
 
-    private ExcelAdminManager excelAdminManager = new ExcelAdminManager();
+    private final ExcelAdminManager excelAdminManager = new ExcelAdminManager();
 
     public List<Factura> getFacturas() {
         return excelAdminManager.getFacturas();
-    }
-
-    public void eliminarFactura(String facturaID) {
-        excelAdminManager.eliminarFactura(facturaID);
     }
 
     public boolean eliminarFacturaYActualizarProductos(String facturaID) {return excelAdminManager.eliminarFacturaYActualizarProductos(facturaID);}

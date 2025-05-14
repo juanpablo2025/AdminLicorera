@@ -7,8 +7,9 @@ import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
 
-import static org.example.utils.Constants.IMPRESORA;
+import static org.example.utils.Constants.*;
 
 public class UIConfigAdmin {
 
@@ -23,27 +24,27 @@ public class UIConfigAdmin {
 
         PrintService[] printServices = PrintServiceLookup.lookupPrintServices(null, null);
         String[] printerNames = new String[printServices.length];
-        for (int i = 0; i < printServices.length; i++) {
+        for (int i = ZERO; i < printServices.length; i++) {
             printerNames[i] = printServices[i].getName();
         }
         String currentPrinter = ConfigAdminManager.getPrinterName();
 
         // Leer datáfonos reales desde puertos COM
         SerialPort[] ports = SerialPort.getCommPorts();
-        String[] dataphoneOptions = new String[ports.length + 1];
-        dataphoneOptions[0] = "Ninguno";
-        for (int i = 0; i < ports.length; i++) {
-            dataphoneOptions[i + 1] = ports[i].getSystemPortName() + " - " + ports[i].getDescriptivePortName();
+        String[] dataphoneOptions = new String[ports.length + ONE];
+        dataphoneOptions[ZERO] = "Ninguno";
+        for (int i = ZERO; i < ports.length; i++) {
+            dataphoneOptions[i + ONE] = ports[i].getSystemPortName() + " - " + ports[i].getDescriptivePortName();
         }
         String currentDataphone = ConfigAdminManager.getSelectedDataphone();
 
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
+        panel.setBorder(BorderFactory.createEmptyBorder(TWENTY, FORTY, TWENTY, FORTY));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.insets = new Insets(TEN, TEN, TEN, TEN);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridx = ZERO;
+        gbc.gridy = ZERO;
 
         JLabel paperLabel = new JLabel("Seleccione el tamaño de papel:");
         panel.add(paperLabel, gbc);
@@ -51,7 +52,7 @@ public class UIConfigAdmin {
         gbc.gridy++;
         JComboBox<String> paperSizeComboBox = new JComboBox<>(paperSizeOptions);
         paperSizeComboBox.setSelectedItem(currentPaperSize);
-        paperSizeComboBox.setPreferredSize(new Dimension(300, 30));
+        paperSizeComboBox.setPreferredSize(new Dimension(300, THIRTY));
         panel.add(paperSizeComboBox, gbc);
 
         gbc.gridy++;
@@ -61,7 +62,7 @@ public class UIConfigAdmin {
         gbc.gridy++;
         JComboBox<String> outputComboBox = new JComboBox<>(outputOptions);
         outputComboBox.setSelectedItem(currentOutput);
-        outputComboBox.setPreferredSize(new Dimension(300, 30));
+        outputComboBox.setPreferredSize(new Dimension(300, THIRTY));
         panel.add(outputComboBox, gbc);
 
         gbc.gridy++;
@@ -72,7 +73,7 @@ public class UIConfigAdmin {
         JComboBox<String> printerComboBox = new JComboBox<>(printerNames);
         printerComboBox.setSelectedItem(currentPrinter);
         printerComboBox.setEnabled(currentOutput.equals(IMPRESORA));
-        printerComboBox.setPreferredSize(new Dimension(300, 30));
+        printerComboBox.setPreferredSize(new Dimension(300, THIRTY));
         panel.add(printerComboBox, gbc);
 
         // Datáfono detectado por COM
@@ -98,7 +99,7 @@ public class UIConfigAdmin {
         trmCheckBox.setSelected(ConfigAdminManager.isTrmEnabled());
         panel.add(trmCheckBox, gbc);
 
-        outputComboBox.addActionListener(e -> printerComboBox.setEnabled(outputComboBox.getSelectedItem().equals(IMPRESORA)));
+        outputComboBox.addActionListener(e -> printerComboBox.setEnabled(Objects.equals(outputComboBox.getSelectedItem(), IMPRESORA)));
 
         // Facturación electrónica
         gbc.gridy++;
@@ -111,40 +112,40 @@ public class UIConfigAdmin {
         JLabel userLabel = new JLabel("Usuario Siigo:");
         panel.add(userLabel, gbc);
         gbc.gridy++;
-        JTextField userField = new JTextField(ConfigAdminManager.getSiigoUsername(), 20);
+        JTextField userField = new JTextField(ConfigAdminManager.getSiigoUsername(), TWENTY);
         panel.add(userField, gbc);
 
         gbc.gridy++;
         JLabel keyLabel = new JLabel("Clave API:");
         panel.add(keyLabel, gbc);
         gbc.gridy++;
-        JTextField keyField = new JTextField(ConfigAdminManager.getSiigoAccessKey(), 20);
+        JTextField keyField = new JTextField(ConfigAdminManager.getSiigoAccessKey(), TWENTY);
         panel.add(keyField, gbc);
 
         gbc.gridy++;
         JLabel clientIdLabel = new JLabel("Client ID:");
         panel.add(clientIdLabel, gbc);
         gbc.gridy++;
-        JTextField clientIdField = new JTextField(ConfigAdminManager.getSiigoClientId(), 20);
+        JTextField clientIdField = new JTextField(ConfigAdminManager.getSiigoClientId(), TWENTY);
         panel.add(clientIdField, gbc);
 
         gbc.gridy++;
         JLabel clientSecretLabel = new JLabel("Client Secret:");
         panel.add(clientSecretLabel, gbc);
         gbc.gridy++;
-        JTextField clientSecretField = new JTextField(ConfigAdminManager.getSiigoClientSecret(), 20);
+        JTextField clientSecretField = new JTextField(ConfigAdminManager.getSiigoClientSecret(), TWENTY);
         panel.add(clientSecretField, gbc);
 
-        outputComboBox.addActionListener(e -> printerComboBox.setEnabled(outputComboBox.getSelectedItem().equals(IMPRESORA)));
+        outputComboBox.addActionListener(e -> printerComboBox.setEnabled(Objects.equals(outputComboBox.getSelectedItem(), IMPRESORA)));
 
         gbc.gridy++;
         JButton saveButton = new JButton("Guardar configuración");
-        saveButton.setPreferredSize(new Dimension(200, 35));
+        saveButton.setPreferredSize(new Dimension(200, THIRTY_FIVE));
         saveButton.setFont(saveButton.getFont().deriveFont(Font.BOLD, 14f));
         saveButton.addActionListener(e -> {
             ConfigAdminManager.setPaperSize((String) paperSizeComboBox.getSelectedItem());
             ConfigAdminManager.setOutputType((String) outputComboBox.getSelectedItem());
-            if (outputComboBox.getSelectedItem().equals(IMPRESORA)) {
+            if (Objects.equals(outputComboBox.getSelectedItem(), IMPRESORA)) {
                 ConfigAdminManager.setPrinterName((String) printerComboBox.getSelectedItem());
             }
             ConfigAdminManager.setSelectedDataphone((String) dataphoneComboBox.getSelectedItem());

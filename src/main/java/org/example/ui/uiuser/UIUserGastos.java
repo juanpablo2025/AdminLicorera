@@ -1,33 +1,37 @@
 package org.example.ui.uiuser;
 
 import org.example.manager.usermanager.GastosUserManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.InputStream;
 import java.net.URL;
 
-import static org.example.utils.Constants.ARIAL_FONT;
+import static org.example.utils.Constants.*;
 
 public class UIUserGastos {
+
+    private static final Logger logger =  LoggerFactory.getLogger(UIUserGastos.class);
 
     private UIUserGastos() {}
 
     public static JPanel createGastosPanel(JPanel contentPanel) {
         JPanel gastosPanel = new JPanel(new BorderLayout());
-        gastosPanel.setBackground(new Color(250, 240, 230));
+        gastosPanel.setBackground(FONDO_PRINCIPAL);
         gastosPanel.setPreferredSize(new Dimension(800, 600));
 
         // Cargar fuente personalizada una sola vez
-        Font customFont = loadCustomFont("Lobster-Regular.ttf", 36f);
+        Font customFont = loadCustomFont();
         if (customFont == null) {
             customFont = new Font(ARIAL_FONT, Font.BOLD, 36); // Fuente de respaldo
         }
 
         // Panel del título
         JPanel titlePanel = new JPanel(new BorderLayout());
-        titlePanel.setBackground(new Color(250, 240, 230));
-        titlePanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 30, 0));
+        titlePanel.setBackground(FONDO_PRINCIPAL);
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(30, ZERO, 30, ZERO));
 
         JLabel titleLabel = new JLabel("Registrar Gastos", SwingConstants.CENTER);
         titleLabel.setFont(customFont.deriveFont(Font.BOLD, 50f)); // Aplicar negrita y tamaño 50
@@ -37,7 +41,7 @@ public class UIUserGastos {
 
         // Panel principal para imagen y formulario
         JPanel mainContentPanel = new JPanel(new GridBagLayout());
-        mainContentPanel.setBackground(new Color(250, 240, 230));
+        mainContentPanel.setBackground(FONDO_PRINCIPAL);
         mainContentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -46,7 +50,7 @@ public class UIUserGastos {
 
         // Panel para la imagen (izquierda)
         JPanel imagePanel = new JPanel(new BorderLayout());
-        imagePanel.setBackground(new Color(250, 240, 230));
+        imagePanel.setBackground(FONDO_PRINCIPAL);
         imagePanel.setPreferredSize(new Dimension(200, 200));
 
         try {
@@ -67,18 +71,18 @@ public class UIUserGastos {
             imagePanel.add(errorLabel, BorderLayout.CENTER);
         }
 
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridheight = 2;
+        gbc.gridx = ZERO;
+        gbc.gridy = ZERO;
+        gbc.gridheight = TWO;
         mainContentPanel.add(imagePanel, gbc);
 
         // Panel para los campos de entrada (derecha)
         JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBackground(new Color(250, 240, 230));
+        formPanel.setBackground(FONDO_PRINCIPAL);
         formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         GridBagConstraints gbcForm = new GridBagConstraints();
-        gbcForm.insets = new Insets(10, 10, 10, 10);
+        gbcForm.insets = new Insets(TEN, TEN, TEN, TEN);
         gbcForm.anchor = GridBagConstraints.WEST;
 
         // Configurar fuente para los labels
@@ -89,11 +93,11 @@ public class UIUserGastos {
         JLabel descLabel = new JLabel("Descripción");
         descLabel.setFont(labelFont);
         descLabel.setForeground(labelColor);
-        gbcForm.gridx = 0;
-        gbcForm.gridy = 0;
+        gbcForm.gridx = ZERO;
+        gbcForm.gridy = ZERO;
         formPanel.add(descLabel, gbcForm);
 
-        gbcForm.gridx = 1;
+        gbcForm.gridx = ONE;
         JTextField nombreGastoField = new JTextField(20);
         nombreGastoField.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
         nombreGastoField.setPreferredSize(new Dimension(300, 35));
@@ -103,25 +107,25 @@ public class UIUserGastos {
         JLabel precioLabel = new JLabel("Total");
         precioLabel.setFont(labelFont);
         precioLabel.setForeground(labelColor);
-        gbcForm.gridx = 0;
-        gbcForm.gridy = 1;
+        gbcForm.gridx = ZERO;
+        gbcForm.gridy = ONE;
         formPanel.add(precioLabel, gbcForm);
 
-        gbcForm.gridx = 1;
+        gbcForm.gridx = ONE;
         JTextField precioField = new JTextField(20);
         precioField.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
         precioField.setPreferredSize(new Dimension(300, 35));
         formPanel.add(precioField, gbcForm);
 
         // Botón Confirmar
-        gbcForm.gridx = 0;
-        gbcForm.gridy = 2;
-        gbcForm.gridwidth = 2;
+        gbcForm.gridx = ZERO;
+        gbcForm.gridy = TWO;
+        gbcForm.gridwidth = TWO;
         gbcForm.fill = GridBagConstraints.CENTER;
         JButton addGastoButton = new JButton("Confirmar");
         addGastoButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
         addGastoButton.setPreferredSize(new Dimension(405, 40));
-        addGastoButton.setBackground(new Color(0, 201, 87));
+        addGastoButton.setBackground(new Color(ZERO, 201, 87));
         addGastoButton.setForeground(Color.WHITE);
         formPanel.add(addGastoButton, gbcForm);
 
@@ -140,13 +144,13 @@ public class UIUserGastos {
                 JOptionPane.showMessageDialog(null, "Por favor ingresa un precio válido.", "Error", JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(null, "Ocurrió un error al registrar el gasto.", "Error", JOptionPane.ERROR_MESSAGE);
-                ex.printStackTrace();
+                logger.error("Error al registrar el gasto: {}", ex.getMessage());
             }
         });
 
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.gridheight = 1;
+        gbc.gridx = ONE;
+        gbc.gridy = ZERO;
+        gbc.gridheight = ONE;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.NORTH;
         mainContentPanel.add(formPanel, gbc);
@@ -156,27 +160,26 @@ public class UIUserGastos {
         // Botón Volver
         JButton backButton = createBackButton(contentPanel);
         JPanel bottomPanel = new JPanel();
-        bottomPanel.setBackground(new Color(250, 240, 230));
+        bottomPanel.setBackground(FONDO_PRINCIPAL);
         bottomPanel.add(backButton);
         gastosPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         return gastosPanel;
     }
 
-    private static Font loadCustomFont(String fontPath, float size) {
+    private static Font loadCustomFont() {
         try {
-            InputStream fontStream = UIUserGastos.class.getClassLoader().getResourceAsStream(fontPath);
+            InputStream fontStream = UIUserGastos.class.getClassLoader().getResourceAsStream(LOBSTER_FONT);
             if (fontStream != null) {
                 Font font = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-                return font.deriveFont(size);
+                return font.deriveFont((float) 36.0);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error al cargar la fuente personalizada: {}", e.getMessage());
         }
         return null;
     }
 
-    // Método auxiliar para crear el botón Volver (opcional)
     private static JButton createBackButton(JPanel contentPanel) {
         // Botón "Volver"
         JButton backButton = new JButton("Volver") {
@@ -185,9 +188,9 @@ public class UIUserGastos {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(Color.BLACK);
-                g2.fillRoundRect(2, 4, getWidth() - 4, getHeight() - 4, 40, 40);
-                g2.setColor(getModel().isPressed() ? new Color(255, 193, 7) : new Color(228, 185, 42));
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
+                g2.fillRoundRect(TWO, FOUR, getWidth() - FOUR, getHeight() - FOUR, 40, 40);
+                g2.setColor(getModel().isPressed() ? new Color(255, 193, SEVEN) : new Color(228, 185, 42));
+                g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
             }
         };
@@ -195,7 +198,7 @@ public class UIUserGastos {
         backButton.setPreferredSize(new Dimension(150, 40)); // Aumenta tamaño del botón
         backButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
         backButton.setForeground(Color.WHITE);
-        backButton.setBackground(new Color(250, 240, 230));
+        backButton.setBackground(FONDO_PRINCIPAL);
         backButton.setFocusPainted(false);
         backButton.setContentAreaFilled(false);
         backButton.setBorderPainted(false);

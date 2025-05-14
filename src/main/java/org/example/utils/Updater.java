@@ -1,7 +1,8 @@
 package org.example.utils;
 
 import org.json.JSONObject;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.*;
 import java.io.FileOutputStream;
@@ -13,10 +14,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import static org.example.utils.Constants.*;
 
 public class Updater {
 
     private Updater() {}
+    private static final Logger logger =  LoggerFactory.getLogger(Updater.class);
 
     private static final String CURRENT_VERSION = "v1.1.3";
     private static final String TEMP_EXE_NAME = "update_temp.exe";
@@ -33,18 +36,18 @@ public class Updater {
         try {
             JSONObject release = fetchLatestRelease();
             String remoteVersion = release.getString("tag_name").trim();
-            String downloadUrl = release.getJSONArray("assets").getJSONObject(0).getString("browser_download_url");
+            String downloadUrl = release.getJSONArray("assets").getJSONObject(ZERO).getString("browser_download_url");
 
-            if (isNewVersion(remoteVersion, CURRENT_VERSION)) {
+            if (isNewVersion(remoteVersion)) {
                 showProgressWindow();
-                downloadFileWithProgress(downloadUrl, TEMP_EXE_NAME);
+                downloadFileWithProgress(downloadUrl);
                 createUpdateScript();
                 hideProgressWindow();
                 launchUpdateScript();
-                System.exit(0);
+                System.exit(ZERO);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error al verificar actualizaciones: ", e);
             hideProgressWindow();
         }
     }
@@ -71,26 +74,26 @@ public class Updater {
         return new JSONObject(json);
     }
 
-    private static boolean isNewVersion(String remote, String local) {
-        return remote.compareTo(local) > 0;
+    private static boolean isNewVersion(String remote) {
+        return remote.compareTo(Updater.CURRENT_VERSION) > ZERO;
     }
 
-    private static void downloadFileWithProgress(String fileURL, String saveAs) throws IOException {
+    private static void downloadFileWithProgress(String fileURL) throws IOException {
         URL url = new URL(fileURL);
         HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
         int contentLength = httpConn.getContentLength();
 
         try (InputStream in = httpConn.getInputStream();
-             FileOutputStream out = new FileOutputStream(saveAs)) {
+             FileOutputStream out = new FileOutputStream(Updater.TEMP_EXE_NAME)) {
 
             byte[] buffer = new byte[4096];
             int bytesRead;
-            int downloaded = 0;
+            int downloaded = ZERO;
 
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
+            while ((bytesRead = in.read(buffer)) != -ONE) {
+                out.write(buffer, ZERO, bytesRead);
                 downloaded += bytesRead;
-                final int progress = (int) ((downloaded / (float) contentLength) * 100);
+                final int progress = (int) ((downloaded / (float) contentLength) * ONE_HUNDRED);
 
                 SwingUtilities.invokeLater(() -> progressBar.setValue(progress));
             }
@@ -106,7 +109,7 @@ public class Updater {
                 "start \"\" /min powershell -WindowStyle Hidden -Command \"Start-Process -WindowStyle Minimized -FilePath 'Licorera CR.exe\"\n'\"",
                 "exit"
         ));
-        Files.write(Paths.get("update_launcher.bat"), script.getBytes(StandardCharsets.UTF_8));
+        Files.writeString(Paths.get("update_launcher.bat"), script);
     }
 
     private static void launchUpdateScript() throws IOException {
@@ -116,19 +119,19 @@ public class Updater {
     private static void showProgressWindow() {
         progressFrame = new JFrame("Actualizando");
         progressFrame.setUndecorated(true);
-        progressBar = new JProgressBar(0, 100);
+        progressBar = new JProgressBar(ZERO, ONE_HUNDRED);
         progressBar.setStringPainted(true);
-        progressBar.setValue(0);
+        progressBar.setValue(ZERO);
 
         JLabel label = new JLabel("Descargando actualización...", SwingConstants.CENTER);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 16)); // Fuente más grande
+        label.setFont(new Font("Segoe UI", Font.BOLD, SIXTEEN)); // Fuente más grande
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(label, BorderLayout.NORTH);
         panel.add(progressBar, BorderLayout.CENTER);
 
         progressFrame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        progressFrame.setSize(350, 50);
+        progressFrame.setSize(350, FIFTY);
         progressFrame.setLocationRelativeTo(null);
         progressFrame.setAlwaysOnTop(true);
         progressFrame.setContentPane(panel);

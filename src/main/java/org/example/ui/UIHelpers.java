@@ -1,7 +1,6 @@
 package org.example.ui;
 
 import org.example.manager.usermanager.ProductoUserManager;
-import org.example.manager.usermanager.VentaMesaUserManager;
 import org.example.model.Producto;
 import org.example.ui.uiuser.UnifiedEditorRenderer;
 import javax.imageio.ImageIO;
@@ -34,25 +33,22 @@ import static org.example.utils.FormatterHelpers.formatearMoneda;
 
 public class UIHelpers {
 
-    private UIHelpers() {
-    }
+    private UIHelpers() {}
 
-    private static ProductoUserManager productoUserManager = new ProductoUserManager();
-    public static final VentaMesaUserManager ventaMesaUserManager = new VentaMesaUserManager();
+    private static final ProductoUserManager productoUserManager = new ProductoUserManager();
 
     public static final Component compraDialog = null;
 
-
     public static JButton createButton(String text, Icon icon, ActionListener listener) {
         JButton button = new JButton();
-        button.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
-        button.setPreferredSize(new Dimension(180, 10));
+        button.setFont(new Font(ARIAL_FONT, Font.BOLD, SIXTEEN));
+        button.setPreferredSize(new Dimension(180, TEN));
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setBackground(new Color(186, 27, 26));
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
         button.setContentAreaFilled(false);
-        button.setUI(new RoundedButtonUI(50));
+        button.setUI(new RoundedButtonUI(FIFTY));
         button.addActionListener(listener);
 
         JPanel panel = new JPanel();
@@ -61,10 +57,10 @@ public class UIHelpers {
 
         JLabel iconLabel = new JLabel(icon);
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        iconLabel.setBorder(BorderFactory.createEmptyBorder(2, 0, 1, 0));
+        iconLabel.setBorder(BorderFactory.createEmptyBorder(TWO, ZERO, ONE, ZERO));
 
         JSeparator separator = new JSeparator();
-        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 4));
+        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, FOUR));
         separator.setForeground(new Color(200, 170, 100));
 
         JLabel textLabel = new JLabel(text);
@@ -87,9 +83,8 @@ public class UIHelpers {
             textLabel.setFont(customFont);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            e.fillInStackTrace();
         }
-
 
         panel.add(iconLabel);
         panel.add(separator);
@@ -125,7 +120,7 @@ public class UIHelpers {
             JButton button = (JButton) c;
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(button.getBackground());
-            g2.fillRoundRect(0, 0, button.getWidth(), button.getHeight(), radius, radius);
+            g2.fillRoundRect(ZERO, ZERO, button.getWidth(), button.getHeight(), radius, radius);
             super.paint(g, c);
         }
     }
@@ -133,7 +128,7 @@ public class UIHelpers {
     public static JComboBox<String> createProductAdminComboBox() {
         JComboBox<String> productComboBox = new JComboBox<>();
         productComboBox.setEditable(true);
-        productComboBox.setFont(new Font(ARIAL_FONT, Font.BOLD, 18));
+        productComboBox.setFont(new Font(ARIAL_FONT, Font.BOLD, EIGHTEEN));
 
         JTextField comboBoxEditor = (JTextField) productComboBox.getEditor().getEditorComponent();
 
@@ -187,10 +182,10 @@ public class UIHelpers {
     public static JPanel createInputPanel(JTable table) {
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
-        inputPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(TWO, TWO, TWO, TWO));
         inputPanel.setBackground(new Color(28, 28, 28));
 
-        Font labelFont = new Font(ARIAL_FONT, Font.BOLD, 18);
+        Font labelFont = new Font(ARIAL_FONT, Font.BOLD, EIGHTEEN);
 
         // 🟦 Search Panel
         JPanel searchPanel = new JPanel();
@@ -198,26 +193,7 @@ public class UIHelpers {
         searchPanel.setBackground(new Color(28, 28, 28));
         searchPanel.setMaximumSize(new Dimension(400, 50));
 
-        JTextField searchField = new JTextField() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                if (getText().isEmpty() && !isFocusOwner()) {
-                    Graphics2D g2 = (Graphics2D) g.create();
-                    g2.setFont(new Font(ARIAL_FONT, Font.PLAIN, 20));
-                    g2.setColor(Color.GRAY);
-                    g2.drawString(COMBO_BOX_TEXT, 5, getHeight() - 10);
-                    g2.dispose();
-                }
-            }
-        };
-        searchField.setFont(new Font(ARIAL_FONT, Font.PLAIN, 20));
-        searchField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        searchField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        ));
-        searchField.setForeground(Color.black);
+        JTextField searchField = getSearchField();
         searchPanel.add(searchField);
         inputPanel.add(searchPanel);
 
@@ -230,13 +206,13 @@ public class UIHelpers {
         quantityLabel.setForeground(Color.WHITE);
         quantityLabel.setFont(labelFont);
 
-        SpinnerNumberModel model = new SpinnerNumberModel(1, 1, 999, 1);
+        SpinnerNumberModel model = new SpinnerNumberModel(ONE, ONE, 999, ONE);
         JSpinner cantidadSpinner = new JSpinner(model);
         JComponent editor = cantidadSpinner.getEditor();
         JFormattedTextField spinnerTextField = ((JSpinner.DefaultEditor) editor).getTextField();
 
-        spinnerTextField.setColumns(3);
-        spinnerTextField.setFont(new Font(ARIAL_FONT, Font.PLAIN, 20));
+        spinnerTextField.setColumns(THREE);
+        spinnerTextField.setFont(new Font(ARIAL_FONT, Font.PLAIN, TWENTY));
         spinnerTextField.setPreferredSize(new Dimension(80, 40));
         spinnerTextField.getDocument().addDocumentListener(new DocumentListener() {
             void update() {
@@ -259,11 +235,11 @@ public class UIHelpers {
         inputPanel.add(quantityPanel);
 
         // 🟦 Scrollable Product Panel
-        JPanel productPanel = new JPanel(new GridLayout(0, 2, 2, 5));
+        JPanel productPanel = new JPanel(new GridLayout(ZERO, TWO, TWO, FIVE));
         productPanel.setBackground(new Color(28, 28, 28));
         JScrollPane scrollPane = new JScrollPane(productPanel);
-        scrollPane.setPreferredSize(new Dimension(400, 300)); // se adapta en pack()
-        scrollPane.getVerticalScrollBar().setUnitIncrement(30);
+        scrollPane.setPreferredSize(new Dimension(400, 300));
+        scrollPane.getVerticalScrollBar().setUnitIncrement(THIRTY);
 
         scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
             @Override protected void configureScrollBarColors() {
@@ -278,18 +254,18 @@ public class UIHelpers {
             }
             private JButton createInvisibleButton() {
                 JButton button = new JButton();
-                button.setPreferredSize(new Dimension(0, 0));
+                button.setPreferredSize(new Dimension(ZERO, ZERO));
                 return button;
             }
         });
 
         inputPanel.add(scrollPane);
 
-        // 🎯 Cargar productos
+        //  Cargar productos
         List<Producto> productList = ProductoUserManager.getProducts();
 
-        // 📌 Aumentar el grosor de la barra de desplazamiento
-        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(15, 0));
+        //  Aumentar el grosor de la barra de desplazamiento
+        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(FIFTEEN, ZERO));
 
         Runnable updateProducts = () -> {
             productPanel.removeAll();
@@ -306,7 +282,7 @@ public class UIHelpers {
 
                                 // Crear un fondo con esquinas redondeadas
                                 g2.setColor(getBackground());
-                                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                                g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), TWENTY, TWENTY);
                             }
 
                             @Override
@@ -316,7 +292,7 @@ public class UIHelpers {
 
                                 // Dibujar borde redondeado
                                 g2.setColor(new Color(74, 50, 28)); // Color del borde
-                                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 20, 20);
+                                g2.drawRoundRect(ZERO, ZERO, getWidth() - ONE, getHeight() - ONE, 20, 20);
                             }
                         };
 
@@ -337,7 +313,7 @@ public class UIHelpers {
                                 Graphics2D g2 = (Graphics2D) g;
                                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                                 g2.setColor(new Color(186, 27, 26));
-                                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
+                                g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), TWENTY, TWENTY);
                             }
                         };
                         namePanel.setPreferredSize(new Dimension(240, 50));
@@ -345,22 +321,22 @@ public class UIHelpers {
                         namePanel.setLayout(new BorderLayout());
 
                         String formattedName = Arrays.stream(product.getName().replace("_", " ").toLowerCase().split(" "))
-                                .map(word -> word.isEmpty() ? "" : Character.toUpperCase(word.charAt(0)) + word.substring(1))
+                                .map(word -> word.isEmpty() ? "" : Character.toUpperCase(word.charAt(ZERO)) + word.substring(ONE))
                                 .collect(Collectors.joining(" "));
 
                         card.setToolTipText(formattedName);
 
                         namePanel.setLayout(new BorderLayout());
-                        namePanel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8)); // Espaciado interno
+                        namePanel.setBorder(BorderFactory.createEmptyBorder(FOUR, EIGHT, FOUR, EIGHT)); // Espaciado interno
 
                         JLabel nameLabel = new JLabel(formattedName);
-                        nameLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
+                        nameLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, SIXTEEN));
                         nameLabel.setForeground(Color.WHITE);
                         nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
                         namePanel.add(nameLabel, BorderLayout.NORTH);
 
                         JLabel quantityPLabel = new JLabel("x" + product.getQuantity());
-                        quantityPLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 14));
+                        quantityPLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, FOURTEEN));
                         quantityPLabel.setForeground(Color.WHITE);
                         quantityPLabel.setHorizontalAlignment(SwingConstants.LEFT);
 
@@ -383,12 +359,12 @@ public class UIHelpers {
                             protected ImageIcon doInBackground() {
                                 try {
                                     // Obtener la ruta de la imagen del producto
-                                    String imagePath = System.getProperty("user.home") + product.getFoto();
+                                    String imagePath = System.getProperty(FOLDER_PATH) + product.getFoto();
                                     File imageFile = new File(imagePath);
-                                    BufferedImage img = null;
+                                    BufferedImage img;
                                     // Si la imagen del producto no existe, usar la imagen de respaldo
                                     if (!imageFile.exists() || !imageFile.isFile()) {
-                                        InputStream is = getClass().getResourceAsStream("/icons/sinfoto.png");
+                                        InputStream is = getClass().getResourceAsStream(NO_FOTO);
                                         if (is != null) {
                                             img = ImageIO.read(is);
                                         } else {
@@ -400,15 +376,14 @@ public class UIHelpers {
 
                                     if (img != null) {
                                         Image scaledImg = img.getScaledInstance(180, 150, Image.SCALE_SMOOTH);
-                                        return makeRoundedImage(scaledImg, 180, 150);
+                                        return makeRoundedImage(scaledImg);
 
                                     }
                                 } catch (IOException e) {
-                                    e.printStackTrace();
+                                    e.fillInStackTrace();
                                 }
                                 return null;
                             }
-
 
                             @Override
                             protected void done() {
@@ -420,7 +395,7 @@ public class UIHelpers {
                                 } catch (InterruptedException e) {
                                     Thread.currentThread().interrupt();
                                 } catch (ExecutionException e) {
-                                    e.printStackTrace();
+                                    e.fillInStackTrace();
                                 }
                             }
                         }.execute();
@@ -439,7 +414,7 @@ public class UIHelpers {
 
                             @Override
                             public void mousePressed(MouseEvent e) {
-                                card.setBackground(new Color(220, 20, 60)); // Color al hacer clic
+                                card.setBackground(new Color(220, TWENTY, 60)); // Color al hacer clic
                             }
 
                             @Override
@@ -452,7 +427,7 @@ public class UIHelpers {
                                 if (SwingUtilities.isLeftMouseButton(e)) {
                                     int cantidad = (Integer) cantidadSpinner.getValue();
                                     addProductsToTable(table, product, cantidad);
-                                    cantidadSpinner.setValue(1);
+                                    cantidadSpinner.setValue(ONE);
                                 }
                             }
                         });
@@ -476,15 +451,39 @@ public class UIHelpers {
         return inputPanel;
     }
 
-    // Método para redondear imágenes
-    private static ImageIcon makeRoundedImage(Image img, int width, int height) {
-        BufferedImage roundedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+    private static JTextField getSearchField() {
+        JTextField searchField = new JTextField() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (getText().isEmpty() && !isFocusOwner()) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setFont(new Font(ARIAL_FONT, Font.PLAIN, TWENTY));
+                    g2.setColor(Color.GRAY);
+                    g2.drawString(COMBO_BOX_TEXT, FIVE, getHeight() - TEN);
+                    g2.dispose();
+                }
+            }
+        };
+        searchField.setFont(new Font(ARIAL_FONT, Font.PLAIN, TWENTY));
+        searchField.setMaximumSize(new Dimension(Integer.MAX_VALUE, FORTY));
+        searchField.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200), ONE),
+                BorderFactory.createEmptyBorder(FIVE, FIVE, FIVE, FIVE)
+        ));
+        searchField.setForeground(Color.black);
+        return searchField;
+    }
+
+    // para redondear imágenes
+    private static ImageIcon makeRoundedImage(Image img) {
+        BufferedImage roundedImage = new BufferedImage(180, 150, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = roundedImage.createGraphics();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Crear una máscara circular
-        g2.setClip(new RoundRectangle2D.Float(0, 0, width, height, 20, 20));
-        g2.drawImage(img, 0, 0, width, height, null);
+        g2.setClip(new RoundRectangle2D.Float(ZERO, ZERO, 180, 150, 20, 20));
+        g2.drawImage(img, ZERO, ZERO, 180, 150, null);
         g2.dispose();
 
         return new ImageIcon(roundedImage);
@@ -499,20 +498,20 @@ public class UIHelpers {
         DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
         boolean productoExistente = false;
 
-        for (int i = 0; i < tableModel.getRowCount(); i++) {
-            String nombreProducto = (String) tableModel.getValueAt(i, 0);
+        for (int i = ZERO; i < tableModel.getRowCount(); i++) {
+            String nombreProducto = (String) tableModel.getValueAt(i, ZERO);
 
             if (nombreProducto.equals(producto.getName())) {
                 try {
-                    int cantidadExistente = Integer.parseInt(tableModel.getValueAt(i, 1).toString());
+                    int cantidadExistente = Integer.parseInt(tableModel.getValueAt(i, ONE).toString());
                     int nuevaCantidad = cantidadExistente + cantidad;
 
                     double precioUnitario = producto.getPrice();
                     double nuevoTotal = nuevaCantidad * precioUnitario;
 
-                    tableModel.setValueAt(nuevaCantidad, i, 1);
-                    tableModel.setValueAt(precioUnitario, i, 2);
-                    tableModel.setValueAt(nuevoTotal, i, 3);
+                    tableModel.setValueAt(nuevaCantidad, i, ONE);
+                    tableModel.setValueAt(precioUnitario, i, TWO);
+                    tableModel.setValueAt(nuevoTotal, i, THREE);
 
                     productoUserManager.updateProductQuantity(producto, nuevaCantidad);
 
@@ -572,15 +571,15 @@ public class UIHelpers {
 
         // Ajustar tamaño de columnas
         TableColumnModel columnModel = table.getColumnModel();
-        columnModel.getColumn(0).setPreferredWidth(250);
-        columnModel.getColumn(1).setPreferredWidth(50);
-        columnModel.getColumn(2).setPreferredWidth(80);
-        columnModel.getColumn(3).setPreferredWidth(80);
+        columnModel.getColumn(ZERO).setPreferredWidth(250);
+        columnModel.getColumn(ONE).setPreferredWidth(FIFTY);
+        columnModel.getColumn(TWO).setPreferredWidth(80);
+        columnModel.getColumn(THREE).setPreferredWidth(80);
 
-        TableColumn quitarColumn = columnModel.getColumn(4);
-        quitarColumn.setPreferredWidth(100);
-        quitarColumn.setMinWidth(100);
-        quitarColumn.setMaxWidth(100);
+        TableColumn quitarColumn = columnModel.getColumn(FOUR);
+        quitarColumn.setPreferredWidth(ONE_HUNDRED);
+        quitarColumn.setMinWidth(ONE_HUNDRED);
+        quitarColumn.setMaxWidth(ONE_HUNDRED);
 
         // Evitar que se puedan mover las columnas
         table.getTableHeader().setReorderingAllowed(false);
@@ -588,20 +587,20 @@ public class UIHelpers {
         // Centrar texto de las columnas Cantidad, Unid. $, y Total $
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        table.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+        table.getColumnModel().getColumn(ONE).setCellRenderer(centerRenderer);
         // Aplicar un CurrencyRenderer centrado a las columnas de precios
-        table.getColumnModel().getColumn(2).setCellRenderer(new CurrencyRenderer()); // PRECIO_UNITARIO
-        table.getColumnModel().getColumn(3).setCellRenderer(new CurrencyRenderer()); // TOTALP
+        table.getColumnModel().getColumn(TWO).setCellRenderer(new CurrencyRenderer());
+        table.getColumnModel().getColumn(THREE).setCellRenderer(new CurrencyRenderer());
         // Asignar editor y renderer personalizados a la columna del botón
-        table.getColumnModel().getColumn(4).setCellRenderer(editorRenderer);
-        table.getColumnModel().getColumn(4).setCellEditor(editorRenderer);
+        table.getColumnModel().getColumn(FOUR).setCellRenderer(editorRenderer);
+        table.getColumnModel().getColumn(FOUR).setCellEditor(editorRenderer);
 
         return table;
     }
 
     public static JPanel createTotalPanel() {
         JPanel totalPanel = new JPanel();
-        totalPanel.setLayout(new GridLayout(1,1));
+        totalPanel.setLayout(new GridLayout(ONE,ONE));
 
         return totalPanel;
     }

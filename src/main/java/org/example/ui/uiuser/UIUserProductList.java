@@ -3,6 +3,9 @@ package org.example.ui.uiuser;
 import org.example.manager.usermanager.ProductoUserManager;
 import org.example.model.Producto;
 import org.example.ui.UIHelpers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -15,11 +18,13 @@ import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
-import static org.example.utils.Constants.LOBSTER_FONT;
-import static org.example.utils.FormatterHelpers.ConfiguracionGlobal.TRM;
+import static org.example.utils.Constants.*;
+import static org.example.utils.FormatterHelpers.ConfigurationGlobal.TRM;
 import static org.example.utils.FormatterHelpers.formatearMoneda;
 
 public class UIUserProductList {
+
+    private static final Logger logger =  LoggerFactory.getLogger(UIUserProductList.class);
 
     private UIUserProductList() {}
 
@@ -41,7 +46,7 @@ public class UIUserProductList {
 
     public static JPanel getProductListPanel() {
         JPanel productListPanel = new JPanel(new BorderLayout());
-        productListPanel.setBackground(new Color(250, 240, 230));
+        productListPanel.setBackground(FONDO_PRINCIPAL);
         productListPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JLabel titleLabel = new JLabel("Inventario", SwingConstants.CENTER);
@@ -56,7 +61,8 @@ public class UIUserProductList {
             customFont = customFont.deriveFont(Font.BOLD, 50); // Ajustar tamaño y peso
             titleLabel.setFont(customFont);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error al cargar las fuente personalizada: {}", e.getMessage());
+            titleLabel.setFont(titleFont);
         }
 
          List<Producto>  products = ProductoUserManager.getProducts();
@@ -67,31 +73,21 @@ public class UIUserProductList {
                 "<html><b>Pesos/USD</b><span style='font-size:14px; color:#28a748;'>(" + formatearMoneda(TRM) + " TRM)</span></html>"
         };
 
-        Object[][] data = new Object[products.size()][3];
-        for (int i = 0; i < products.size(); i++) {
+        Object[][] data = new Object[products.size()][THREE];
+        for (int i = ZERO; i < products.size(); i++) {
             Producto p = products.get(i);
-            data[i][0] = formatProductName(p.getName());
-            data[i][1] = p.getQuantity();
+            data[i][ZERO] = formatProductName(p.getName());
+            data[i][ONE] = p.getQuantity();
 
             double precioUSD = TRM != 0.0 ? p.getPrice() / TRM : 0.0;
-            data[i][2] = String.format(
+            data[i][TWO] = String.format(
                     "<html><b>%s</b> <span style='font-size:14px; color:#000080;'>(%s)</span></html>",
                     "$ " + formatearMoneda(p.getPrice()),
                     FORMAT_USD.format(precioUSD)
             );
         }
 
-        JTable productTable = new JTable(new DefaultTableModel(data, columnNames) {
-            @Override
-            public boolean isCellEditable(int row, int column) { return false; }
-        });
-
-        productTable.setFont(new Font("Arial", Font.PLAIN, 18));
-        productTable.setRowHeight(40);
-        productTable.setBackground(new Color(250, 240, 230));
-        productTable.setSelectionBackground(new Color(173, 216, 230));
-        productTable.setSelectionForeground(Color.BLACK);
-        productTable.setFillsViewportHeight(true);
+        JTable productTable = getJTable(data, columnNames);
 
         JTableHeader header = productTable.getTableHeader();
         header.setFont(headerFont);
@@ -113,12 +109,13 @@ public class UIUserProductList {
             header.setForeground(new Color(201, 41, 41));
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error al cargar la fuente personalizada: {}", e.getMessage());
+            header.setFont(headerFont);
         }
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
-        productTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
-        productTable.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
+        productTable.getColumnModel().getColumn(ONE).setCellRenderer(centerRenderer);
+        productTable.getColumnModel().getColumn(TWO).setCellRenderer(centerRenderer);
 
         DefaultTableCellRenderer customRenderer = new DefaultTableCellRenderer() {
             @Override
@@ -128,8 +125,8 @@ public class UIUserProductList {
                 // Fondo por cantidad
                 if (!isSelected) {
                     try {
-                        int cantidad = Integer.parseInt(table.getValueAt(row, 1).toString());
-                        cell.setBackground(cantidad < 0 ? new Color(255, 150, 150) : new Color(250, 240, 230));
+                        int cantidad = Integer.parseInt(table.getValueAt(row, ONE).toString());
+                        cell.setBackground(cantidad < ZERO ? new Color(255, 150, 150) : FONDO_PRINCIPAL);
                     } catch (Exception e) {
                         cell.setBackground(Color.WHITE);
                     }
@@ -138,13 +135,13 @@ public class UIUserProductList {
                 }
 
                 // Alineación centrada para cantidad y precio
-                if (column == 1 || column == 2) {
+                if (column == ONE || column == TWO) {
                     ((JLabel) cell).setHorizontalAlignment(SwingConstants.CENTER);
                 } else {
                     ((JLabel) cell).setHorizontalAlignment(SwingConstants.LEFT);
                 }
 
-                if (column == 2 && value instanceof String s && s.contains("<html>")) {
+                if (column == TWO && value instanceof String s && s.contains("<html>")) {
                     ((JLabel) cell).setText(s);
                 }
                 return cell;
@@ -152,22 +149,52 @@ public class UIUserProductList {
         };
 
         // Asignar a todas las columnas el mismo renderer
-        for (int i = 0; i < productTable.getColumnCount(); i++) {
+        for (int i = ZERO; i < productTable.getColumnCount(); i++) {
             productTable.getColumnModel().getColumn(i).setCellRenderer(customRenderer);
         }
 
         JScrollPane scrollPane = new JScrollPane(productTable);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(TEN, TEN, TEN, TEN));
 
+        JButton closeButton = getCloseButton(productListPanel);
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBorder(new EmptyBorder(TEN, ZERO, TEN, ZERO));
+        buttonPanel.setBackground(FONDO_PRINCIPAL);
+        buttonPanel.add(closeButton);
+
+        productListPanel.add(titleLabel, BorderLayout.NORTH);
+        productListPanel.add(scrollPane, BorderLayout.CENTER);
+        productListPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        return productListPanel;
+    }
+
+    private static JTable getJTable(Object[][] data, String[] columnNames) {
+        JTable productTable = new JTable(new DefaultTableModel(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) { return false; }
+        });
+
+        productTable.setFont(new Font("Arial", Font.PLAIN, 18));
+        productTable.setRowHeight(40);
+        productTable.setBackground(FONDO_PRINCIPAL);
+        productTable.setSelectionBackground(new Color(173, 216, 230));
+        productTable.setSelectionForeground(Color.BLACK);
+        productTable.setFillsViewportHeight(true);
+        return productTable;
+    }
+
+    private static JButton getCloseButton(JPanel productListPanel) {
         JButton closeButton = new JButton("Volver") {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(0, 0, 0, 30));
-                g2.fillRoundRect(2, 4, getWidth() - 4, getHeight() - 4, 40, 40);
-                g2.setColor(getModel().isPressed() ? new Color(255, 193, 7) : new Color(228, 185, 42));
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
+                g2.setColor(new Color(ZERO, ZERO, ZERO, 30));
+                g2.fillRoundRect(TWO, FOUR, getWidth() - FOUR, getHeight() - FOUR, 40, 40);
+                g2.setColor(getModel().isPressed() ? new Color(255, 193, SEVEN) : new Color(228, 185, 42));
+                g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
             }
         };
@@ -183,17 +210,7 @@ public class UIUserProductList {
             CardLayout cl = (CardLayout) productListPanel.getParent().getLayout();
             cl.show(productListPanel.getParent(), "mesas");
         });
-
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setBorder(new EmptyBorder(10, 0, 10, 0));
-        buttonPanel.setBackground(new Color(250, 240, 230));
-        buttonPanel.add(closeButton);
-
-        productListPanel.add(titleLabel, BorderLayout.NORTH);
-        productListPanel.add(scrollPane, BorderLayout.CENTER);
-        productListPanel.add(buttonPanel, BorderLayout.SOUTH);
-
-        return productListPanel;
+        return closeButton;
     }
 
     private static String formatProductName(String name) {
@@ -202,8 +219,8 @@ public class UIUserProductList {
         StringBuilder capitalized = new StringBuilder();
         for (String word : words) {
             if (!word.isEmpty()) {
-                capitalized.append(Character.toUpperCase(word.charAt(0)))
-                        .append(word.substring(1))
+                capitalized.append(Character.toUpperCase(word.charAt(ZERO)))
+                        .append(word.substring(ONE))
                         .append(" ");
             }
         }

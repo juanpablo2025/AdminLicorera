@@ -5,16 +5,21 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.example.model.Producto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static org.example.utils.Constants.PRODUCTS_SHEET_NAME;
+import static org.example.utils.Constants.*;
 
 public class GastosAdminManager {
+
+    private static final Logger logger =  LoggerFactory.getLogger(GastosAdminManager.class);
 
     public void reabastecerProducto(Producto producto, int cantidad, double precioCompra) {
         try (FileInputStream fis = new FileInputStream(ExcelAdminManager.FILE_PATH);
@@ -24,16 +29,17 @@ public class GastosAdminManager {
             Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
             boolean productoEncontrado = false;
 
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            for (int i = ONE; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
+                // Suponiendo que el nombre del producto está en la columna 1
                 if (row != null) {
-                    // Suponiendo que el nombre del producto está en la columna 1
-                    if (row.getCell(1).getStringCellValue().equals(producto.getName())) {
-                        int cantidadActual = (int) row.getCell(2).getNumericCellValue(); // Suponiendo que la cantidad está en la columna 2
-                        row.getCell(2).setCellValue(cantidadActual + cantidad);  // Sumar la cantidad
-                        productoEncontrado = true;
-                        break;
+                    if (!row.getCell(ONE).getStringCellValue().equals(producto.getName())) {
+                        continue;
                     }
+                    int cantidadActual = (int) row.getCell(TWO).getNumericCellValue(); // Suponiendo que la cantidad está en la columna 2
+                    row.getCell(TWO).setCellValue(cantidadActual + cantidad);  // Sumar la cantidad
+                    productoEncontrado = true;
+                    break;
                 }
             }
 
@@ -52,12 +58,12 @@ public class GastosAdminManager {
                 reabastecimientoSheet = workbook.createSheet(gastosSheetName);
 
                 // Crear fila de encabezado
-                Row headerRow = reabastecimientoSheet.createRow(0);
-                headerRow.createCell(0).setCellValue("ID Producto");
-                headerRow.createCell(1).setCellValue("Nombre Producto");
-                headerRow.createCell(2).setCellValue("Cantidad Reabastecida");
-                headerRow.createCell(3).setCellValue("Precio Compra");
-                headerRow.createCell(4).setCellValue("Fecha y Hora");
+                Row headerRow = reabastecimientoSheet.createRow(ZERO);
+                headerRow.createCell(ZERO).setCellValue("ID Producto");
+                headerRow.createCell(ONE).setCellValue("Nombre Producto");
+                headerRow.createCell(TWO).setCellValue("Cantidad Reabastecida");
+                headerRow.createCell(THREE).setCellValue("Precio Compra");
+                headerRow.createCell(FOUR).setCellValue("Fecha y Hora");
             }
 
             LocalDateTime fechaHora = LocalDateTime.now();
@@ -66,19 +72,19 @@ public class GastosAdminManager {
 
             // Añadir el registro del gasto
             int lastRowNum = reabastecimientoSheet.getLastRowNum();
-            Row newRow = reabastecimientoSheet.createRow(lastRowNum + 1);
-            newRow.createCell(0).setCellValue(producto.getId());
-            newRow.createCell(1).setCellValue(producto.getName());
-            newRow.createCell(2).setCellValue(cantidad);
+            Row newRow = reabastecimientoSheet.createRow(lastRowNum + ONE);
+            newRow.createCell(ZERO).setCellValue(producto.getId());
+            newRow.createCell(ONE).setCellValue(producto.getName());
+            newRow.createCell(TWO).setCellValue(cantidad);
 
             // Si el precio es -1, escribir "N/A" o dejar vacío
-            if (precioCompra == -10) {
-                newRow.createCell(3).setCellValue("N/A");
+            if (precioCompra == -TEN) {
+                newRow.createCell(THREE).setCellValue(ZERO);
             } else {
-                newRow.createCell(3).setCellValue(precioCompra);
+                newRow.createCell(THREE).setCellValue(precioCompra);
             }
 
-            newRow.createCell(4).setCellValue(fechaFormateada);
+            newRow.createCell(FOUR).setCellValue(fechaFormateada);
 
             // Guardar los cambios en el archivo Excel
             try (FileOutputStream fos = new FileOutputStream(ExcelAdminManager.FILE_PATH)) {
@@ -86,7 +92,8 @@ public class GastosAdminManager {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al guardar el gasto: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null,"Error al guardar el gasto: " + e.getMessage());
         }
     }
 }

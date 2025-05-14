@@ -6,7 +6,6 @@ import java.util.List;
 
 public class FacturasUserManager {
 
-    public List<Factura> getFacturas() {
-        return ExcelUserManager.getFacturas(); // llamada estática
-    }
+    public List<Factura> getFacturas() {return ExcelUserManager.getFacturas();}
+
 }

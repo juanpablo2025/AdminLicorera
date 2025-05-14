@@ -10,12 +10,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import static org.example.utils.Constants.*;
+
 
 public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCellEditor, TableCellRenderer, ActionListener {
     private final JButton buttonRestar;
     private final JButton buttonEliminar;
     private final JSpinner spinner;
-
     private JTable currentTable;
     private int editingRow;
     private int editingColumn;
@@ -40,12 +41,12 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
         buttonEliminar.setActionCommand("Eliminar");
         buttonEliminar.addActionListener(this);
 
-        spinner = new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+        spinner = new JSpinner(new SpinnerNumberModel(ONE, ONE, ONE_HUNDRED, ONE));
     }
 
     @Override
     public Object getCellEditorValue() {
-        if (editingColumn == 1) {
+        if (editingColumn == ONE) {
             return spinner.getValue();
         }
         return null;
@@ -57,13 +58,13 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
         this.editingColumn = column;
         this.currentTable = table;
 
-        if (column == 4) {
-            JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        if (column == FOUR) {
+            JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, ZERO, ZERO));
             panel.setBackground(table.getBackground());
             panel.add(buttonRestar);
             panel.add(buttonEliminar);
             return panel;
-        } else if (column == 1) {
+        } else if (column == ONE) {
             spinner.setValue(value);
             return spinner;
         }
@@ -73,7 +74,7 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         if (column == 4) {
-            JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+            JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, ZERO, ZERO));
 
             JButton btnRestar = new JButton("-1");
             btnRestar.setBackground(new Color(201, 79, 79));
@@ -91,8 +92,8 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
             panel.add(btnRestar);
             panel.add(btnEliminar);
             return panel;
-        } else if (column == 1) {
-            return new JSpinner(new SpinnerNumberModel(1, 1, 100, 1));
+        } else if (column == ONE) {
+            return new JSpinner(new SpinnerNumberModel(ONE, ONE, ONE_HUNDRED, ONE));
         }
         return null;
     }
@@ -101,15 +102,15 @@ public class UnifiedEditorRenderer extends AbstractCellEditor implements TableCe
     public void actionPerformed(ActionEvent e) {
         stopCellEditing();
         DefaultTableModel tableModel = (DefaultTableModel) currentTable.getModel();
-        if (editingRow >= 0 && editingRow < tableModel.getRowCount()) {
-            Object cantidadObj = tableModel.getValueAt(editingRow, 1);
+        if (editingRow >= ZERO && editingRow < tableModel.getRowCount()) {
+            Object cantidadObj = tableModel.getValueAt(editingRow, ONE);
             String action = e.getActionCommand();
 
             if ("Restar".equals(action)) {
                 if (cantidadObj instanceof Integer) {
                     int cantidadActual = (int) cantidadObj;
-                    if (cantidadActual > 1) {
-                        tableModel.setValueAt(cantidadActual - 1, editingRow, 1);
+                    if (cantidadActual > ONE) {
+                        tableModel.setValueAt(cantidadActual - ONE, editingRow, ONE);
                     } else {
                         removeProductFromCart(editingRow);
                         tableModel.removeRow(editingRow);

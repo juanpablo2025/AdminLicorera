@@ -4,6 +4,8 @@ import com.formdev.flatlaf.FlatLightLaf;
 import org.example.manager.adminmanager.ConfigAdminManager;
 import org.example.ui.uiuser.UIUserMain;
 import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -13,6 +15,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Objects;
 import static org.example.Main.mostrarLogin;
 import static org.example.manager.usermanager.ExcelUserManager.hayRegistroDeHoy;
 import static org.example.ui.UIHelpers.createButton;
@@ -22,13 +25,11 @@ import static org.example.ui.uiadmin.UIConfigAdmin.createPrinterConfigPanel;
 import static org.example.ui.uiuser.UIUserMain.*;
 import static org.example.utils.Constants.*;
 
-public class MainAdminUi {
+public class UIMainAdmin {
 
-    private MainAdminUi() {}
+    private UIMainAdmin() {}
 
-    public static void mainAdmin() {
-        showAdminPanel();
-    }
+    private static final Logger logger =  LoggerFactory.getLogger(UIMainAdmin.class);
 
     public static void showAdminPanel() {
         try {
@@ -40,7 +41,7 @@ public class MainAdminUi {
             frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 
             // Cargar icono de la aplicación
-            ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png"));
+            ImageIcon icon = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png")));
             if (icon.getImage() != null) {
                 frame.setIconImage(icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
             }
@@ -62,27 +63,27 @@ public class MainAdminUi {
 
             JPanel sidebarPanel = new JPanel();
             sidebarPanel.setLayout(new BoxLayout(sidebarPanel, BoxLayout.Y_AXIS));
-            sidebarPanel.add(Box.createVerticalStrut(5));
+            sidebarPanel.add(Box.createVerticalStrut(FIVE));
 
             JPanel contentPanel = new JPanel(new CardLayout());
             contentPanel.add(getAdminProductListPanel(), PRODUCTOS);
             contentPanel.add(getAdminBillsPanel(), "facturas");
-            contentPanel.add(createPrinterConfigPanel(), "configuracion");
+            contentPanel.add(createPrinterConfigPanel(), "configuration");
 
             JLabel titleLabel = new JLabel("Panel de Administración", SwingConstants.CENTER);            titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
-            titleLabel.setForeground(new Color(50, 50, 50));
+            titleLabel.setForeground(new Color(FIFTY, FIFTY, FIFTY));
 
             // Panel de botones
-            JPanel buttonPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+            JPanel buttonPanel = new JPanel(new GridLayout(TWO, TWO, TEN, TEN));
             buttonPanel.setBackground(new Color(245, 245, 245));
-            buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 50, 10, 50));
+            buttonPanel.setBorder(BorderFactory.createEmptyBorder(TWENTY, FIFTY, TEN, FIFTY));
 
             // Panel superior con logo y nombre del empleado centrados
             JPanel logoPanel = new JPanel();
             logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.Y_AXIS));
-            logoPanel.setBackground(fondoPrincipal);
+            logoPanel.setBackground(FONDO_PRINCIPAL);
 
-            ImageIcon logoIcon = new ImageIcon(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png"));
+            ImageIcon logoIcon = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png")));
             Image imgLogo = logoIcon.getImage().getScaledInstance(130, 130, Image.SCALE_SMOOTH);
             JLabel logoLabel = getJLabel(imgLogo, contentPanel);
 
@@ -94,16 +95,17 @@ public class MainAdminUi {
                 Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 26);
                 employeeLabel.setFont(customFont);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Error al cargar la fuente personalizada: ", e);
+                employeeLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 26));
             }
 
             sidebarPanel.add(employeeLabel, BorderLayout.NORTH);
 
-            logoPanel.add(Box.createVerticalStrut(1));
+            logoPanel.add(Box.createVerticalStrut(ONE));
             logoPanel.add(logoLabel);
-            logoPanel.add(Box.createVerticalStrut(1));
+            logoPanel.add(Box.createVerticalStrut(ONE));
             logoPanel.add(employeeLabel);
-            logoPanel.add(Box.createVerticalStrut(1));
+            logoPanel.add(Box.createVerticalStrut(ONE));
             sidebarPanel.add(logoPanel, BorderLayout.NORTH);
 
             JPanel buttonsPanel = new JPanel();
@@ -136,7 +138,7 @@ public class MainAdminUi {
                 }
             });
 
-            Dimension buttonSize = new Dimension(100, 60);
+            Dimension buttonSize = new Dimension(ONE_HUNDRED, 60);
 
             JButton listaProductosButton = createButton("Inventario", resizeIcon("/icons/lista-de_productos.png"), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
@@ -150,7 +152,7 @@ public class MainAdminUi {
             gastosButton.setMaximumSize(buttonSize);
             JButton configButton = createButton("Configuración", resizeIcon("/icons/obrero.png"), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
-                cl.show(contentPanel, "configuracion");
+                cl.show(contentPanel, "configuration");
 
             });
             configButton.setMaximumSize(buttonSize);
@@ -165,18 +167,18 @@ public class MainAdminUi {
             });
             moreOptionsButton.setMaximumSize(buttonSize);
 
-            moreOptionsButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
+            moreOptionsButton.setFont(new Font(ARIAL_FONT, Font.BOLD, SIXTEEN));
 
             buttonsPanel.add(moreOptionsButton);
-            buttonsPanel.add(Box.createVerticalStrut(5));
+            buttonsPanel.add(Box.createVerticalStrut(FIVE));
             buttonsPanel.add(listaProductosButton);
-            buttonsPanel.add(Box.createVerticalStrut(5));
+            buttonsPanel.add(Box.createVerticalStrut(FIVE));
             buttonsPanel.add(gastosButton);
-            buttonsPanel.add(Box.createVerticalStrut(5));
+            buttonsPanel.add(Box.createVerticalStrut(FIVE));
             buttonsPanel.add(moreOptionsButton);
-            buttonsPanel.add(Box.createVerticalStrut(5));
+            buttonsPanel.add(Box.createVerticalStrut(FIVE));
             buttonsPanel.add(configButton);
-            buttonsPanel.add(Box.createVerticalStrut(5));
+            buttonsPanel.add(Box.createVerticalStrut(FIVE));
 
             sidebarPanel.add(buttonsPanel, BorderLayout.CENTER);
             mainPanel.add(sidebarPanel, BorderLayout.WEST);
@@ -186,7 +188,9 @@ public class MainAdminUi {
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            logger.error("Error al mostrar el panel de administración", ex);
+            JOptionPane.showMessageDialog(null, "Error al cargar la interfaz de administración: " + ex.getMessage(),
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -206,7 +210,7 @@ public class MainAdminUi {
             @Override
             public void mouseEntered(MouseEvent e) {
                 logoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Cambia el cursor a "mano"
-                logoLabel.setBorder(BorderFactory.createLineBorder(new Color(250, 240, 230), 1)); // Borde amarillo al pasar el mouse
+                logoLabel.setBorder(BorderFactory.createLineBorder(FONDO_PRINCIPAL, ONE)); // Borde amarillo al pasar el mouse
             }
 
             @Override
@@ -244,7 +248,7 @@ public class MainAdminUi {
 
     public static double obtenerTRM() {
 
-        if (!ConfigAdminManager.isTrmEnabled()) return 0.0;
+        if (!ConfigAdminManager.isTrmEnabled()) return ZERO_DOUBLE;
         try {
             URL url = new URL("https://www.datos.gov.co/resource/32sa-8pi3.json?$limit=1&$order=vigenciadesde%20DESC");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -257,8 +261,8 @@ public class MainAdminUi {
                 String line;
                 while ((line = in.readLine()) != null) response.append(line);
                 JSONArray arr = new JSONArray(response.toString());
-                if (arr.length() == 0) return 0.0;
-                return Double.parseDouble(arr.getJSONObject(0).getString("valor"));
+                if (arr.isEmpty()) return ZERO_DOUBLE;
+                return Double.parseDouble(arr.getJSONObject(ZERO).getString("valor"));
             }
         } catch (Exception e) {
             return 0.0;

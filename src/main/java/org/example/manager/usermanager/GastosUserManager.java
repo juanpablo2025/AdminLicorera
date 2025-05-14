@@ -4,18 +4,24 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static org.example.utils.Constants.*;
+
 
 public class GastosUserManager {
 
-    private GastosUserManager() {
-    }
+    private GastosUserManager() {}
+
+    private static final Logger logger =  LoggerFactory.getLogger(GastosUserManager.class);
 
     public static void saveGasto(String nombreGasto, double precio) {
         try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
@@ -28,29 +34,30 @@ public class GastosUserManager {
                 gastosSheet = workbook.createSheet(gastosSheetName);
 
                 // Crear fila de encabezado
-                Row headerRow = gastosSheet.createRow(0);
-                headerRow.createCell(0).setCellValue("ID Producto");
-                headerRow.createCell(1).setCellValue("Nombre Producto");
-                headerRow.createCell(3).setCellValue("Precio Compra");
-                headerRow.createCell(4).setCellValue("Fecha y Hora");
+                Row headerRow = gastosSheet.createRow(ZERO);
+                headerRow.createCell(ZERO).setCellValue("ID Producto");
+                headerRow.createCell(ONE).setCellValue("Nombre Producto");
+                headerRow.createCell(THREE).setCellValue("Precio Compra");
+                headerRow.createCell(FOUR).setCellValue("Fecha y Hora");
             }
             LocalDateTime fechaHora = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             // Añadir el registro del gasto
             int lastRowNum = gastosSheet.getLastRowNum();
-            Row newRow = gastosSheet.createRow(lastRowNum + 1);
-            newRow.createCell(0).setCellValue(System.currentTimeMillis() % 1000);
-            newRow.createCell(1).setCellValue(nombreGasto);
-            newRow.createCell(2).setCellValue("n/a");
-            newRow.createCell(3).setCellValue(precio);  // Guardar el precio ingresado
-            newRow.createCell(4).setCellValue(formatter.format(fechaHora));
+            Row newRow = gastosSheet.createRow(lastRowNum + ONE);
+            newRow.createCell(ZERO).setCellValue(System.currentTimeMillis() % 1000);
+            newRow.createCell(ONE).setCellValue(nombreGasto);
+            newRow.createCell(TWO).setCellValue("n/a");
+            newRow.createCell(THREE).setCellValue(precio);  // Guardar el precio ingresado
+            newRow.createCell(FOUR).setCellValue(formatter.format(fechaHora));
 
             // Guardar los cambios en el archivo Excel
             try (FileOutputStream fos = new FileOutputStream(ExcelUserManager.FILE_PATH)) {
                 workbook.write(fos);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al guardar el gasto: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al guardar el gasto: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
 
     }

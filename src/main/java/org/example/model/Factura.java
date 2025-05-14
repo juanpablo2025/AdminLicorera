@@ -1,11 +1,11 @@
 package org.example.model;
 
 public class Factura {
-    private String id;
+    private final String id;
     private String productos;
-    private double total;
-    private String fechaHora;
-    private String tipoPago;
+    private final double total;
+    private final String fechaHora;
+    private final String tipoPago;
 
     public Factura(String id, String productos, double total, String fechaHora, String tipoPago) {
         this.id = id;

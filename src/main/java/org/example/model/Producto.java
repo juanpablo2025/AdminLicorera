@@ -4,13 +4,12 @@ package org.example.model;
 public class Producto {
 
     private int id;
-    private String name;
+    private final String name;
     private int quantity ;
-    private double price;
-    private String foto;
+    private final double price;
+    private final String foto;
 
     public Producto(int id,String name, int quantity, double price, String foto) {
-
         this.id = id;
         this.name = name;
         this.quantity = quantity;
@@ -55,14 +54,6 @@ public class Producto {
 
     public String getFoto() {
         return foto;
-    }
-
-    public void setPrecio(double precio) {
-        this.price = precio;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public void setId(int abs) {

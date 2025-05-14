@@ -5,39 +5,34 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.model.Factura;
 import org.example.model.Mesa;
 import org.example.model.Producto;
-
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.io.*;
-
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-
 import static org.example.manager.usermanager.FacturacionUserManager.*;
-
 import static org.example.utils.Constants.*;
 
 public class ExcelUserManager {
 
     public static final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
     public static final String DIRECTORY_PATH =System.getProperty(FOLDER_PATH) + "\\Calculadora del Administrador";
-    public static final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
+    public static final String FILE_PATH = DIRECTORY_PATH + '\\' + FILE_NAME;
     static LocalDateTime fechaHora = LocalDateTime.now();
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH_mm_ss");
     static String fechaFormateada = fechaHora.format(formatter);
     public static final String FACTURACION_FILENAME = "\\Facturacion\\Facturacion"+ fechaFormateada+".xlsx";
+
+    private static final Logger logger =  LoggerFactory.getLogger(ExcelUserManager.class);
 
     public ExcelUserManager() {
         // Verificar si la carpeta existe, si no, crearla
@@ -53,63 +48,63 @@ public class ExcelUserManager {
         }
     }
 
-    // Método para crear el archivo Excel si no existe
+    //  para crear el archivo Excel si no existe
     public static void createExcelFile() {
         Workbook workbook = new XSSFWorkbook();
 
         // Crear hoja de productos
         Sheet productsSheet = workbook.createSheet(PRODUCTS_SHEET_NAME);
-        Row header = productsSheet.createRow(0); // Utiliza constantes para los índices si las tienes
-        header.createCell(0).setCellValue(ID);
-        header.createCell(1).setCellValue(NOMBRE);
-        header.createCell(2).setCellValue(CANTIDAD);
-        header.createCell(3).setCellValue(PRECIO);
-        header.createCell(4).setCellValue(CANTIDAD_VENDIDA);
-        header.createCell(5 ).setCellValue("Foto");
+        Row header = productsSheet.createRow(ZERO); // Utiliza constantes para los índices si las tienes
+        header.createCell(ZERO).setCellValue(ID);
+        header.createCell(ONE).setCellValue(NOMBRE);
+        header.createCell(TWO).setCellValue(CANTIDAD);
+        header.createCell(THREE).setCellValue(PRECIO);
+        header.createCell(FOUR).setCellValue(CANTIDAD_VENDIDA);
+        header.createCell(FIVE ).setCellValue("Foto");
 
         // Crear hoja de compras
         Sheet purchasesSheet = workbook.createSheet(PURCHASES_SHEET_NAME);
-        Row purchasesHeader = purchasesSheet.createRow(0);
-        purchasesHeader.createCell(0).setCellValue(ID);
-        purchasesHeader.createCell(1).setCellValue(PRODUCTOS);
-        purchasesHeader.createCell(2).setCellValue(TOTAL);
-        purchasesHeader.createCell(3).setCellValue(FECHA_HORA);
-        purchasesHeader.createCell(4).setCellValue("Forma de Pago");
+        Row purchasesHeader = purchasesSheet.createRow(ZERO);
+        purchasesHeader.createCell(ZERO).setCellValue(ID);
+        purchasesHeader.createCell(ONE).setCellValue(PRODUCTOS);
+        purchasesHeader.createCell(TWO).setCellValue(TOTAL);
+        purchasesHeader.createCell(THREE).setCellValue(FECHA_HORA);
+        purchasesHeader.createCell(FOUR).setCellValue("Forma de Pago");
 
         // Crear hoja de gastos
         Sheet gastosSheet = workbook.createSheet("Gastos");
-        Row gastosHeader = gastosSheet.createRow(0);
-        gastosHeader.createCell(0).setCellValue("ID Producto");
-        gastosHeader.createCell(1).setCellValue("Nombre Producto");
-        gastosHeader.createCell(2).setCellValue("Cantidad");
-        gastosHeader.createCell(3).setCellValue("Precio Compra");
-        gastosHeader.createCell(4).setCellValue("Fecha y Hora");
+        Row gastosHeader = gastosSheet.createRow(ZERO);
+        gastosHeader.createCell(ZERO).setCellValue("ID Producto");
+        gastosHeader.createCell(ONE).setCellValue("Nombre Producto");
+        gastosHeader.createCell(TWO).setCellValue("Cantidad");
+        gastosHeader.createCell(THIRTY).setCellValue("Precio Compra");
+        gastosHeader.createCell(FOUR).setCellValue("Fecha y Hora");
 
         // Verificar si la pestaña "Mesas" ya existe
         Sheet mesasSheet = workbook.getSheet(MESAS_TITLE);
         if (mesasSheet == null) {
             mesasSheet = workbook.createSheet(MESAS_TITLE);
-            Row headerRow = mesasSheet.createRow(0);
-            headerRow.createCell(0).setCellValue("Mesa ID");
-            headerRow.createCell(1).setCellValue("Estado");
-            headerRow.createCell(2).setCellValue("Productos");
-            headerRow.createCell(3).setCellValue("Total");
+            Row headerRow = mesasSheet.createRow(ZERO);
+            headerRow.createCell(ZERO).setCellValue("Mesa ID");
+            headerRow.createCell(ONE).setCellValue("Estado");
+            headerRow.createCell(TWO).setCellValue("Productos");
+            headerRow.createCell(THREE).setCellValue("Total");
 
             // Crear 10 mesas por defecto
-            for (int i = 1; i <= 10; i++) {
+            for (int i = ONE; i <= TEN; i++) {
                 Row row = mesasSheet.createRow(i);
-                row.createCell(0).setCellValue(MESA_TITLE + i);
-                row.createCell(1).setCellValue("Libre");  // Estado inicial
+                row.createCell(ZERO).setCellValue(MESA_TITLE + i);
+                row.createCell(ONE).setCellValue("Libre");  // Estado inicial
             }
         }
 
         Sheet empleadosSheet = workbook.getSheet(EMPLOYEES_SHEET_NAME);
         if (empleadosSheet == null) {
             empleadosSheet = workbook.createSheet(EMPLOYEES_SHEET_NAME);
-            Row empleadosHeader = empleadosSheet.createRow(0);
-            empleadosHeader.createCell(0).setCellValue("Nombre Empleado");
-            empleadosHeader.createCell(1).setCellValue("Hora Inicio");
-            empleadosHeader.createCell(2).setCellValue("Fecha Inicio");
+            Row empleadosHeader = empleadosSheet.createRow(ZERO);
+            empleadosHeader.createCell(ZERO).setCellValue("Nombre Empleado");
+            empleadosHeader.createCell(ONE).setCellValue("Hora Inicio");
+            empleadosHeader.createCell(TWO).setCellValue("Fecha Inicio");
         }
 
 
@@ -117,17 +112,19 @@ public class ExcelUserManager {
         try (FileOutputStream fileOut = new FileOutputStream(FILE_PATH)) {
             workbook.write(fileOut);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al crear el archivo Excel: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al crear el archivo Excel: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         } finally {
             try {
                 workbook.close(); // Cierra el workbook para liberar recursos
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Error al cerrar el archivo Excel: {}", e.getMessage());
+                JOptionPane.showMessageDialog(null, "Error al cerrar el archivo Excel: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
-    // Método para leer los productos del archivo Excel
+    //  para leer los productos del archivo Excel
     public List<Producto> getProducts() {
         List<Producto> products = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
@@ -141,31 +138,35 @@ public class ExcelUserManager {
                     String name = getCellValueAsString(row.getCell(ONE));
                     int quantity = getCellValueAsInt(row.getCell(TWO));
                     double price = getCellValueAsDouble(row.getCell(THREE));
-                    String foto = getCellValueAsString(row.getCell(5));
+                    String foto = getCellValueAsString(row.getCell(FIVE));
 
                     products.add(new Producto(id,name, quantity, price, foto));
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al leer los productos: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al leer los productos: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            logger.error("Error inesperado: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
         return products;
     }
 
-    // Métodos auxiliares para manejar celdas nulas y tipos de datos
+    //  auxiliares para manejar celdas nulas y tipos de datos
     private String getCellValueAsString(Cell cell) {
         return (cell != null) ? cell.toString() : "Desconocido";
     }
 
     private int getCellValueAsInt(Cell cell) {
-        return (cell != null && cell.getCellType() == CellType.NUMERIC) ? (int) cell.getNumericCellValue() : 0;
+        return (cell != null && cell.getCellType() == CellType.NUMERIC) ? (int) cell.getNumericCellValue() : ZERO;
     }
 
     private double getCellValueAsDouble(Cell cell) {
-        return (cell != null && cell.getCellType() == CellType.NUMERIC) ? cell.getNumericCellValue() : 0.0;
+        return (cell != null && cell.getCellType() == CellType.NUMERIC) ? cell.getNumericCellValue() : ZERO_DOUBLE;
     }
 
-    // Método para obtener un producto por nombre
+    //  para obtener un producto por nombre
     public Producto getProductByName(String selectedProduct) {
         List<Producto> products = getProducts();
         for (Producto p : products) {
@@ -176,7 +177,7 @@ public class ExcelUserManager {
         return null;
     }
 
-    // Método para guardar una compra en el archivo Excel
+    //  para guardar una compra en el archivo Excel
     public void savePurchase(String compraID, String productos, double total, String tipoCompra) {
         DateTimeFormatter formatteo = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
@@ -208,11 +209,15 @@ public class ExcelUserManager {
                 workbook.write(fileOut);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al guardar la compra: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al guardar la compra: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            logger.error("Error inesperado: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Método para restar los totales de la hoja "Gastos"
+    // para restar los totales de la hoja "Gastos"
     public static double restarTotalesGastos(Sheet gastosSheet) {
         double totalGastos = ZERO_DOUBLE; // Usar la constante como en el ejemplo
 
@@ -220,7 +225,7 @@ public class ExcelUserManager {
         for (int i = ONE; i <= gastosSheet.getLastRowNum(); i++) {
             Row row = gastosSheet.getRow(i);
             if (row != null) {
-                Cell cell = row.getCell(3); // La columna D es el índice 3
+                Cell cell = row.getCell(THREE); // La columna D es el índice 3
                 if (cell != null && cell.getCellType() == CellType.NUMERIC) {
                     totalGastos += cell.getNumericCellValue();
                 }
@@ -229,7 +234,7 @@ public class ExcelUserManager {
         return totalGastos;
     }
 
-    // Método para sumar los totales de la hoja "Compras"
+    //  para sumar los totales de la hoja "Compras"
     static double sumarTotalesCompras(Sheet purchasesSheet) {
         double totalSum = ZERO_DOUBLE;
         for (int i = ONE; i <= purchasesSheet.getLastRowNum(); i++) {
@@ -241,7 +246,7 @@ public class ExcelUserManager {
         return totalSum;
     }
 
-    // Método para limpiar la hoja "Compras"
+    //  para limpiar la hoja "Compras"
     private void limpiarHojaCompras(Sheet purchasesSheet) {
         for (int i = purchasesSheet.getLastRowNum(); i >= ONE; i--) {
             Row row = purchasesSheet.getRow(i);
@@ -265,38 +270,38 @@ public class ExcelUserManager {
 
                 Pattern pattern = Pattern.compile("(.+?)\\s+x(\\d+)", Pattern.CASE_INSENSITIVE);
 
-                for (int i = 1; i <= purchasesSheet.getLastRowNum(); i++) {
+                for (int i = ONE; i <= purchasesSheet.getLastRowNum(); i++) {
                     Row row = purchasesSheet.getRow(i);
                     if (row != null) {
-                        Cell celdaProducto = row.getCell(0);
+                        Cell celdaProducto = row.getCell(ZERO);
                         if (celdaProducto != null && celdaProducto.getCellType() == CellType.STRING) {
                             String texto = celdaProducto.getStringCellValue().trim();
 
                             Matcher matcher = pattern.matcher(texto);
                             while (matcher.find()) {
-                                String nombreProducto = matcher.group(1).trim();
-                                int cantidadVendida = Integer.parseInt(matcher.group(2).trim());
+                                String nombreProducto = matcher.group(ONE).trim();
+                                int cantidadVendida = Integer.parseInt(matcher.group(TWO).trim());
 
-                                productosVendidos.put(nombreProducto, productosVendidos.getOrDefault(nombreProducto, 0) + cantidadVendida);
+                                productosVendidos.put(nombreProducto, productosVendidos.getOrDefault(nombreProducto, ZERO) + cantidadVendida);
                             }
 
                         }
                     }
                 }
 
-                // 3️⃣ Calcular el total por método de pago
+                // 3️⃣ Calcular el total por modo de pago
                 Map<String, Double> totalPorFormaPago = new HashMap<>();
-                for (int i = 1; i <= purchasesSheet.getLastRowNum(); i++) {
+                for (int i = ONE; i <= purchasesSheet.getLastRowNum(); i++) {
                     Row row = purchasesSheet.getRow(i);
                     if (row != null) {
-                        Cell pagoCell = row.getCell(4); // Forma de pago (columna 4)
-                        Cell totalCell = row.getCell(2); // Total de la compra (columna 2)
+                        Cell pagoCell = row.getCell(FOUR); // Forma de pago (columna 4)
+                        Cell totalCell = row.getCell(TWO); // Total de la compra (columna 2)
 
                         if (pagoCell != null && totalCell != null && totalCell.getCellType() == CellType.NUMERIC) {
                             String formaPago = pagoCell.getStringCellValue().trim();
                             double total = totalCell.getNumericCellValue();
 
-                            totalPorFormaPago.put(formaPago, totalPorFormaPago.getOrDefault(formaPago, 0.0) + total);
+                            totalPorFormaPago.put(formaPago, totalPorFormaPago.getOrDefault(formaPago, ZERO_DOUBLE) + total);
                         }
                     }
                 }
@@ -306,7 +311,6 @@ public class ExcelUserManager {
                 double totalCompra = sumarTotalesCompras(purchasesSheet);
                 double totalGastos = restarTotalesGastos(gastosSheet);
                 double totalReabastecimiento = restarTotalesGastos(reabastecimientoSheet);
-                double totalFinal = totalCompra;
                 String nombreEmpleado = obtenerUltimoEmpleado();
 
                 crearArchivoFacturacionYGastos(purchasesSheet, gastosSheet, empleadosSheet, totalCompra, totalGastos, reabastecimientoSheet, totalReabastecimiento);
@@ -316,9 +320,9 @@ public class ExcelUserManager {
                 // 2️⃣ Guardar archivo con datos antes de limpiar
                 try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
                     workbook.write(fos);
-                    guardarTotalFacturadoEnArchivo(totalPorFormaPago, totalFinal);
+                    guardarTotalFacturadoEnArchivo(totalPorFormaPago, totalCompra);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("Error al guardar el archivo con datos: {}", e.getMessage());
                     JOptionPane.showMessageDialog(null, "Error al guardar archivo con datos.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -333,22 +337,26 @@ public class ExcelUserManager {
                 try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
                     workbook.write(fos);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("Error al guardar el archivo limpio: {}", e.getMessage());
                     JOptionPane.showMessageDialog(null, "Error al guardar archivo limpio.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
                 }
                 limpiarCantidadVendida();
                 limpiarFacturas();
-                String nombreCapitalizado = nombreEmpleado.substring(0, 1).toUpperCase() + nombreEmpleado.substring(1).toLowerCase();
+                String nombreCapitalizado = nombreEmpleado.substring(ZERO, ONE).toUpperCase() + nombreEmpleado.substring(ONE).toLowerCase();
 
                 JOptionPane.showMessageDialog(null, "Muchas gracias por tu ayuda "+nombreCapitalizado+ ".", "Día finalizado correctamente.", JOptionPane.INFORMATION_MESSAGE);
 
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al abrir el archivo Excel: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al abrir el archivo Excel: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            logger.error("Error inesperado: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Método para crear el archivo Excel independiente con las hojas "Facturacion" y "Gastos"
+    //  para crear el archivo Excel independiente con las hojas "Facturacion" y "Gastos"
     public void crearArchivoFacturacionYGastos(Sheet purchasesSheet, Sheet gastosSheet, Sheet empleadosSheet, double totalCompra, double totalGastos, Sheet reabastecimientoSheet,double totalRebastecimiento) throws IOException {
         // Crear un nuevo Workbook (archivo Excel)
         Workbook workbook = new XSSFWorkbook();
@@ -399,7 +407,7 @@ public class ExcelUserManager {
         guardarArchivo(workbook);
     }
 
-    // Método para copiar el contenido de una hoja y agregar la columna "Hora Cerrada"
+    //  para copiar el contenido de una hoja y agregar la columna "Hora Cerrada"
     private void copiarContenidoHojaConHoraCerrada(Sheet sourceSheet, Sheet targetSheet) {
         int rowCount = sourceSheet.getPhysicalNumberOfRows();
         LocalDateTime horaCerrada = LocalDateTime.now();
@@ -410,7 +418,7 @@ public class ExcelUserManager {
             Row targetRow = targetSheet.createRow(i);
 
             int cellCount = sourceRow.getPhysicalNumberOfCells();
-            for (int j = 0; j < cellCount; j++) {
+            for (int j = ZERO; j < cellCount; j++) {
                 Cell sourceCell = sourceRow.getCell(j);
                 Cell targetCell = targetRow.createCell(j);
                 copiarCelda(sourceCell, targetCell);
@@ -418,7 +426,7 @@ public class ExcelUserManager {
 
             // Añadir la columna "Hora Cerrada" al final de cada fila
             Cell horaCerradaCell = targetRow.createCell(cellCount);
-            if (i == 0) {
+            if (i == ZERO) {
                 // Si es la primera fila (cabecera), escribir "Hora Cerrada"
                 horaCerradaCell.setCellValue("Hora de Cierre");
             } else {
@@ -428,14 +436,11 @@ public class ExcelUserManager {
         }
     }
 
-    // Método para copiar contenido de una celda a otra
+    //  para copiar contenido de una celda a otra
     private void copiarCelda(Cell sourceCell, Cell targetCell) {
         if (sourceCell == null) return;
 
         switch (sourceCell.getCellType()) {
-            case STRING:
-                targetCell.setCellValue(sourceCell.getStringCellValue());
-                break;
             case NUMERIC:
                 targetCell.setCellValue(sourceCell.getNumericCellValue());
                 break;
@@ -451,13 +456,13 @@ public class ExcelUserManager {
         }
     }
 
-    // Método auxiliar para copiar el contenido de una hoja a otra
+    //  auxiliar para copiar el contenido de una hoja a otra
     private void copiarContenidoHoja(Sheet oldSheet, Sheet newSheet) {
-        for (int i = 0; i <= oldSheet.getLastRowNum(); i++) {
+        for (int i = ZERO; i <= oldSheet.getLastRowNum(); i++) {
             Row oldRow = oldSheet.getRow(i);
             Row newRow = newSheet.createRow(i);
             if (oldRow != null) {
-                for (int j = 0; j < oldRow.getLastCellNum(); j++) {
+                for (int j = ZERO; j < oldRow.getLastCellNum(); j++) {
                     Cell oldCell = oldRow.getCell(j);
                     Cell newCell = newRow.createCell(j);
 
@@ -492,7 +497,7 @@ public class ExcelUserManager {
         }
     }
 
-    // Método para crear un nuevo estilo de celda basado en el estilo de otra celda
+    //  para crear un nuevo estilo de celda basado en el estilo de otra celda
     private CellStyle crearEstiloParaCelda(Cell oldCell, Workbook newWorkbook) {
         CellStyle newStyle = newWorkbook.createCellStyle();
 
@@ -502,7 +507,7 @@ public class ExcelUserManager {
         return newStyle;
     }
 
-    // Método auxiliar para crear un estilo de celda en rojo
+    //  auxiliar para crear un estilo de celda en rojo
     private CellStyle crearEstiloRojo(Workbook workbook) {
         CellStyle redStyle = workbook.createCellStyle();
         Font font = workbook.createFont();
@@ -512,21 +517,21 @@ public class ExcelUserManager {
         return redStyle;
     }
 
-    // Método auxiliar para agregar el total al final de la hoja
+    //  auxiliar para agregar el total al final de la hoja
     private void agregarTotal(Sheet sheet, double total, String label, CellStyle style) {
-        int lastRow = sheet.getLastRowNum() + 1; // La siguiente fila vacía
+        int lastRow = sheet.getLastRowNum() + ONE; // La siguiente fila vacía
         Row totalRow = sheet.createRow(lastRow);
-        Cell totalLabelCell = totalRow.createCell(0); // Columna 0 para la etiqueta
+        Cell totalLabelCell = totalRow.createCell(ZERO); // Columna 0 para la etiqueta
         totalLabelCell.setCellValue(label);
 
-        Cell totalValueCell = totalRow.createCell(1); // Columna 1 para el valor total
+        Cell totalValueCell = totalRow.createCell(ONE); // Columna 1 para el valor total
         totalValueCell.setCellValue(total);
 
         // Aplicar el estilo de color rojo a la celda del total
         totalValueCell.setCellStyle(style);
     }
 
-    // Método auxiliar para guardar el archivo en el directorio
+    //  auxiliar para guardar el archivo en el directorio
     private void guardarArchivo(Workbook workbook) throws IOException {
         // Crear el directorio si no existe
         File directory = new File(DIRECTORY_PATH);
@@ -544,7 +549,7 @@ public class ExcelUserManager {
         workbook.close();
     }
 
-    // Método auxiliar para obtener productos con cantidad 0
+    //  auxiliar para obtener productos con cantidad 0
     static List<Producto> obtenerProductosAgotados(Sheet productsSheet) {
         List<Producto> productosAgotados = new ArrayList<>();
         for (int i = ONE; i <= productsSheet.getLastRowNum(); i++) {
@@ -554,7 +559,7 @@ public class ExcelUserManager {
                 String name = row.getCell(ONE).getStringCellValue();
                 int quantity = (int) row.getCell(TWO).getNumericCellValue();
 
-                if (quantity <= -1) {
+                if (quantity <= -ONE) {
                     productosAgotados.add(new Producto(id,name, quantity, row.getCell(THREE).getNumericCellValue(),row.getCell(5).getStringCellValue()));
                 }
             }
@@ -562,10 +567,10 @@ public class ExcelUserManager {
         return productosAgotados;
     }
 
-    // Método para cargar las mesas desde el archivo Excel
-    public static ArrayList<Mesa> cargarMesasDesdeExcel() {
+    //  para cargar las mesas desde el archivo Excel
+    public static List<Mesa> cargarMesasDesdeExcel() {
         final String DIRECTORY_PATH =System.getProperty(FOLDER_PATH) + "\\Calculadora del Administrador";
-        final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
+        final String FILE_PATH = DIRECTORY_PATH + '\\' + FILE_NAME;
 
         ArrayList<Mesa> mesas = new ArrayList<>();
 
@@ -574,18 +579,18 @@ public class ExcelUserManager {
 
             Sheet mesasSheet = workbook.getSheet(MESAS_TITLE); // Acceder a la hoja llamada "mesas"
             if (mesasSheet != null) {
-                for (int i = 1; i <= mesasSheet.getLastRowNum(); i++) { // Empezamos en la fila 1 (saltamos el encabezado)
+                for (int i = ONE; i <= mesasSheet.getLastRowNum(); i++) { // Empezamos en la fila 1 (saltamos el encabezado)
                     Row row = mesasSheet.getRow(i);
                     if (row != null) {
                         // Leer el ID de la mesa (columna 0)
-                        Cell idCell = row.getCell(0);
+                        Cell idCell = row.getCell(ZERO);
                         String idText = idCell.getStringCellValue();
 
                         // Extraer el número de la mesa, por ejemplo, de "Mesa 1" extraer 1
                         int id = extraerNumeroDeTexto(idText);
 
                         // Leer el estado de la mesa (columna 1)
-                        String estado = row.getCell(1).getStringCellValue();
+                        String estado = row.getCell(ONE).getStringCellValue();
                         Mesa mesa = new Mesa(MESA_TITLE +id);
                         mesa.setOcupada(estado.equalsIgnoreCase("Ocupada"));
                         mesas.add(mesa);
@@ -593,13 +598,17 @@ public class ExcelUserManager {
                 }
             }
         } catch (IOException | NumberFormatException e) {
-            e.printStackTrace();
+            logger.error("Error al cargar las mesas desde Excel: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al cargar las mesas desde Excel: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            logger.error("Error inesperado: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
 
         return mesas;
     }
 
-    // Método auxiliar para extraer el número del ID de la mesa
+    //  auxiliar para extraer el número del ID de la mesa
     private static int extraerNumeroDeTexto(String texto) {
         // Remover cualquier cosa que no sea un número del texto
         String numeroTexto = texto.replaceAll("[^0-9]", "");
@@ -613,10 +622,10 @@ public class ExcelUserManager {
             Sheet sheet = workbook.getSheet(PRODUCTS_SHEET_NAME);
 
             // Verificar si existe la columna "Cantidad Vendida", si no, agregarla
-            Row headerRow = sheet.getRow(0);
-            int ventasColIndex = -1;
+            Row headerRow = sheet.getRow(ZERO);
+            int ventasColIndex = -ONE;
 
-            for (int colIndex = 0; colIndex < headerRow.getLastCellNum(); colIndex++) {
+            for (int colIndex = ZERO; colIndex < headerRow.getLastCellNum(); colIndex++) {
                 Cell headerCell = headerRow.getCell(colIndex);
                 if (headerCell != null && "Cantidad Vendida".equalsIgnoreCase(headerCell.getStringCellValue())) {
                     ventasColIndex = colIndex;
@@ -624,7 +633,7 @@ public class ExcelUserManager {
                 }
             }
 
-            if (ventasColIndex == -1) {
+            if (ventasColIndex == -ONE) {
                 ventasColIndex = headerRow.getLastCellNum(); // Nueva columna al final
                 headerRow.createCell(ventasColIndex).setCellValue("Cantidad Vendida");
             }
@@ -635,15 +644,15 @@ public class ExcelUserManager {
                 int cantidadComprada = entry.getValue();
                 boolean productoEncontrado = false;
 
-                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                for (int i = ONE; i <= sheet.getLastRowNum(); i++) {
                     Row row = sheet.getRow(i);
                     if (row != null) {
-                        if (row.getCell(1).getStringCellValue().equalsIgnoreCase(nombreProducto)) {
+                        if (row.getCell(ONE).getStringCellValue().equalsIgnoreCase(nombreProducto)) {
                             // Actualizar stock **permitiendo valores negativos**
-                            Cell cantidadCell = row.getCell(2);
+                            Cell cantidadCell = row.getCell(TWO);
                             if (cantidadCell == null) {
-                                cantidadCell = row.createCell(2);
-                                cantidadCell.setCellValue(0);
+                                cantidadCell = row.createCell(TWO);
+                                cantidadCell.setCellValue(ZERO);
                             }
 
                             if (cantidadCell.getCellType() == CellType.NUMERIC) {
@@ -658,7 +667,7 @@ public class ExcelUserManager {
                             Cell ventasCell = row.getCell(ventasColIndex);
                             if (ventasCell == null) {
                                 ventasCell = row.createCell(ventasColIndex);
-                                ventasCell.setCellValue(0); // Inicializar en 0 si no existe
+                                ventasCell.setCellValue(ZERO); // Inicializar en 0 si no existe
                             }
 
                             if (ventasCell.getCellType() == CellType.NUMERIC) {
@@ -672,7 +681,7 @@ public class ExcelUserManager {
                 }
 
                 if (!productoEncontrado) {
-                    JOptionPane.showMessageDialog(null, "Producto '" + nombreProducto + "' no encontrado en stock.", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Producto '" + nombreProducto + "' no encontrado en stock.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
                     return;
                 }
             }
@@ -683,13 +692,17 @@ public class ExcelUserManager {
             }
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+            logger.error("Error al actualizar la cantidad de stock: {}", ex.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al actualizar la cantidad de stock: " + ex.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            logger.error("Error inesperado: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
 
     public static List<String[]> cargarProductosMesaDesdeExcel(String mesaID) {
         final String DIRECTORY_PATH = System.getProperty("user.home") + "\\Calculadora del Administrador";
-        final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
+        final String FILE_PATH = DIRECTORY_PATH + '\\' + FILE_NAME;
 
         List<String[]> productosMesa = new ArrayList<>();
 
@@ -698,10 +711,10 @@ public class ExcelUserManager {
 
             Sheet sheet = workbook.getSheet(MESAS_TITLE); // Asegúrate de tener una hoja "mesas" en el archivo Excel
             if (sheet != null) {
-                for (int i = 1; i <= sheet.getLastRowNum(); i++) { // Recorrer las filas de la hoja, empezando en la fila 1
+                for (int i = ONE; i <= sheet.getLastRowNum(); i++) { // Recorrer las filas de la hoja, empezando en la fila 1
                     Row row = sheet.getRow(i);
                     if (row != null) {
-                        Cell idCell = row.getCell(0); // Columna A: ID de la mesa
+                        Cell idCell = row.getCell(ZERO); // Columna A: ID de la mesa
 
                         // Asegúrate de que la celda no sea nula y de que contenga un valor de tipo String
                         if (idCell != null && idCell.getCellType() == CellType.STRING) {
@@ -713,7 +726,7 @@ public class ExcelUserManager {
                             //    System.out.println("Mesa encontrada: " + id); // Log si se encuentra la mesa
 
                                 // Leer los productos de la mesa (suponiendo que los productos están en la columna C)
-                                Cell productosCell = row.getCell(2);
+                                Cell productosCell = row.getCell(TWO);
                                 if (productosCell != null && productosCell.getCellType() == CellType.STRING) {
                                     String productosTexto = productosCell.getStringCellValue(); // Obtener los productos como String
                                    // System.out.println("Productos encontrados: " + productosTexto); // Log de los productos encontrados
@@ -723,7 +736,7 @@ public class ExcelUserManager {
                                     for (String producto : productos) {
                                         // Suponiendo que los productos tienen un formato "nombreProducto xCantidad $PrecioUnitario"
                                         String[] detallesProducto = producto.trim().split(" ");
-                                        if (detallesProducto.length >= 3) { // Verifica que hay suficientes elementos
+                                        if (detallesProducto.length >= THREE) { // Verifica que hay suficientes elementos
                                             productosMesa.add(detallesProducto); // Añadir el producto a la lista
                                         }
                                     }
@@ -735,7 +748,11 @@ public class ExcelUserManager {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al cargar los productos de la mesa: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al cargar los productos de la mesa: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            logger.error("Error inesperado: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
 
         return productosMesa;
@@ -744,9 +761,9 @@ public class ExcelUserManager {
 
     public static void agregarMesaAExcel(Mesa nuevaMesa) {
         final String DIRECTORY_PATH =System.getProperty("user.home") + "\\Calculadora del Administrador";
-        final String FILE_PATH = DIRECTORY_PATH + "\\" + FILE_NAME;
-        String filePath = FILE_PATH; // Reemplaza con la ruta correcta
-        try (FileInputStream fis = new FileInputStream(filePath);
+        final String FILE_PATH = DIRECTORY_PATH + '\\' + FILE_NAME;
+        // Reemplaza con la ruta correcta
+        try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet mesasSheet = workbook.getSheet(MESAS_TITLE);
@@ -754,24 +771,28 @@ public class ExcelUserManager {
                 // Si no existe la hoja "mesas", crearla
                 mesasSheet = workbook.createSheet(MESAS_TITLE);
                 // Crear encabezado si es una hoja nueva
-                Row headerRow = mesasSheet.createRow(0);
-                headerRow.createCell(0).setCellValue("ID");
-                headerRow.createCell(1).setCellValue("Estado");
+                Row headerRow = mesasSheet.createRow(ZERO);
+                headerRow.createCell(ZERO).setCellValue("ID");
+                headerRow.createCell(ONE).setCellValue("Estado");
             }
 
             // Agregar nueva fila con los datos de la nueva mesa
-            int newRowNum = mesasSheet.getLastRowNum() + 1; // La última fila más uno
+            int newRowNum = mesasSheet.getLastRowNum() + ONE; // La última fila más uno
             Row newRow = mesasSheet.createRow(newRowNum);
-            newRow.createCell(0).setCellValue(MESA_TITLE + nuevaMesa.getId()); // ID de la mesa
-            newRow.createCell(1).setCellValue(nuevaMesa.isOcupada() ? "Ocupada" : "Libre"); // Estado de la mesa
+            newRow.createCell(ZERO).setCellValue(MESA_TITLE + nuevaMesa.getId()); // ID de la mesa
+            newRow.createCell(ONE).setCellValue(nuevaMesa.isOcupada() ? "Ocupada" : "Libre"); // Estado de la mesa
 
             // Escribir los cambios en el archivo
-            try (FileOutputStream fos = new FileOutputStream(filePath)) {
+            try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
                 workbook.write(fos);
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al agregar la mesa: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al agregar la mesa: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            logger.error("Error inesperado: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
     public static void eliminarMesasConIdMayorA15() {
@@ -783,17 +804,17 @@ public class ExcelUserManager {
             if (mesasSheet != null) {
                 // Primero, verificar si alguna mesa con ID > 15 está ocupada.
                 boolean mesaOcupada = false;
-                for (int i = 1; i <= mesasSheet.getLastRowNum(); i++) {
+                for (int i = ONE; i <= mesasSheet.getLastRowNum(); i++) {
                     Row row = mesasSheet.getRow(i);
                     if (row != null) {
-                        Cell idCell = row.getCell(0); // Suponemos que el ID está en la columna A (índice 0)
+                        Cell idCell = row.getCell(ZERO); // Suponemos que el ID está en la columna A (índice 0)
                         if (idCell != null && idCell.getCellType() == CellType.STRING) {
                             String mesaID = idCell.getStringCellValue();
                             if (mesaID.startsWith("Mesa ")) {
-                                int idNumero = Integer.parseInt(mesaID.split(" ")[1]);
-                                if (idNumero > 15) {
+                                int idNumero = Integer.parseInt(mesaID.split(" ")[ONE]);
+                                if (idNumero > FIFTEEN) {
                                     // Suponemos que el estado de la mesa se encuentra en la columna B (índice 1)
-                                    Cell estadoCell = row.getCell(1);
+                                    Cell estadoCell = row.getCell(ONE);
                                     if (estadoCell != null && estadoCell.getCellType() == CellType.STRING) {
                                         String estado = estadoCell.getStringCellValue();
                                         if ("ocupada".equalsIgnoreCase(estado.trim())) {
@@ -813,21 +834,21 @@ public class ExcelUserManager {
                 }
 
                 // Si no se encontró ninguna mesa ocupada, proceder a eliminar las mesas con ID mayor a 15.
-                for (int i = mesasSheet.getLastRowNum(); i >= 1; i--) { // Iteramos desde la última fila hacia arriba
+                for (int i = mesasSheet.getLastRowNum(); i >= ONE; i--) { // Iteramos desde la última fila hacia arriba
                     Row row = mesasSheet.getRow(i);
                     if (row != null) {
-                        Cell idCell = row.getCell(0); // Suponemos que el ID de la mesa está en la columna A (índice 0)
+                        Cell idCell = row.getCell(ZERO); // Suponemos que el ID de la mesa está en la columna A (índice 0)
                         if (idCell != null && idCell.getCellType() == CellType.STRING) {
                             String mesaID = idCell.getStringCellValue();
                             if (mesaID.startsWith("Mesa ")) {
-                                int idNumero = Integer.parseInt(mesaID.split(" ")[1]);
-                                if (idNumero > 15) {
+                                int idNumero = Integer.parseInt(mesaID.split(" ")[ONE]);
+                                if (idNumero > FIFTEEN) {
                                     mesasSheet.removeRow(row); // Eliminar la fila de la mesa
                                     // Desplazar el resto de filas hacia arriba para llenar el vacío
-                                    for (int j = i + 1; j <= mesasSheet.getLastRowNum(); j++) {
+                                    for (int j = i + ONE; j <= mesasSheet.getLastRowNum(); j++) {
                                         Row nextRow = mesasSheet.getRow(j);
                                         if (nextRow != null) {
-                                            mesasSheet.shiftRows(j, j + 1, -1);
+                                            mesasSheet.shiftRows(j, j + ONE, -ONE);
                                         }
                                     }
                                 }
@@ -841,14 +862,18 @@ public class ExcelUserManager {
                     workbook.write(fos);
                 }
             } else {
-                JOptionPane.showMessageDialog(null, "La hoja de mesas no se encontró.", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "La hoja de mesas no se encontró.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al abrir el archivo Excel: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al abrir el archivo Excel: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            logger.error("Error inesperado: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Método para obtener todas las facturas desde la hoja de "compras"
+    //  para obtener todas las facturas desde la hoja de "compras"
     public static List<Factura> getFacturas() {
         List<Factura> facturas = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
@@ -856,14 +881,14 @@ public class ExcelUserManager {
 
             Sheet ventasSheet = workbook.getSheet("Ventas");
             if (ventasSheet != null) {
-                for (int i = 1; i <= ventasSheet.getLastRowNum(); i++) {
+                for (int i = ONE; i <= ventasSheet.getLastRowNum(); i++) {
                     Row row = ventasSheet.getRow(i);
                     if (row != null) {
-                        String id = row.getCell(0).getStringCellValue();
-                        String productos = row.getCell(1).getStringCellValue();
-                        double total = row.getCell(2).getNumericCellValue();
-                        String fechaHora = row.getCell(3).getStringCellValue();
-                        String formaPago = row.getCell(4).getStringCellValue();
+                        String id = row.getCell(ZERO).getStringCellValue();
+                        String productos = row.getCell(ONE).getStringCellValue();
+                        double total = row.getCell(TWO).getNumericCellValue();
+                        String fechaHora = row.getCell(THREE).getStringCellValue();
+                        String formaPago = row.getCell(FOUR).getStringCellValue();
 
                         Factura factura = new Factura(id, productos, total, fechaHora, formaPago);
                         facturas.add(factura);
@@ -871,7 +896,11 @@ public class ExcelUserManager {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al abrir el archivo Excel: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al abrir el archivo Excel: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            logger.error("Error inesperado: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
         return facturas;
     }
@@ -882,8 +911,8 @@ public class ExcelUserManager {
     public static LocalDate getFechaTurnoActivo() {
         LocalTime ahora = LocalTime.now();
         LocalDate hoy = LocalDate.now();
-        if (ahora.isAfter(LocalTime.MIDNIGHT) && ahora.isBefore(LocalTime.of(6, 0))) {
-            return hoy.minusDays(1); // entre 00:00 y 06:00, aún es el turno de ayer
+        if (ahora.isAfter(LocalTime.MIDNIGHT) && ahora.isBefore(LocalTime.of(SIX, ZERO))) {
+            return hoy.minusDays(ONE); // entre 00:00 y 06:00, aún es el turno de ayer
         }
 
         return hoy;
@@ -896,15 +925,15 @@ public class ExcelUserManager {
 
             Sheet sheet = workbook.getSheet(EMPLOYEES_SHEET_NAME);
             if (sheet != null) {
-                for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                for (int i = ONE; i <= sheet.getLastRowNum(); i++) {
                     Row row = sheet.getRow(i);
                     if (row != null) {
-                        Cell cell = row.getCell(2);
+                        Cell cell = row.getCell(TWO);
                         if (cell != null && cell.getCellType() == CellType.STRING) {
                             String fechaRegistro = cell.getStringCellValue();
                             LocalDate fecha = LocalDate.parse(fechaRegistro, DATE_FORMATTER);
                             if (fecha.isEqual(fechaTurno) ||
-                                    (LocalTime.now().isBefore(LocalTime.of(6, 0)) && fecha.isEqual(fechaTurno.plusDays(1)))) {
+                                    (LocalTime.now().isBefore(LocalTime.of(SIX, ZERO)) && fecha.isEqual(fechaTurno.plusDays(1)))) {
                                 return true;
                             }
                         }
@@ -912,7 +941,9 @@ public class ExcelUserManager {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al abrir el archivo Excel: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error inesperado: {}", e.getMessage());
         }
         return false;
     }
@@ -930,25 +961,29 @@ public class ExcelUserManager {
             if (empleadosSheet == null) {
                 empleadosSheet = workbook.createSheet(EMPLOYEES_SHEET_NAME);
                 // Crear fila de encabezado
-                Row empleadosHeader = empleadosSheet.createRow(0);
-                empleadosHeader.createCell(0).setCellValue("Nombre Empleado");
-                empleadosHeader.createCell(1).setCellValue("Hora Inicio");
-                empleadosHeader.createCell(2).setCellValue("Fecha Inicio");
+                Row empleadosHeader = empleadosSheet.createRow(ZERO);
+                empleadosHeader.createCell(ZERO).setCellValue("Nombre Empleado");
+                empleadosHeader.createCell(ONE).setCellValue("Hora Inicio");
+                empleadosHeader.createCell(TWO).setCellValue("Fecha Inicio");
             }
 
             // Agregar la nueva entrada
-            int lastRow = empleadosSheet.getLastRowNum() + 1;
+            int lastRow = empleadosSheet.getLastRowNum() + ONE;
             Row row = empleadosSheet.createRow(lastRow);
-            row.createCell(0).setCellValue(nombreUsuario);
-            row.createCell(1).setCellValue(horaInicio);
-            row.createCell(2).setCellValue(fechaInicio);
+            row.createCell(ZERO).setCellValue(nombreUsuario);
+            row.createCell(ONE).setCellValue(horaInicio);
+            row.createCell(TWO).setCellValue(fechaInicio);
 
             // Guardar cambios en el archivo
             try (FileOutputStream fos = new FileOutputStream(FILE_PATH)) {
                 workbook.write(fos);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al registrar el día: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al registrar el día: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            logger.error("Error inesperado: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -960,10 +995,10 @@ public class ExcelUserManager {
             Sheet empleadosSheet = workbook.getSheet(employeesheet);
             if (empleadosSheet == null) return "No hay empleados registrados";
 
-            for (int i = empleadosSheet.getLastRowNum(); i >= 0; i--) {
+            for (int i = empleadosSheet.getLastRowNum(); i >= ZERO; i--) {
                 Row row = empleadosSheet.getRow(i);
                 if (row != null) {
-                    Cell cell = row.getCell(0); // Columna A
+                    Cell cell = row.getCell(ZERO); // Columna A
                     if (cell != null && cell.getCellType() == CellType.STRING) {
                         String nombre = cell.getStringCellValue().trim();
                         if (!nombre.isEmpty()) {
@@ -973,7 +1008,7 @@ public class ExcelUserManager {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al abrir el archivo Excel: {}", e.getMessage());
         }
         return "No se encontró un nombre de empleado";
     }

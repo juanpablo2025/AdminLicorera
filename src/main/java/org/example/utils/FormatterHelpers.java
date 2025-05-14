@@ -3,9 +3,11 @@ package org.example.utils;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import static org.example.ui.uiadmin.MainAdminUi.obtenerTRM;
+import static org.example.ui.uiadmin.UIMainAdmin.obtenerTRM;
 
 public class FormatterHelpers {
+
+    private FormatterHelpers() {}
 
     public static String formatearMoneda(double valor) {
 
@@ -14,11 +16,11 @@ public class FormatterHelpers {
         return formatCOP.format(valor);
     }
 
-    public class ConfiguracionGlobal {
+    public static class ConfigurationGlobal {
 
         public static final double TRM = obtenerTRM();
 
-        private ConfiguracionGlobal() {}
+        private ConfigurationGlobal() {}
 
     }
 }

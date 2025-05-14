@@ -5,11 +5,18 @@ import org.example.manager.adminmanager.ConfigAdminManager;
 import org.example.manager.usermanager.ExcelUserManager;
 import org.example.manager.usermanager.ProductoUserManager;
 import org.example.model.Producto;
+import org.example.ui.UIHelpers;
 import org.example.utils.FormatterHelpers;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.swing.*;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.awt.Color;
 import java.awt.Font;
@@ -17,30 +24,238 @@ import java.awt.event.*;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.example.manager.usermanager.ExcelUserManager.actualizarCantidadStockExcel;
+import static org.example.manager.usermanager.ExcelUserManager.cargarProductosMesaDesdeExcel;
 import static org.example.manager.usermanager.FacturacionUserManager.generarFacturadeCompra;
+import static org.example.ui.UIHelpers.*;
 import static org.example.ui.uiuser.UIUserMain.mainUser;
 import static org.example.utils.Constants.*;
 
-import static org.example.utils.FormatterHelpers.ConfiguracionGlobal.TRM;
+import static org.example.utils.FormatterHelpers.ConfigurationGlobal.TRM;
 
-public class UIUserVenta {
+public class UIUserVenta extends Panel {
 
-    private UIUserVenta() {}
+    private static final ProductoUserManager productoUserManager = new ProductoUserManager();
 
-    private static ProductoUserManager productoUserManager = new ProductoUserManager();
+    private static final Logger logger =  LoggerFactory.getLogger(UIUserVenta.class);
+
+    public UIUserVenta(List<String[]> productos, String mesaID, JPanel mainPanel, JFrame frame) {
+        AtomicReference<Double> sumaTotal = new AtomicReference<>(0.0);
+
+        setLayout(new BorderLayout());
+        setPreferredSize(new Dimension(1366, 720));
+
+        JLabel titleLabel = createTitleLabel(mesaID);
+        JTable table = createConfiguredTable();
+        DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
+
+        loadProductsToTable(productos, tableModel, sumaTotal);
+        JTextField totalField = createTotalField(sumaTotal.get());
+        JPanel totalPanel = createTotalPanel();
+        totalPanel.add(totalField, BorderLayout.CENTER);
+
+        setupTableListener(tableModel, totalField);
+
+        JScrollPane tableScrollPane = new JScrollPane(table);
+        JPanel inputPanel = UIHelpers.createInputPanel(table);
+
+        add(titleLabel, BorderLayout.NORTH);
+        add(tableScrollPane, BorderLayout.CENTER);
+        add(inputPanel, BorderLayout.EAST);
+
+        JPanel buttonPanel = createButtonPanel(table, (JDialog) compraDialog, mesaID, mainPanel, frame);
+
+        JPanel southPanel = new JPanel(new BorderLayout());
+        southPanel.add(totalPanel, BorderLayout.NORTH);
+        southPanel.add(buttonPanel, BorderLayout.SOUTH);
+        add(southPanel, BorderLayout.SOUTH);
+    }
+
+    private JLabel createTitleLabel(String mesaID) {
+        JLabel titleLabel = new JLabel("Venta " + mesaID, SwingConstants.CENTER);
+        titleLabel.setForeground(new Color(28, 28, 28));
+        titleLabel.setOpaque(true);
+        titleLabel.setBackground(FONDO_PRINCIPAL);
+        try (InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream(LOBSTER_FONT)) {
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 50);
+            titleLabel.setFont(customFont);
+        } catch (Exception e) {
+            e.fillInStackTrace();
+        }
+        return titleLabel;
+    }
+
+    private JTable createConfiguredTable() {
+        JTable table = createProductTable();
+        table.getColumnModel().getColumn(TWO).setCellRenderer(new UIHelpers.CurrencyRenderer());
+
+        Font font = new Font(ARIAL_FONT, Font.PLAIN, 18);
+        table.setFont(font);
+        table.setRowHeight(30);
+
+        JTableHeader header = table.getTableHeader();
+        header.setFont(new Font(ARIAL_FONT, Font.BOLD, 20));
+        header.setBackground(new Color(28, 28, 28));
+        header.setForeground(new Color(201, 41, 41));
+
+        table.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        table.setBackground(FONDO_PRINCIPAL);
+        table.setSelectionBackground(new Color(173, 216, 255));
+        table.setSelectionForeground(Color.BLACK);
+
+        return table;
+    }
+
+    private void loadProductsToTable(List<String[]> productos, DefaultTableModel tableModel, AtomicReference<Double> sumaTotal) {
+        tableModel.setRowCount(ZERO);
+        for (String[] productoDetalles : productos) {
+            try {
+                String nombreProducto = productoDetalles[ZERO].trim();
+                int cantidad = Integer.parseInt(productoDetalles[ONE].substring(ONE).trim());
+                double precioUnitario = Double.parseDouble(productoDetalles[TWO].substring(ONE).trim());
+                double total = cantidad * precioUnitario;
+
+                tableModel.addRow(new Object[]{nombreProducto, cantidad, FormatterHelpers.formatearMoneda(precioUnitario), total});
+                sumaTotal.updateAndGet(v -> v + total);
+            } catch (NumberFormatException ex) {
+                logger.error("Error al cargar el producto: {}", Arrays.toString(productoDetalles), ex);
+            }
+        }
+    }
+
+    private JTextField createTotalField(double total) {
+        JTextField totalField = new JTextField(TOTAL_PRICE + FormatterHelpers.formatearMoneda(total) + PESOS);
+        totalField.setFont(new Font(ARIAL_FONT, Font.BOLD, 26));
+        totalField.setForeground(Color.RED);
+        totalField.setEditable(false);
+        totalField.setHorizontalAlignment(SwingConstants.CENTER);
+        totalField.setBorder(BorderFactory.createEmptyBorder(TEN, TEN, TEN, TEN));
+        totalField.setVisible(total > ZERO);
+        totalField.setBackground(FONDO_PRINCIPAL);
+
+        try (InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream(LOBSTER_FONT)) {
+            if (fontStream == null) throw new IOException("No se encontró la fuente");
+            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 26);
+            totalField.setFont(customFont);
+        } catch (Exception e) {
+            logger.error("Error al cargar la fuente", e);
+        }
+
+        return totalField;
+    }
+
+    private void setupTableListener(DefaultTableModel tableModel, JTextField totalField) {
+        tableModel.addTableModelListener(new TableModelListener() {
+            private boolean updatingTable = false;
+
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                if (updatingTable) return;
+
+                updatingTable = true;
+                try {
+                    double nuevoTotalGeneral = ZERO;
+                    for (int i = ZERO; i < tableModel.getRowCount(); i++) {
+                        String nombreProducto = (String) tableModel.getValueAt(i, ZERO);
+                        int cantidad = (int) tableModel.getValueAt(i, ONE);
+                        Producto producto = ProductoUserManager.getProductByName(nombreProducto);
+
+                        double precioUnitario = producto != null ? producto.getPrice() : 0.0;
+                        double subtotal = cantidad * precioUnitario;
+                        tableModel.setValueAt(subtotal, i, THREE);
+                        nuevoTotalGeneral += subtotal;
+                    }
+
+                    totalField.setText(TOTAL_PRICE + FormatterHelpers.formatearMoneda(nuevoTotalGeneral) + PESOS);
+                    totalField.setVisible(nuevoTotalGeneral > ZERO);
+                } finally {
+                    updatingTable = false;
+                }
+            }
+        });
+    }
+
+
+    private JPanel createButtonPanel(JTable table, JDialog compraDialog, String mesaID, JPanel mainPanel,JFrame frame) {
+        JPanel buttonPanel = new JPanel(new BorderLayout());
+        JPanel topButtonsPanel = new JPanel(new GridLayout(ONE, TWO, ONE, TEN)); // 1 fila, 2 columnas, separación de 20px
+        JButton guardarCompra = createSavePurchaseMesaButton( mesaID, table);
+        guardarCompra.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+
+        JButton confirmarCompraButton = createConfirmPurchaseMesaButton(compraDialog, mesaID, table,frame);
+        confirmarCompraButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+
+        List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
+        boolean productosEnExcel = !productosPrevios.isEmpty();
+        confirmarCompraButton.setEnabled(productosEnExcel || table.getRowCount() > ZERO);
+
+        table.getModel().addTableModelListener(e -> confirmarCompraButton.setEnabled(productosEnExcel || table.getRowCount() > 0));
+
+        guardarCompra.setPreferredSize(new Dimension(ZERO, 50)); // Altura fija, ancho automático
+        confirmarCompraButton.setPreferredSize(new Dimension(ZERO, 50));
+
+        topButtonsPanel.add(guardarCompra);
+        topButtonsPanel.add(confirmarCompraButton);
+
+        buttonPanel.add(topButtonsPanel, BorderLayout.CENTER);
+
+        // 📌 Botón "Volver"
+        JButton closeButton = getCloseButton(mainPanel);
+
+        // 🔹 Panel para centrar el botón "Volver"
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        bottomPanel.add(closeButton);
+
+        buttonPanel.add(bottomPanel, BorderLayout.SOUTH);
+        bottomPanel.setBackground(FONDO_PRINCIPAL);
+        return buttonPanel;
+    }
+
+    private static JButton getCloseButton(JPanel mainPanel) {
+        JButton closeButton = new JButton("Volver") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(Color.BLACK);
+                g2.fillRoundRect(TWO, FOUR, getWidth() - FOUR, getHeight() - FOUR, 40, 40);
+                g2.setColor(getModel().isPressed() ? new Color(255, 193, SEVEN) : new Color(228, 185, 42));
+                g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), 40, 40);
+                super.paintComponent(g);
+            }
+        };
+
+        closeButton.setPreferredSize(new Dimension(150, 40));
+        closeButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        closeButton.setForeground(Color.WHITE);
+        closeButton.setBackground(FONDO_PRINCIPAL);
+        closeButton.setFocusPainted(false);
+        closeButton.setContentAreaFilled(false);
+        closeButton.setBorderPainted(false);
+        closeButton.setOpaque(false);
+
+        closeButton.addActionListener(e -> {
+            CardLayout cl = (CardLayout) mainPanel.getLayout();
+            cl.show(mainPanel, MESAS); // Vuelve a la vista de mesas
+        });
+        return closeButton;
+    }
+
 
     private static Map<String, Integer> actualizarProductosDesdeTabla(JTable productosTable) {
         Map<String, Integer> productosActualizados = new HashMap<>();
         DefaultTableModel tableModel = (DefaultTableModel) productosTable.getModel();
 
-        for (int i = 0; i < tableModel.getRowCount(); i++) {
-            String nombreProducto = (String) tableModel.getValueAt(i, 0);
-            int cantidad = (int) tableModel.getValueAt(i, 1);
+        for (int i = ZERO; i < tableModel.getRowCount(); i++) {
+            String nombreProducto = (String) tableModel.getValueAt(i, ZERO);
+            int cantidad = (int) tableModel.getValueAt(i, ONE);
             productosActualizados.put(nombreProducto, cantidad);
         }
 
@@ -58,14 +273,14 @@ public class UIUserVenta {
         confirmarCompraButton.setFocusPainted(false);
         confirmarCompraButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         confirmarCompraButton.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
-                BorderFactory.createEmptyBorder(10, 20, 10, 20)
+                BorderFactory.createLineBorder(Color.DARK_GRAY, TWO),
+                BorderFactory.createEmptyBorder(TEN, 20, TEN, 20)
         ));
         // Efecto hover: cambiar color al pasar el mouse
         confirmarCompraButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                confirmarCompraButton.setBackground(new Color(0, 201, 87)); // Cambia a color más oscuro
+                confirmarCompraButton.setBackground(new Color(ZERO, 201, 87)); // Cambia a color más oscuro
             }
 
             @Override
@@ -80,8 +295,8 @@ public class UIUserVenta {
                 // 🔄 Obtener los productos actualizados desde la tabla antes de confirmar la compra
                 Map<String, Integer> productosComprados = actualizarProductosDesdeTabla(productosTable);
                 
-                double total = 0;
-                String ventaID = String.valueOf(System.currentTimeMillis() % 1000) + " " + mesaID;
+                double total = ZERO;
+                String ventaID = System.currentTimeMillis() % 1000 + " " + mesaID;
                 LocalDateTime dateTime = LocalDateTime.now();
                 StringBuilder listaProductosEnLinea = new StringBuilder();
 
@@ -129,23 +344,23 @@ public class UIUserVenta {
 
                     Sheet mesasSheet = workbook.getSheet(MESAS);
                     if (mesasSheet != null) {
-                        for (int i = 1; i <= mesasSheet.getLastRowNum(); i++) {
+                        for (int i = ONE; i <= mesasSheet.getLastRowNum(); i++) {
                             Row row = mesasSheet.getRow(i);
                             if (row != null) {
-                                Cell idCell = row.getCell(0);
+                                Cell idCell = row.getCell(ZERO);
                                 if (idCell != null && idCell.getStringCellValue().equalsIgnoreCase(mesaID)) {
-                                    Cell estadoCell = row.getCell(1);
+                                    Cell estadoCell = row.getCell(ONE);
                                     if (estadoCell == null) {
-                                        estadoCell = row.createCell(1);
+                                        estadoCell = row.createCell(ONE);
                                     }
                                     estadoCell.setCellValue("Libre");
 
-                                    Cell productosCell = row.getCell(2);
+                                    Cell productosCell = row.getCell(TWO);
                                     if (productosCell != null) {
                                         productosCell.setCellValue("");
                                     }
 
-                                    Cell totalCell = row.getCell(3);
+                                    Cell totalCell = row.getCell(THREE);
                                     if (totalCell != null) {
                                         totalCell.setCellValue(0.0);
                                     }
@@ -159,10 +374,10 @@ public class UIUserVenta {
                         }
                     }
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    logger.error("Error al guardar la compra en Excel", ex);
                 }
 
-                // Mostramos el dialogo de confirmación
+                // Mostramos el diálogo de confirmación
                 int respuesta = JOptionPane.showConfirmDialog(null, PRINT_BILL, COMFIRM_TITLE, JOptionPane.YES_NO_OPTION);
                 if (respuesta == JOptionPane.YES_OPTION) {
                     // Corregimos aquí, enviamos la lista completa y no solo un String.
@@ -224,8 +439,8 @@ public class UIUserVenta {
         saveCompraButton.setFocusPainted(false);
         saveCompraButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         saveCompraButton.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
-                BorderFactory.createEmptyBorder(10, 20, 10, 20)
+                BorderFactory.createLineBorder(Color.DARK_GRAY, TWO),
+                BorderFactory.createEmptyBorder(TEN, 20, TEN, 20)
         ));
 
         // Efecto hover: cambiar ligeramente el color al pasar el mouse
@@ -247,7 +462,7 @@ public class UIUserVenta {
                 int rowCount = tableModel.getRowCount();
 
                 // Verificar si la tabla está vacía
-                if (rowCount == 0) {
+                if (rowCount == ZERO) {
                     limpiarMesaEnExcel(mesaID);  // Limpia la mesa en Excel si no hay productos
                     ProductoUserManager.limpiarCarrito();  // Limpia el carrito de esta mesa
                     JOptionPane.showMessageDialog(null, "La mesa " + mesaID + " ha sido limpiada.");
@@ -264,9 +479,9 @@ public class UIUserVenta {
 
                 // Map para almacenar los productos comprados para esta mesa
                 Map<String, Integer> productosComprados = new HashMap<>();
-                for (int i = 0; i < rowCount; i++) {
-                    String nombreProducto = (String) tableModel.getValueAt(i, 0); // Columna 0: nombre del producto
-                    int cantidad = (int) tableModel.getValueAt(i, 1); // Columna 1: cantidad del producto
+                for (int i = ZERO; i < rowCount; i++) {
+                    String nombreProducto = (String) tableModel.getValueAt(i, ZERO); // Columna 0: nombre del producto
+                    int cantidad = (int) tableModel.getValueAt(i, ONE); // Columna 1: cantidad del producto
                     productosComprados.put(nombreProducto, cantidad);
                 }
 
@@ -280,24 +495,24 @@ public class UIUserVenta {
                     Sheet mesasSheet = workbook.getSheet("mesas");
                     if (mesasSheet != null) {
                         boolean mesaEncontrada = false;
-                        for (int i = 1; i <= mesasSheet.getLastRowNum(); i++) {
+                        for (int i = ONE; i <= mesasSheet.getLastRowNum(); i++) {
                             Row row = mesasSheet.getRow(i);
                             if (row != null) {
-                                Cell idCell = row.getCell(0);
+                                Cell idCell = row.getCell(ZERO);
                                 if (idCell != null && idCell.getStringCellValue().trim().equalsIgnoreCase(mesaID.trim())) {
                                     mesaEncontrada = true;
 
                                     // Cambiar el estado de la mesa a "Ocupada"
-                                    Cell estadoCell = row.getCell(1);
+                                    Cell estadoCell = row.getCell(ONE);
                                     if (estadoCell == null) {
-                                        estadoCell = row.createCell(1);
+                                        estadoCell = row.createCell(ONE);
                                     }
                                     estadoCell.setCellValue("Ocupada");
 
                                     // Almacenar productos comprados
-                                    Cell productosCell = row.getCell(2);
+                                    Cell productosCell = row.getCell(TWO);
                                     if (productosCell == null) {
-                                        productosCell = row.createCell(2);
+                                        productosCell = row.createCell(TWO);
                                     }
 
                                     StringBuilder listaProductos = new StringBuilder();
@@ -321,9 +536,9 @@ public class UIUserVenta {
                                     productosCell.setCellValue(listaProductos.toString());
 
                                     // Poner el total en la columna de Total
-                                    Cell totalCell = row.getCell(3);
+                                    Cell totalCell = row.getCell(THREE);
                                     if (totalCell == null) {
-                                        totalCell = row.createCell(3);
+                                        totalCell = row.createCell(THREE);
                                     }
                                     totalCell.setCellValue(total);
 
@@ -337,13 +552,12 @@ public class UIUserVenta {
                             return;
                         }
 
-
                         // Guardar los cambios en el archivo Excel
                         guardarCambiosWorkbook(workbook);
 
                         // Mostrar mensaje de confirmación
                         JOptionPane.showMessageDialog(null, "Compra guardada para la mesa: " + mesaID + ".");
-                        tableModel.setRowCount(0); // Limpiar la tabla
+                        tableModel.setRowCount(ZERO); // Limpiar la tabla
                         ProductoUserManager.limpiarCarrito();// Limpia el carrito de la mesa después de guardar la compra
 
                         SwingUtilities.invokeLater(() -> {
@@ -359,7 +573,8 @@ public class UIUserVenta {
                     }
 
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    logger.error("Error al guardar la compra en Excel", ex);
+                    JOptionPane.showMessageDialog(null, "Error al guardar la compra.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
                 }
 
             } catch (NumberFormatException ex) {
@@ -387,7 +602,7 @@ public class UIUserVenta {
         JTextField telefonoField = new JTextField("3001234567");
         JTextField correoField = new JTextField(25);
 
-        JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
+        JPanel panel = new JPanel(new GridLayout(ZERO, TWO, FIVE, FIVE));
         panel.add(new JLabel("Nombre:"));
         panel.add(nombreField);
         panel.add(new JLabel("Apellido:"));
@@ -411,7 +626,7 @@ public class UIUserVenta {
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
-            JSONObject customer = new JSONObject()
+            return new JSONObject()
                     .put("person_type", "Person")
                     .put("id_type", "13")
                     .put("identification", identificacionField.getText().trim())
@@ -435,40 +650,39 @@ public class UIUserVenta {
                                     .put("email", correoField.getText().trim())
                             )
                     );
-            return customer;
         } else {
             return null;
         }
     }
 
-    // Método auxiliar para limpiar la mesa en el archivo Excel cuando no hay productos
+    //  auxiliar para limpiar la mesa en el archivo Excel cuando no hay productos
     private static void limpiarMesaEnExcel(String mesaID) {
         try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
             Sheet mesasSheet = workbook.getSheet("mesas");
             if (mesasSheet != null) {
-                for (int i = 1; i <= mesasSheet.getLastRowNum(); i++) {
+                for (int i = ONE; i <= mesasSheet.getLastRowNum(); i++) {
                     Row row = mesasSheet.getRow(i);
                     if (row != null) {
-                        Cell idCell = row.getCell(0);
+                        Cell idCell = row.getCell(ZERO);
                         if (idCell != null && idCell.getStringCellValue().equalsIgnoreCase(mesaID)) {
 
-                            Cell estadoCell = row.getCell(1);
+                            Cell estadoCell = row.getCell(ONE);
                             if (estadoCell == null) {
-                                estadoCell = row.createCell(1);
+                                estadoCell = row.createCell(ONE);
                             }
                             estadoCell.setCellValue("Libre");
 
-                            Cell productosCell = row.getCell(2);
+                            Cell productosCell = row.getCell(TWO);
                             if (productosCell == null) {
-                                productosCell = row.createCell(2);
+                                productosCell = row.createCell(TWO);
                             }
                             productosCell.setCellValue("");
 
-                            Cell totalCell = row.getCell(3);
+                            Cell totalCell = row.getCell(THREE);
                             if (totalCell == null) {
-                                totalCell = row.createCell(3);
+                                totalCell = row.createCell(THREE);
                             }
                             totalCell.setCellValue(0.0);
 
@@ -486,12 +700,13 @@ public class UIUserVenta {
             }
 
         } catch (IOException ex) {
-            ex.printStackTrace();
+            logger.error("Error al limpiar la mesa en Excel", ex);
+            JOptionPane.showMessageDialog(null, "Error al limpiar la mesa.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private static String paySelection(JDialog compraDialog, double total,JFrame frame) {
-        // Selección de método de pago
+        // Selección de modo de pago
         // Crear íconos redimensionados para los métodos de pago
         ImageIcon iconoBancolombia = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/bancolombia.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
         ImageIcon iconoNequi = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/nequi.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
@@ -504,16 +719,16 @@ public class UIUserVenta {
         dialogoPago.setSize(1300, 400);
         dialogoPago.setLayout(new BorderLayout(20, 20));
         dialogoPago.setResizable(false);
-        Double totalDolar = total/TRM;
-        JLabel totalLabel = getJLabel(total, totalDolar);
+        double totalDollar = total/TRM;
+        JLabel totalLabel = getJLabel(total, totalDollar);
 
         // Crear panel para el menú de pago
         JPanel panelPago = new JPanel();
-        panelPago.setLayout(new GridLayout(2, 3, 20, 20));
-        panelPago.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 20));
+        panelPago.setLayout(new GridLayout(TWO, THREE, 20, 20));
+        panelPago.setBorder(BorderFactory.createEmptyBorder(TEN, 20, 20, 20));
         panelPago.setBackground(Color.WHITE);
 
-        // Crear botones de método de pago
+        // Crear botones de modo de pago
         JButton botonEfectivo = new JButton(EFECTIVO, iconoEfectivo);
         JButton botonBancolombia = new JButton("Bancolombia - Transferencia", iconoBancolombia);
         JButton botonNequi = new JButton("Nequi - Transferencia", iconoNequi);
@@ -528,7 +743,7 @@ public class UIUserVenta {
             btn.setBackground(new Color(245, 245, 245));
             btn.setFocusPainted(false);
             btn.setHorizontalAlignment(SwingConstants.LEFT);
-            btn.setIconTextGap(10);
+            btn.setIconTextGap(TEN);
             panelPago.add(btn);
         }
 
@@ -538,29 +753,29 @@ public class UIUserVenta {
         final String[] tipoPagoSeleccionado = {null};
         final double finalTotal = total;
 
-        configurarBotonConQR(dialogoPago, botonBancolombia, finalTotal, totalDolar, () -> {
-            tipoPagoSeleccionado[0] = "Bancolombia - Transferencia";
+        configurarBotonConQR(dialogoPago, botonBancolombia, finalTotal, totalDollar, () -> {
+            tipoPagoSeleccionado[ZERO] = "Bancolombia - Transferencia";
             dialogoPago.dispose();
         });
 
-        configurarBotonConQR(dialogoPago, botonNequi, finalTotal, totalDolar, () -> {
-            tipoPagoSeleccionado[0] = "Nequi - Transferencia";
+        configurarBotonConQR(dialogoPago, botonNequi, finalTotal, totalDollar, () -> {
+            tipoPagoSeleccionado[ZERO] = "Nequi - Transferencia";
             dialogoPago.dispose();
         });
 
-        configurarBotonConQR(dialogoPago, botonDaviplata, finalTotal, totalDolar, () -> {
-            tipoPagoSeleccionado[0] = "Daviplata - Transferencia";
+        configurarBotonConQR(dialogoPago, botonDaviplata, finalTotal, totalDollar, () -> {
+            tipoPagoSeleccionado[ZERO] = "Daviplata - Transferencia";
             dialogoPago.dispose();
         });
 
-        configurarBotonConQR(dialogoPago, botonPaypal, finalTotal, totalDolar, () -> {
-                tipoPagoSeleccionado[0] = "Paypal - Transferencia";
+        configurarBotonConQR(dialogoPago, botonPaypal, finalTotal, totalDollar, () -> {
+                tipoPagoSeleccionado[ZERO] = "Paypal - Transferencia";
                 dialogoPago.dispose();
         });
 
         botonEfectivo.addActionListener(event -> {
 
-            JTextField inputField = new JTextField(12);
+            JTextField inputField = new JTextField(TWELVE);
             inputField.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
 
             JLabel title = new JLabel("Ingrese el dinero recibido:");
@@ -579,7 +794,7 @@ public class UIUserVenta {
 
             JButton continuarBtn = new JButton("Continuar");
             continuarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-            continuarBtn.setBackground(new Color(0, 153, 0));
+            continuarBtn.setBackground(new Color(ZERO, 153, ZERO));
             continuarBtn.setForeground(Color.WHITE);
             continuarBtn.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
             continuarBtn.setFocusPainted(false);
@@ -612,7 +827,7 @@ public class UIUserVenta {
                 String input = inputField.getText().trim();
                 dialog.dispose();
                 if (input.isEmpty()) {
-                    tipoPagoSeleccionado[0] = EFECTIVO;
+                    tipoPagoSeleccionado[ZERO] = EFECTIVO;
                     dialogoPago.dispose();
                     return;
                 }
@@ -648,7 +863,7 @@ public class UIUserVenta {
                             JOptionPane.INFORMATION_MESSAGE,
                             null,
                             options,
-                            options[0]
+                            options[ZERO]
                     );
 
                     if (option == JOptionPane.YES_OPTION) {
@@ -658,7 +873,7 @@ public class UIUserVenta {
 
                     // En ambos casos se cierra el diálogo
                     dialog.dispose();
-                    tipoPagoSeleccionado[0] = EFECTIVO;
+                    tipoPagoSeleccionado[ZERO] = EFECTIVO;
                     dialogoPago.dispose();
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(compraDialog,
@@ -671,7 +886,7 @@ public class UIUserVenta {
 
             // Acción del botón "Omitir"
             omitirBtn.addActionListener(es -> {
-                tipoPagoSeleccionado[0] = EFECTIVO;
+                tipoPagoSeleccionado[ZERO] = EFECTIVO;
                 dialogoPago.dispose();
                 dialog.dispose();
             });
@@ -697,11 +912,11 @@ public class UIUserVenta {
             JLabel montoLabel = new JLabel(TOTAL_PRICE + FormatterHelpers.formatearMoneda(finalTotal) + PESOS);
 
             montoLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
-            montoLabel.setForeground(new Color(0, 153, 0));
+            montoLabel.setForeground(new Color(ZERO, 153, ZERO));
             montoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            JLabel montoLabel2 = new JLabel(FormatterHelpers.formatearMoneda(totalDolar) + " USD");
+            JLabel montoLabel2 = new JLabel(FormatterHelpers.formatearMoneda(totalDollar) + " USD");
             montoLabel2.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
-            montoLabel2.setForeground(new Color(0, 0, 128));
+            montoLabel2.setForeground(new Color(ZERO, ZERO, 128));
             montoLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             // Instrucción
@@ -713,7 +928,7 @@ public class UIUserVenta {
 
             // Botón continuar
             JButton continuarBtn = new JButton("Continuar");
-            continuarBtn.setBackground(new Color(0, 153, 0));
+            continuarBtn.setBackground(new Color(ZERO, 153, ZERO));
             continuarBtn.setForeground(Color.WHITE);
             continuarBtn.setFont(new Font(ARIAL_FONT, Font.BOLD, 18));
             continuarBtn.setFocusPainted(false);
@@ -761,7 +976,7 @@ public class UIUserVenta {
         dialogoPago.setLocationRelativeTo(compraDialog);
         dialogoPago.setVisible(true);
 
-        if (tipoPagoSeleccionado[0] == null) {
+        if (tipoPagoSeleccionado[ZERO] == null) {
             JOptionPane.showMessageDialog(compraDialog, "No se seleccionó un método de pago.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             return null;
         }
@@ -775,7 +990,7 @@ public class UIUserVenta {
                     }
         }
 
-        return tipoPagoSeleccionado[0];
+        return tipoPagoSeleccionado[ZERO];
     }
 
     private static JLabel getJLabel(double total, Double totalDolar) {
@@ -787,7 +1002,7 @@ public class UIUserVenta {
                 total, totalDolar
         );
         JLabel totalLabel = new JLabel(textoTotal, SwingConstants.CENTER);
-        totalLabel.setBorder(BorderFactory.createEmptyBorder(20, 10, 0, 10));
+        totalLabel.setBorder(BorderFactory.createEmptyBorder(TWELVE, TEN, ZERO, TEN));
         return totalLabel;
     }
 
@@ -800,12 +1015,12 @@ public class UIUserVenta {
 
             JLabel montoLabel = new JLabel(TOTAL_PRICE + FormatterHelpers.formatearMoneda(total) + PESOS);
             montoLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
-            montoLabel.setForeground(new Color(0, 153, 0));
+            montoLabel.setForeground(new Color(ZERO, 153, ZERO));
             montoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             JLabel montoLabel2 = new JLabel(FormatterHelpers.formatearMoneda(totalDolar) + " USD");
             montoLabel2.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
-            montoLabel2.setForeground(new Color(0, 0, 128));
+            montoLabel2.setForeground(new Color(ZERO, ZERO, 128));
             montoLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             JLabel instruccion = new JLabel("<html><div style='text-align:center; color:red;'>"
@@ -815,7 +1030,7 @@ public class UIUserVenta {
             instruccion.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             JButton continuarBtn = new JButton(CONTINUE);
-            continuarBtn.setBackground(new Color(0, 153, 0));
+            continuarBtn.setBackground(new Color(ZERO, 153, ZERO));
             continuarBtn.setForeground(Color.WHITE);
             continuarBtn.setFont(new Font(ARIAL_FONT, Font.BOLD, 18));
             continuarBtn.setFocusPainted(false);

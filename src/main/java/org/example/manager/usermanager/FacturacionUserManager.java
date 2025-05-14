@@ -15,6 +15,9 @@ import org.apache.poi.ss.usermodel.*;
 import org.example.manager.adminmanager.ConfigAdminManager;
 import org.example.model.Factura;
 import org.example.model.Producto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.swing.*;
 import java.io.*;
 import java.net.URI;
@@ -42,11 +45,14 @@ public class FacturacionUserManager {
     private FacturacionUserManager() {
     }
 
-    private static ExcelUserManager excelUserManager = new ExcelUserManager(); // Inicializar directamente
+    private static final ExcelUserManager excelUserManager = new ExcelUserManager();
+
+    private static final Logger logger =  LoggerFactory.getLogger(FacturacionUserManager.class);
 
     public static boolean verificarFacturacion(String input) {
         return "Facturar".equals(input);
     }
+
 
     public static void facturarYSalir() {
         // Verifica si hay ventas registradas antes de continuar
@@ -54,8 +60,8 @@ public class FacturacionUserManager {
 
         if (facturas.isEmpty()) {
             // Si no hay ventas, muestra un mensaje y no termina el día
-            JOptionPane.showMessageDialog(null, "No se pueden cerrar las ventas, ya que no hay ventas registradas.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;  // Salir del método sin proceder
+            JOptionPane.showMessageDialog(null, "No se pueden cerrar las ventas, ya que no hay ventas registradas.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+            return;
         }
         // Si hay ventas, procede con la facturación
         excelUserManager.facturarYLimpiar();
@@ -63,6 +69,7 @@ public class FacturacionUserManager {
         System.exit(ZERO);
 
     }
+
 
     public static void mostrarErrorFacturacion() {
         JOptionPane.showMessageDialog(null, ERROR_MENU, ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
@@ -72,6 +79,7 @@ public class FacturacionUserManager {
         try {
             InputStream fontStream = FacturacionUserManager.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
             // Leer la fuente desde el InputStream
+            assert fontStream != null;
             byte[] fontBytes = fontStream.readAllBytes();
             PdfFont lobsterFont = PdfFontFactory.createFont(fontBytes, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
@@ -97,117 +105,118 @@ public class FacturacionUserManager {
             String nombreArchivo = System.getProperty(FOLDER_PATH) + "\\Calculadora del Administrador\\Facturas\\" + BILL_FILE + ventaID + PDF_FORMAT;
             PdfWriter writer = new PdfWriter(nombreArchivo);
             PdfDocument pdfDoc = new PdfDocument(writer);
-            Document document = new Document(pdfDoc, pageSize);
+            try (Document document = new Document(pdfDoc, pageSize)) {
 
-            PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+                PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
 
-            // Ajustar margen izquierdo a 10mm (1cm)
-            float margenIzquierdo = 10 * HEIGHT_DOTS;
-            document.setMargins(FIVE, FIVE, FIVE, margenIzquierdo);
-            document.add(new Paragraph("Licorera CR")
-                    .setFont(lobsterFont)
-                    .setFontSize(13)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(-2)); // Margen inferior ajustado a 0
+                // Ajustar margen izquierdo a 10mm (1cm)
+                float margenIzquierdo = TEN * HEIGHT_DOTS;
+                document.setMargins(FIVE, FIVE, FIVE, margenIzquierdo);
+                document.add(new Paragraph("Licorera CR")
+                        .setFont(lobsterFont)
+                        .setFontSize(13)
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setMarginBottom(-2)); // Margen inferior ajustado a 0
 
-            document.add(new Paragraph("La 70")
-                    .setFont(lobsterFont)
-                    .setFontSize(10)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginTop(-5)
-                    .setMarginBottom(-2));// Margen inferior ajustado a 0
+                document.add(new Paragraph("La 70")
+                        .setFont(lobsterFont)
+                        .setFontSize(10)
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setMarginTop(-5)
+                        .setMarginBottom(-2));// Margen inferior ajustado a 0
 
-            document.add(new Paragraph(NIT)
-                    .setFont(fontNormal)
-                    .setFontSize(SIX)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(-2)); // Margen inferior ajustado a 0
+                document.add(new Paragraph(NIT)
+                        .setFont(fontNormal)
+                        .setFontSize(SIX)
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setMarginBottom(-2)); // Margen inferior ajustado a 0
 
-            document.add(new Paragraph(DIRECCION)
-                    .setFont(fontNormal)
-                    .setFontSize(SIX)
-                    .setTextAlignment(TextAlignment.CENTER).setMarginBottom(-2)); // Margen inferior ajustado a 0
+                document.add(new Paragraph(DIRECCION)
+                        .setFont(fontNormal)
+                        .setFontSize(SIX)
+                        .setTextAlignment(TextAlignment.CENTER).setMarginBottom(-2)); // Margen inferior ajustado a 0
 
-            document.add(new Paragraph(TELEFONO)
-                    .setFont(fontNormal)
-                    .setFontSize(SIX)
-                    .setTextAlignment(TextAlignment.CENTER).setMarginBottom(-2)); // Margen inferior ajustado a 0
+                document.add(new Paragraph(TELEFONO)
+                        .setFont(fontNormal)
+                        .setFontSize(SIX)
+                        .setTextAlignment(TextAlignment.CENTER).setMarginBottom(-2)); // Margen inferior ajustado a 0
 
-            document.add(new Paragraph(new String(new char[22]).replace(SLASH_ZERO, "_"))
-                    .setFont(fontNormal)
-                    .setFontSize(EIGHT)
-                    .setMarginBottom(FIVE));
+                document.add(new Paragraph(new String(new char[22]).replace(SLASH_ZERO, "_"))
+                        .setFont(fontNormal)
+                        .setFontSize(EIGHT)
+                        .setMarginBottom(FIVE));
 
-            // Detalles de la compra
-            document.add(new Paragraph(BILL_ID +"N°"+ ventaID)
-                    .setFont(fontNormal)
-                    .setFontSize(EIGHT)
-                    .setTextAlignment(TextAlignment.CENTER));
+                // Detalles de la compra
+                document.add(new Paragraph(BILL_ID + "N°" + ventaID)
+                        .setFont(fontNormal)
+                        .setFontSize(EIGHT)
+                        .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(fechaFormateada)
-                    .setFont(fontNormal)
-                    .setFontSize(SIX)
-                    .setMarginBottom(1)
-                    .setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph(fechaFormateada)
+                        .setFont(fontNormal)
+                        .setFontSize(SIX)
+                        .setMarginBottom(1)
+                        .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(tipoPago)
-                    .setFont(fontNormal)
-                    .setFontSize(8)
-                    .setBold()
-                    .setMarginBottom(5)
-                    .setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph(tipoPago)
+                        .setFont(fontNormal)
+                        .setFontSize(8)
+                        .setBold()
+                        .setMarginBottom(5)
+                        .setTextAlignment(TextAlignment.CENTER));
 
-            // Agregar productos con formato de moneda colombiano
-            for (String producto : productos) {
-                // Suponiendo que el formato de cada producto es "nombreProducto xCantidad $precioUnitario"
-                String[] detallesProducto = producto.split(" ");
-                if (detallesProducto.length >= 3) {
-                    // Extraer el nombre del producto y el precio unitario
-                    String nombreProducto = detallesProducto[0];
-                    String cantidadStr = detallesProducto[1]; // Ejemplo: "x2"
-                    String precioStr = detallesProducto[2];   // Ejemplo: "$1000.0"
+                // Agregar productos con formato de moneda colombiano
+                for (String producto : productos) {
+                    // Suponiendo que el formato de cada producto es "nombreProducto xCantidad $precioUnitario"
+                    String[] detallesProducto = producto.split(" ");
+                    if (detallesProducto.length >= 3) {
+                        // Extraer el nombre del producto y el precio unitario
+                        String nombreProducto = detallesProducto[0];
+                        String cantidadStr = detallesProducto[1]; // Ejemplo: "x2"
+                        String precioStr = detallesProducto[2];   // Ejemplo: "$1000.0"
 
-                    // Convertir el precio a double (sin el símbolo "$")
-                    double precioUnitario = Double.parseDouble(precioStr.substring(1));
+                        // Convertir el precio a double (sin el símbolo "$")
+                        double precioUnitario = Double.parseDouble(precioStr.substring(1));
 
-                    // Formatear el precio en el formato de moneda colombiano (COP)
-                    NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
-                    String formattedPrice = formatCOP.format(precioUnitario);
-                    // Crear el texto del producto con el formato de moneda colombiano
-                    String productoConPrecioFormateado = nombreProducto + " " + cantidadStr + " " + formattedPrice;
+                        // Formatear el precio en el formato de moneda colombiano (COP)
+                        NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
+                        String formattedPrice = formatCOP.format(precioUnitario);
+                        // Crear el texto del producto con el formato de moneda colombiano
+                        String productoConPrecioFormateado = nombreProducto + " " + cantidadStr + " " + formattedPrice;
 
-                    // Agregar el producto al documento con el nuevo formato de precio
-                    document.add(new Paragraph(productoConPrecioFormateado)
-                            .setFont(fontNormal)
-                            .setFontSize(6));
-                }}
+                        // Agregar el producto al documento con el nuevo formato de precio
+                        document.add(new Paragraph(productoConPrecioFormateado)
+                                .setFont(fontNormal)
+                                .setFontSize(6));
+                    }
+                }
 
-            NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
-            String formattedPrice = formatCOP.format(totalCompra);
+                NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
+                String formattedPrice = formatCOP.format(totalCompra);
 
-            document.add(new Paragraph(TOTAL_BILL + PESO_SIGN + formattedPrice + PESOS)
-                    .setFont(fontNormal) // Puedes ajustar la fuente
-                    .setFontSize(9)    // Puedes ajustar el tamaño de la fuente
-                    .setMarginBottom(2)
-                    .setBold()); // O el margen que necesites
+                document.add(new Paragraph(TOTAL_BILL + PESO_SIGN + formattedPrice + PESOS)
+                        .setFont(fontNormal) // Puedes ajustar la fuente
+                        .setFontSize(9)    // Puedes ajustar el tamaño de la fuente
+                        .setMarginBottom(2)
+                        .setBold()); // O el margen que necesites
 
-            document.add(new Paragraph(new String(new char[22]).replace(SLASH_ZERO, "_"))
-                    .setFont(fontNormal)
-                    .setFontSize(EIGHT)
-                    .setMarginBottom(FIVE));
+                document.add(new Paragraph(new String(new char[22]).replace(SLASH_ZERO, "_"))
+                        .setFont(fontNormal)
+                        .setFontSize(EIGHT)
+                        .setMarginBottom(FIVE));
 
-            document.add(new Paragraph(THANKS_BILL)
-                    .setFont(fontNormal)
-                    .setFontSize(EIGHT)
-                    .setBold()
-                    .setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph("IVA incluido.")
-                    .setFont(fontNormal)
-                    .setFontSize(5)
-                    .setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph(THANKS_BILL)
+                        .setFont(fontNormal)
+                        .setFontSize(EIGHT)
+                        .setBold()
+                        .setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph("IVA incluido.")
+                        .setFont(fontNormal)
+                        .setFontSize(5)
+                        .setTextAlignment(TextAlignment.CENTER));
 
-            // Cerrar el documento
-            document.close();
+                // Cerrar el documento
+            }
 
             if ("IMPRESORA".equals(outputType)) {
                 imprimirPDF(nombreArchivo);
@@ -215,11 +224,15 @@ public class FacturacionUserManager {
                 abrirPDF(nombreArchivo);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al generar la factura: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al generar la factura: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            logger.error("Error inesperado: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    public static void generarResumenDiarioEstilizadoPDF() {
+    public static void generarResumenDiarioEstilizadoPDF() throws InterruptedException {
         LocalDate fechaActual = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
@@ -336,6 +349,7 @@ public class FacturacionUserManager {
                         precioGasto = Double.parseDouble(precioTexto.replace(".", "").replace(",", "."));
                     } catch (NumberFormatException e) {
                         // Si el valor no es numérico (por ejemplo, "N/A"), simplemente lo dejas en 0 o lo omites
+
                     }  // Precio de gasto
 
                     document.add(new Paragraph("- " + producto + ": $" + formatearMoneda(precioGasto) + PESOS)
@@ -358,11 +372,13 @@ public class FacturacionUserManager {
                 if (row != null) {
                     String producto = row.getCell(1).getStringCellValue();  // Nombre del producto
                     String precioTexto = new DataFormatter().formatCellValue(row.getCell(3)).trim();
-                    double precioreabastecimiento = 0;
+                    double precioreabastecimiento;
                     try {
                         precioreabastecimiento = Double.parseDouble(precioTexto.replace(".", "").replace(",", "."));
                     } catch (NumberFormatException e) {
-                        throw new RuntimeException(e);
+                       logger .error("Error al convertir el precio de reabastecimiento: {}", e.getMessage());
+                        // Si el valor no es numérico (por ejemplo, "N/A"), simplemente lo dejas en 0 o lo omites
+                        precioreabastecimiento = 0;
                     }
 
                     document.add(new Paragraph("- " + producto + ": $" + formatearMoneda(precioreabastecimiento) + " pesos")
@@ -450,38 +466,38 @@ public class FacturacionUserManager {
             try (FileInputStream fisGastos = new FileInputStream(FILE_PATH);
                  Workbook wbGastos = WorkbookFactory.create(fisGastos)) {
                  wbGastos.getSheet("Gastos");
-                if (gastosSheet != null) {
-                    for (int i = 1; i <= gastosSheet.getLastRowNum(); i++) {
-                        Row row = gastosSheet.getRow(i);
-                        if (row != null) {
-                            String cantidad = formatteo.formatCellValue(row.getCell(2)).trim().toLowerCase();
-                            if ("n/a".equals(cantidad)) {
-                                String producto = formatteo.formatCellValue(row.getCell(1));
-                                String valor = formatteo.formatCellValue(row.getCell(3));
-                                gastosNA.append("\n- ").append(producto).append(": $").append(valor).append(" pesos");
-                            }
+                for (int i = 1; i <= gastosSheet.getLastRowNum(); i++) {
+                    Row row = gastosSheet.getRow(i);
+                    if (row != null) {
+                        String cantidad = formatteo.formatCellValue(row.getCell(2)).trim().toLowerCase();
+                        if ("n/a".equals(cantidad)) {
+                            String producto = formatteo.formatCellValue(row.getCell(1));
+                            cantidad = String.valueOf(0);
+                            String valor = formatteo.formatCellValue(row.getCell(3));
+                            gastosNA.append("\n- ").append(producto).append(": $").append(valor).append(" pesos");
                         }
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Error al leer la hoja de gastos: {}", e.getMessage());
+                JOptionPane.showMessageDialog(null, "Error al leer la hoja de gastos: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             }
             String[] numeros = { "+573226094632","+573112599560"};  //"+573146704316" Número al que quieres enviar el mensaje
             String mensaje = "*[Licorera CR]*\n¡Hola! se ha generado la liquidación del día de hoy por un total de: $ "
                     + formatearMoneda(totalVentas) + " pesos.\nPuedes consultar los detalles en los resúmenes adjuntos en Google Drive: https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
             if (!gastosNA.isEmpty()) {
-                mensaje += "\n\n*Gastos del d\u00eda:*" + gastosNA;
+                mensaje += "\n\n*Gastos del día:*" + gastosNA;
             }
-           enviarMensaje(numeros,mensaje);
+            enviarMensaje(numeros,mensaje);
         } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt(); // ⚠️ Muy importante: restablece la interrupción
-            e.printStackTrace();
+            logger.error("Error al generar el resumen diario: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al generar el resumen diario: " + e.getMessage(), ERROR_TITLE,JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorPago,double totalFacturado) throws IOException {
+
+
+public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorPago,double totalFacturado) throws IOException {
         Map<String, Integer> productosVendidos = obtenerProductosVendidos();
 
         LocalDate fechaActual = LocalDate.now();
@@ -495,7 +511,7 @@ public class FacturacionUserManager {
         if (!carpeta.exists()) {
             boolean wasSuccessful = carpeta.mkdirs();
             if (!wasSuccessful) {
-                return; // Salir del método si no se puede crear la carpeta
+                return; // Salir dela funcion si no se puede crear la carpeta
             }
         }
         LocalTime horaActual = LocalTime.now();
@@ -524,153 +540,154 @@ public class FacturacionUserManager {
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
             PdfWriter writer = new PdfWriter(nombreArchivo);
             PdfDocument pdfDoc = new PdfDocument(writer);
-            Document document = new Document(pdfDoc, pageSize);
+            try (Document document = new Document(pdfDoc, pageSize)) {
 
-            PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
-            PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
-            InputStream fontStream = FacturacionUserManager.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
-            // Leer la fuente desde el InputStream
-            byte[] fontBytes = fontStream.readAllBytes();
-            PdfFont lobsterFont = PdfFontFactory.createFont(fontBytes, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
+                PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+                PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+                InputStream fontStream = FacturacionUserManager.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
+                // Leer la fuente desde el InputStream
+                assert fontStream != null;
+                byte[] fontBytes = fontStream.readAllBytes();
+                PdfFont lobsterFont = PdfFontFactory.createFont(fontBytes, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
 
-            // Ajustar margen izquierdo a 6mm (1cm equivalente)
-            float margenIzquierdo = 10 * HEIGHT_DOTS;
-            document.setMargins(FIVE, FIVE, FIVE, margenIzquierdo);
+                // Ajustar margen izquierdo a 6mm (1cm equivalente)
+                float margenIzquierdo = 10 * HEIGHT_DOTS;
+                document.setMargins(FIVE, FIVE, FIVE, margenIzquierdo);
 
 
-            // Encabezado del PDF
-            document.add(new Paragraph("Realizo del Día")
-                    .setFont(lobsterFont)
-                    .setFontSize(15)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(0));
+                // Encabezado del PDF
+                document.add(new Paragraph("Realizo del Día")
+                        .setFont(lobsterFont)
+                        .setFontSize(15)
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setMarginBottom(0));
 
-            LocalTime horaNueva = LocalTime.now();
-            DateTimeFormatter horaFormateada= DateTimeFormatter.ofPattern("HH:mm:ss");
-            document.add(new Paragraph(fechaActual.format(formatter) + "\n" + horaNueva.format(horaFormateada))
-                    .setFont(fontNormal)
-                    .setFontSize(8)
-                    .setMarginBottom(-1)
-                    .setTextAlignment(TextAlignment.CENTER));
+                LocalTime horaNueva = LocalTime.now();
+                DateTimeFormatter horaFormateada = DateTimeFormatter.ofPattern("HH:mm:ss");
+                document.add(new Paragraph(fechaActual.format(formatter) + "\n" + horaNueva.format(horaFormateada))
+                        .setFont(fontNormal)
+                        .setFontSize(8)
+                        .setMarginBottom(-1)
+                        .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph(new String(new char[22]).replace('\0', '_'))
-                    .setFont(fontNormal)
-                    .setFontSize(8)
-                    .setMarginBottom(2));
-
-            // Detalles del total facturado
-            NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
-            String formattedPrice = formatCOP.format(totalFacturado);
-            document.add(new Paragraph("Total $ " + formattedPrice)
-                    .setFont(fontBold)
-                    .setFontSize(12)
-                    .setTextAlignment(TextAlignment.LEFT)
-                    .setMarginBottom(5));
-
-            if (totalesPorPago != null && !totalesPorPago.isEmpty()) {
-                for (Map.Entry<String, Double> entry : totalesPorPago.entrySet()) {
-                    String metodoPago = entry.getKey().replace(" - Transferencia", "");
-                    double total = entry.getValue();
-
-                    // Formateo del total en pesos colombianos
-                    String totalFormateado = formatCOP.format(total);
-
-                    Paragraph pagoParrafo = new Paragraph()
-                            .add(new Text(metodoPago + ": ").setFont(fontNormal).setBold())
-                            .add(new Text("$ " + totalFormateado).setFont(fontNormal))
-                            .setFontSize(8)
-                            .setMarginBottom(2);
-
-                    document.add(pagoParrafo);
-                }
-
-            } else {
-                document.add(new Paragraph("No hay datos de pagos registrados.")
+                document.add(new Paragraph(new String(new char[22]).replace('\0', '_'))
                         .setFont(fontNormal)
                         .setFontSize(8)
                         .setMarginBottom(2));
-            }
 
-            // Espacios para el cierre de caja
-            document.add(new Paragraph(new String(new char[18]).replace('\0', '_'))
-                    .setFont(fontNormal)
-                    .setFontSize(10)
-                    .setMarginBottom(5));
-
-            if (totalGastos > 0) {
-                document.add(new Paragraph("Gastos $ " + formatearMoneda(totalGastos))
+                // Detalles del total facturado
+                NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
+                String formattedPrice = formatCOP.format(totalFacturado);
+                document.add(new Paragraph("Total $ " + formattedPrice)
                         .setFont(fontBold)
+                        .setFontSize(12)
+                        .setTextAlignment(TextAlignment.LEFT)
+                        .setMarginBottom(5));
+
+                if (totalesPorPago != null && !totalesPorPago.isEmpty()) {
+                    for (Map.Entry<String, Double> entry : totalesPorPago.entrySet()) {
+                        String metodoPago = entry.getKey().replace(" - Transferencia", "");
+                        double total = entry.getValue();
+
+                        // Formateo del total en pesos colombianos
+                        String totalFormateado = formatCOP.format(total);
+
+                        Paragraph pagoParrafo = new Paragraph()
+                                .add(new Text(metodoPago + ": ").setFont(fontNormal).setBold())
+                                .add(new Text("$ " + totalFormateado).setFont(fontNormal))
+                                .setFontSize(8)
+                                .setMarginBottom(2);
+
+                        document.add(pagoParrafo);
+                    }
+
+                } else {
+                    document.add(new Paragraph("No hay datos de pagos registrados.")
+                            .setFont(fontNormal)
+                            .setFontSize(8)
+                            .setMarginBottom(2));
+                }
+
+                // Espacios para el cierre de caja
+                document.add(new Paragraph(new String(new char[18]).replace('\0', '_'))
+                        .setFont(fontNormal)
                         .setFontSize(10)
-                        .setTextAlignment(TextAlignment.LEFT)
-                        .setMarginBottom(0));
+                        .setMarginBottom(5));
 
-                document.add(new Paragraph("Detalles")
-                        .setFont(fontBold)
-                        .setFontSize(7)
-                        .setTextAlignment(TextAlignment.LEFT)
-                        .setMarginBottom(0));
+                if (totalGastos > 0) {
+                    document.add(new Paragraph("Gastos $ " + formatearMoneda(totalGastos))
+                            .setFont(fontBold)
+                            .setFontSize(10)
+                            .setTextAlignment(TextAlignment.LEFT)
+                            .setMarginBottom(0));
 
-                for (int i = 1; i <= gastosSheet.getLastRowNum(); i++) {
-                    Row row = gastosSheet.getRow(i);
-                    if (row != null) {
-                        String producto = row.getCell(1).getStringCellValue();
-                        String precioTexto = new DataFormatter().formatCellValue(row.getCell(3)).trim();
-                        double precioGasto = 0;
-                        try {
-                            precioGasto = Double.parseDouble(precioTexto.replace(".", "").replace(",", "."));
-                        } catch (NumberFormatException e) {
-                            continue; // Omitir si no es numérico
+                    document.add(new Paragraph("Detalles")
+                            .setFont(fontBold)
+                            .setFontSize(7)
+                            .setTextAlignment(TextAlignment.LEFT)
+                            .setMarginBottom(0));
+
+                    for (int i = 1; i <= gastosSheet.getLastRowNum(); i++) {
+                        Row row = gastosSheet.getRow(i);
+                        if (row != null) {
+                            String producto = row.getCell(1).getStringCellValue();
+                            String precioTexto = new DataFormatter().formatCellValue(row.getCell(3)).trim();
+                            double precioGasto;
+                            try {
+                                precioGasto = Double.parseDouble(precioTexto.replace(".", "").replace(",", "."));
+                            } catch (NumberFormatException e) {
+                                continue; // Omitir si no es numérico
+                            }
+
+                            document.add(new Paragraph(producto.toUpperCase() + " $ " + formatearMoneda(precioGasto))
+                                    .setFont(fontNormal)
+                                    .setFontSize(6)
+                                    .setTextAlignment(TextAlignment.LEFT));
                         }
-
-                        document.add(new Paragraph(producto.toUpperCase() + " $ " + formatearMoneda(precioGasto))
-                                .setFont(fontNormal)
-                                .setFontSize(6)
-                                .setTextAlignment(TextAlignment.LEFT));
                     }
                 }
-            }
-            document.add(new Paragraph("Vendidos")
-                    .setFont(fontBold)
-                    .setFontSize(10)
-                    .setMarginBottom(5));
-
-            if (productosVendidos != null && !productosVendidos.isEmpty()) {
-                for (Map.Entry<String, Integer> entry : productosVendidos.entrySet()) {
-                    String producto = entry.getKey();
-                    int cantidad = entry.getValue();
-
-                    document.add(new Paragraph( producto + " x"+ cantidad)
-                            .setFont(fontNormal)
-                            .setFontSize(6)
-                            .setMarginBottom(0));
-                }
-            } else {
-                document.add(new Paragraph("No se registraron ventas en este periodo.")
-                        .setFont(fontNormal)
-                        .setFontSize(8)
+                document.add(new Paragraph("Vendidos")
+                        .setFont(fontBold)
+                        .setFontSize(10)
                         .setMarginBottom(5));
+
+                if (!productosVendidos.isEmpty()) {
+                    for (Map.Entry<String, Integer> entry : productosVendidos.entrySet()) {
+                        String producto = entry.getKey();
+                        int cantidad = entry.getValue();
+
+                        document.add(new Paragraph(producto + " x" + cantidad)
+                                .setFont(fontNormal)
+                                .setFontSize(6)
+                                .setMarginBottom(0));
+                    }
+                } else {
+                    document.add(new Paragraph("No se registraron ventas en este periodo.")
+                            .setFont(fontNormal)
+                            .setFontSize(8)
+                            .setMarginBottom(5));
+                }
+                document.add(new Paragraph(new String(new char[15]).replace('\0', '_'))
+                        .setFont(fontNormal)
+                        .setFontSize(10)
+                        .setMarginTop(2)
+                        .setMarginBottom(2));
+
+                // Agradecimiento o información adicional
+                document.add(new Paragraph("Licorera CR")
+                        .setFont(lobsterFont)
+                        .setFontSize(13)
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setMarginBottom(-2)); // Margen inferior ajustado a 0
+
+                document.add(new Paragraph("La 70")
+                        .setFont(lobsterFont)
+                        .setFontSize(10)
+                        .setTextAlignment(TextAlignment.CENTER)
+                        .setMarginTop(-5)
+                        .setMarginBottom(-2));// Margen inferior ajustado a 0
+
             }
-            document.add(new Paragraph(new String(new char[15]).replace('\0', '_'))
-                    .setFont(fontNormal)
-                    .setFontSize(10)
-                    .setMarginTop(2)
-                    .setMarginBottom(2));
-
-            // Agradecimiento o información adicional
-            document.add(new Paragraph("Licorera CR")
-                    .setFont(lobsterFont)
-                    .setFontSize(13)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginBottom(-2)); // Margen inferior ajustado a 0
-
-            document.add(new Paragraph("La 70")
-                    .setFont(lobsterFont)
-                    .setFontSize(10)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setMarginTop(-5)
-                    .setMarginBottom(-2));// Margen inferior ajustado a 0
-
-            document.close();
             String outputType = ConfigAdminManager.getOutputType();
             if ("IMPRESORA".equals(outputType)) {
                 imprimirPDF(nombreArchivo);
@@ -679,17 +696,21 @@ public class FacturacionUserManager {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al generar el archivo Realizo: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al generar el archivo Realizo: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            logger.error("Error inesperado: {}", e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // Método para limpiar la carpeta de facturas
+    //  para limpiar la carpeta de facturas
     public static void limpiarFacturas() {
         String rutaFacturas = System.getProperty(FOLDER_PATH) +"\\Calculadora del Administrador\\Facturas";
         borrarContenidoCarpeta(rutaFacturas);
     }
 
-    // Método para borrar el contenido de la carpeta
+    //  para borrar el contenido de la carpeta
     private static void borrarContenidoCarpeta(String carpetaPath) {
         File carpeta = new File(carpetaPath);
         if (carpeta.exists() && carpeta.isDirectory()) {
@@ -762,7 +783,11 @@ public class FacturacionUserManager {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al obtener productos vendidos: {}", e.getMessage());
+        } catch (IllegalStateException e) {
+            logger.error("Error de estado ilegal: {}", e.getMessage());
+        } catch (Exception e) {
+            logger.error("Error inesperado: {}", e.getMessage());
         }
 
         return productosVendidos;
@@ -809,7 +834,7 @@ public class FacturacionUserManager {
                 workbook.write(fos);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error al limpiar la cantidad vendida: {}", e.getMessage());
         }
     }
 
@@ -832,9 +857,10 @@ public class FacturacionUserManager {
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println("Enviado a " + numero + " → Respuesta: " + response.body());
+            if (logger.isErrorEnabled()) {logger.error("Enviado a {} → Respuesta: {}", numero, response.body());}
         }
     }
+
 
 }
 
