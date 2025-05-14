@@ -202,7 +202,6 @@ public class UIMainAdmin {
             public void mouseEntered(MouseEvent e) {
                 logoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
                 logoLabel.setBorder(BorderFactory.createLineBorder(FONDO_PRINCIPAL, ONE));
-                amarillo al pasar el mouse
             }
 
             @Override
