@@ -1,7 +1,6 @@
 package org.example.ui.uiuser;
 
 import org.apache.poi.ss.usermodel.*;
-import org.example.manager.adminmanager.ConfigAdminManager;
 import org.example.manager.usermanager.ExcelUserManager;
 import org.example.manager.usermanager.ProductoUserManager;
 import org.example.model.Producto;
@@ -11,7 +10,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -185,7 +183,7 @@ public class UIUserVenta extends Panel {
 
     private JPanel createButtonPanel(JTable table, JDialog compraDialog, String mesaID, JPanel mainPanel,JFrame frame) {
         JPanel buttonPanel = new JPanel(new BorderLayout());
-        JPanel topButtonsPanel = new JPanel(new GridLayout(ONE, TWO, ONE, TEN)); // 1 fila, 2 columnas, separación de 20px
+        JPanel topButtonsPanel = new JPanel(new GridLayout(ONE, TWO, ONE, TEN));
         JButton guardarCompra = createSavePurchaseMesaButton( mesaID, table);
         guardarCompra.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
 
@@ -198,7 +196,7 @@ public class UIUserVenta extends Panel {
 
         table.getModel().addTableModelListener(e -> confirmarCompraButton.setEnabled(productosEnExcel || table.getRowCount() > 0));
 
-        guardarCompra.setPreferredSize(new Dimension(ZERO, 50)); // Altura fija, ancho automático
+        guardarCompra.setPreferredSize(new Dimension(ZERO, 50));
         confirmarCompraButton.setPreferredSize(new Dimension(ZERO, 50));
 
         topButtonsPanel.add(guardarCompra);
@@ -206,10 +204,8 @@ public class UIUserVenta extends Panel {
 
         buttonPanel.add(topButtonsPanel, BorderLayout.CENTER);
 
-        // 📌 Botón "Volver"
         JButton closeButton = getCloseButton(mainPanel);
 
-        // 🔹 Panel para centrar el botón "Volver"
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         bottomPanel.add(closeButton);
 
@@ -243,7 +239,7 @@ public class UIUserVenta extends Panel {
 
         closeButton.addActionListener(e -> {
             CardLayout cl = (CardLayout) mainPanel.getLayout();
-            cl.show(mainPanel, MESAS); // Vuelve a la vista de mesas
+            cl.show(mainPanel, MESAS);
         });
         return closeButton;
     }
@@ -276,23 +272,22 @@ public class UIUserVenta extends Panel {
                 BorderFactory.createLineBorder(Color.DARK_GRAY, TWO),
                 BorderFactory.createEmptyBorder(TEN, 20, TEN, 20)
         ));
-        // Efecto hover: cambiar color al pasar el mouse
+
         confirmarCompraButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                confirmarCompraButton.setBackground(new Color(ZERO, 201, 87)); // Cambia a color más oscuro
+                confirmarCompraButton.setBackground(new Color(ZERO, 201, 87));
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                confirmarCompraButton.setBackground(new Color(168, 230, 207)); // Vuelve al color original
+                confirmarCompraButton.setBackground(new Color(168, 230, 207));
             }
         });
 
         confirmarCompraButton.addActionListener(e -> {
             try {
 
-                // 🔄 Obtener los productos actualizados desde la tabla antes de confirmar la compra
                 Map<String, Integer> productosComprados = actualizarProductosDesdeTabla(productosTable);
                 
                 double total = ZERO;
@@ -300,13 +295,11 @@ public class UIUserVenta extends Panel {
                 LocalDateTime dateTime = LocalDateTime.now();
                 StringBuilder listaProductosEnLinea = new StringBuilder();
 
-                // Inicializar mapas vacíos para la venta actual
                 Map<String, Integer> cantidadTotalPorProducto = new HashMap<>();
                 Map<String, Double> precioUnitarioPorProducto = new HashMap<>();
 
 
 
-                // Procesar productos de la tabla actualizada
                 for (Map.Entry<String, Integer> entrada : productosComprados.entrySet()) {
                     String nombre = entrada.getKey();
                     int cantidad = entrada.getValue();
@@ -316,7 +309,6 @@ public class UIUserVenta extends Panel {
                     precioUnitarioPorProducto.put(nombre, producto.getPrice());
                 }
 
-                // Generar resumen de productos y calcular el total
                 for (Map.Entry<String, Integer> entrada : cantidadTotalPorProducto.entrySet()) {
                     String nombreProducto = entrada.getKey();
                     int cantidadTotal = entrada.getValue();
@@ -333,10 +325,9 @@ public class UIUserVenta extends Panel {
 
                 String tipoPago = paySelection(compraDialog, total,frame);
                 if (tipoPago == null) {
-                    return; // el usuario canceló
+                    return;
                 }
 
-                // Guardar la compra en Excel
                 ExcelUserManager excelUserManager = new ExcelUserManager();
                 excelUserManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total ,tipoPago);
                 try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
@@ -377,10 +368,8 @@ public class UIUserVenta extends Panel {
                     logger.error("Error al guardar la compra en Excel", ex);
                 }
 
-                // Mostramos el diálogo de confirmación
                 int respuesta = JOptionPane.showConfirmDialog(null, PRINT_BILL, COMFIRM_TITLE, JOptionPane.YES_NO_OPTION);
                 if (respuesta == JOptionPane.YES_OPTION) {
-                    // Corregimos aquí, enviamos la lista completa y no solo un String.
                     generarFacturadeCompra(ventaID, Arrays.asList(listaProductosEnLinea.toString().split("\n")), total, dateTime, tipoPago);
                 }
 
@@ -407,11 +396,10 @@ public class UIUserVenta extends Panel {
                 );
                 actualizarCantidadStockExcel(cantidadTotalPorProducto);
                 ProductoUserManager.limpiarCarrito();
-                // Cerrar la ventana actual (si es un JDialog)
                 SwingUtilities.invokeLater(() -> {
                     Window window = SwingUtilities.getWindowAncestor(confirmarCompraButton);
                     if (window != null) {
-                        window.setVisible(false); // Ocultar antes de cerrar
+                        window.setVisible(false);
                         window.dispose();
                     }
                     mainUser();
@@ -443,7 +431,6 @@ public class UIUserVenta extends Panel {
                 BorderFactory.createEmptyBorder(TEN, 20, TEN, 20)
         ));
 
-        // Efecto hover: cambiar ligeramente el color al pasar el mouse
         saveCompraButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -457,14 +444,12 @@ public class UIUserVenta extends Panel {
 
         saveCompraButton.addActionListener(e -> {
             try {
-                // Obtener los productos de la tabla
                 DefaultTableModel tableModel = (DefaultTableModel) productosTable.getModel();
                 int rowCount = tableModel.getRowCount();
 
-                // Verificar si la tabla está vacía
                 if (rowCount == ZERO) {
-                    limpiarMesaEnExcel(mesaID);  // Limpia la mesa en Excel si no hay productos
-                    ProductoUserManager.limpiarCarrito();  // Limpia el carrito de esta mesa
+                    limpiarMesaEnExcel(mesaID);
+                    ProductoUserManager.limpiarCarrito();
                     JOptionPane.showMessageDialog(null, "La mesa " + mesaID + " ha sido limpiada.");
                     SwingUtilities.invokeLater(() -> {
                         Window window = SwingUtilities.getWindowAncestor(saveCompraButton);
@@ -474,21 +459,20 @@ public class UIUserVenta extends Panel {
                         mainUser();
                     });
 
-                    return; // Salir después de limpiar la mesa
+                    return;
                 }
 
-                // Map para almacenar los productos comprados para esta mesa
+
                 Map<String, Integer> productosComprados = new HashMap<>();
                 for (int i = ZERO; i < rowCount; i++) {
-                    String nombreProducto = (String) tableModel.getValueAt(i, ZERO); // Columna 0: nombre del producto
-                    int cantidad = (int) tableModel.getValueAt(i, ONE); // Columna 1: cantidad del producto
+                    String nombreProducto = (String) tableModel.getValueAt(i, ZERO);
+                    int cantidad = (int) tableModel.getValueAt(i, ONE);
                     productosComprados.put(nombreProducto, cantidad);
                 }
 
-                // Obtener el total para esta mesa específica
+
                 double total = productoUserManager.getTotalCartAmount();
 
-                // Guardar la compra en la pestaña "mesas"
                 try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
                      Workbook workbook = WorkbookFactory.create(fis)) {
 
@@ -502,14 +486,12 @@ public class UIUserVenta extends Panel {
                                 if (idCell != null && idCell.getStringCellValue().trim().equalsIgnoreCase(mesaID.trim())) {
                                     mesaEncontrada = true;
 
-                                    // Cambiar el estado de la mesa a "Ocupada"
                                     Cell estadoCell = row.getCell(ONE);
                                     if (estadoCell == null) {
                                         estadoCell = row.createCell(ONE);
                                     }
                                     estadoCell.setCellValue("Ocupada");
 
-                                    // Almacenar productos comprados
                                     Cell productosCell = row.getCell(TWO);
                                     if (productosCell == null) {
                                         productosCell = row.createCell(TWO);
@@ -535,7 +517,6 @@ public class UIUserVenta extends Panel {
 
                                     productosCell.setCellValue(listaProductos.toString());
 
-                                    // Poner el total en la columna de Total
                                     Cell totalCell = row.getCell(THREE);
                                     if (totalCell == null) {
                                         totalCell = row.createCell(THREE);
@@ -552,13 +533,11 @@ public class UIUserVenta extends Panel {
                             return;
                         }
 
-                        // Guardar los cambios en el archivo Excel
                         guardarCambiosWorkbook(workbook);
 
-                        // Mostrar mensaje de confirmación
                         JOptionPane.showMessageDialog(null, "Compra guardada para la mesa: " + mesaID + ".");
-                        tableModel.setRowCount(ZERO); // Limpiar la tabla
-                        ProductoUserManager.limpiarCarrito();// Limpia el carrito de la mesa después de guardar la compra
+                        tableModel.setRowCount(ZERO);
+                        ProductoUserManager.limpiarCarrito();
 
                         SwingUtilities.invokeLater(() -> {
                             Window window = SwingUtilities.getWindowAncestor(saveCompraButton);
@@ -655,7 +634,6 @@ public class UIUserVenta extends Panel {
         }
     }
 
-    //  auxiliar para limpiar la mesa en el archivo Excel cuando no hay productos
     private static void limpiarMesaEnExcel(String mesaID) {
         try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
@@ -706,8 +684,6 @@ public class UIUserVenta extends Panel {
     }
 
     private static String paySelection(JDialog compraDialog, double total,JFrame frame) {
-        // Selección de modo de pago
-        // Crear íconos redimensionados para los métodos de pago
         ImageIcon iconoBancolombia = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/bancolombia.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
         ImageIcon iconoNequi = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/nequi.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
         ImageIcon iconoEfectivo = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/dinero.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
@@ -722,13 +698,11 @@ public class UIUserVenta extends Panel {
         double totalDollar = total/TRM;
         JLabel totalLabel = getJLabel(total, totalDollar);
 
-        // Crear panel para el menú de pago
         JPanel panelPago = new JPanel();
         panelPago.setLayout(new GridLayout(TWO, THREE, 20, 20));
         panelPago.setBorder(BorderFactory.createEmptyBorder(TEN, 20, 20, 20));
         panelPago.setBackground(Color.WHITE);
 
-        // Crear botones de modo de pago
         JButton botonEfectivo = new JButton(EFECTIVO, iconoEfectivo);
         JButton botonBancolombia = new JButton("Bancolombia - Transferencia", iconoBancolombia);
         JButton botonNequi = new JButton("Nequi - Transferencia", iconoNequi);
@@ -736,7 +710,6 @@ public class UIUserVenta extends Panel {
         JButton botonDatafono = new JButton("Datafono", iconoDatafono);
         JButton botonPaypal = new JButton("Paypal", iconoPaypal);
 
-        // Ajuste visual común para los botones
         JButton[] botones = { botonEfectivo, botonBancolombia, botonNequi, botonDaviplata, botonDatafono, botonPaypal };
         for (JButton btn : botones) {
             btn.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
@@ -809,7 +782,6 @@ public class UIUserVenta extends Panel {
             omitirBtn.setFocusPainted(false);
             omitirBtn.setPreferredSize(new Dimension(150, 40));
 
-            // Container para botón con padding
             JPanel btnPanel = new JPanel();
             btnPanel.setBackground(Color.WHITE);
             btnPanel.add(continuarBtn);
@@ -822,7 +794,7 @@ public class UIUserVenta extends Panel {
             dialog.pack();
             dialog.setLocationRelativeTo(compraDialog);
             dialog.setResizable(false);
-            // Acción del botón
+
             continuarBtn.addActionListener(es -> {
                 String input = inputField.getText().trim();
                 dialog.dispose();
@@ -852,7 +824,6 @@ public class UIUserVenta extends Panel {
                             + "</div></html>");
                     label.setHorizontalAlignment(SwingConstants.CENTER);
 
-                    // Opciones de botones
                     Object[] options = {"Calcular cambio", "Omitir"};
 
                     int option = JOptionPane.showOptionDialog(
@@ -867,11 +838,10 @@ public class UIUserVenta extends Panel {
                     );
 
                     if (option == JOptionPane.YES_OPTION) {
-                        // El usuario eligió "Calcular cambio"
+
                         JOptionPane.showMessageDialog(compraDialog, label, "Cambio devuelto", JOptionPane.INFORMATION_MESSAGE);
                     }
 
-                    // En ambos casos se cierra el diálogo
                     dialog.dispose();
                     tipoPagoSeleccionado[ZERO] = EFECTIVO;
                     dialogoPago.dispose();
@@ -884,13 +854,12 @@ public class UIUserVenta extends Panel {
                 }
             });
 
-            // Acción del botón "Omitir"
+
             omitirBtn.addActionListener(es -> {
                 tipoPagoSeleccionado[ZERO] = EFECTIVO;
                 dialogoPago.dispose();
                 dialog.dispose();
             });
-            // Si el usuario cierra la ventana con la X, continúa flujo
             dialog.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
@@ -902,13 +871,12 @@ public class UIUserVenta extends Panel {
 
         botonDatafono.addActionListener(event -> {
 
-            // Imagen QR
             ImageIcon qrIcon = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/NoDatafono.png"))
                     .getImage().getScaledInstance(300, 400, Image.SCALE_SMOOTH));
             JLabel qrLabel = new JLabel(qrIcon);
             qrLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            // Texto de valor total
+
             JLabel montoLabel = new JLabel(TOTAL_PRICE + FormatterHelpers.formatearMoneda(finalTotal) + PESOS);
 
             montoLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
@@ -919,37 +887,33 @@ public class UIUserVenta extends Panel {
             montoLabel2.setForeground(new Color(ZERO, ZERO, 128));
             montoLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            // Instrucción
+
             JLabel instruccion = new JLabel("<html><div style='text-align:center; color:red;'>"
                     + "Registra la compra en el Datafono.<br>Y verifica sí la transacción fue exitosa antes de continuar."
                     + "</div></html>");
             instruccion.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
             instruccion.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            // Botón continuar
             JButton continuarBtn = new JButton("Continuar");
             continuarBtn.setBackground(new Color(ZERO, 153, ZERO));
             continuarBtn.setForeground(Color.WHITE);
             continuarBtn.setFont(new Font(ARIAL_FONT, Font.BOLD, 18));
             continuarBtn.setFocusPainted(false);
             continuarBtn.setPreferredSize(new Dimension(200, 50));
-            continuarBtn.setMaximumSize(new Dimension(200, 50)); // para que no se estire
+            continuarBtn.setMaximumSize(new Dimension(200, 50));
             continuarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            // Crear el diálogo
-            JDialog dialogoQR = new JDialog(compraDialog, "Guía de Pago Datafono", true); // Cambié el título a "Datafono"
+            JDialog dialogoQR = new JDialog(compraDialog, "Guía de Pago Datafono", true);
             dialogoQR.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-            dialogoQR.setLayout(new BoxLayout(dialogoQR.getContentPane(), BoxLayout.Y_AXIS)); // Usar BoxLayout para alinear verticalmente
+            dialogoQR.setLayout(new BoxLayout(dialogoQR.getContentPane(), BoxLayout.Y_AXIS));
 
-            // Acción del botón "Continuar"
             continuarBtn.addActionListener(es -> {
-                dialogoQR.dispose(); // Cierra el diálogo QR
+                dialogoQR.dispose();
                 tipoPagoSeleccionado[0] = "Datafono";
-                dialogoPago.dispose(); // Cierra el diálogo de selección de pago
+                dialogoPago.dispose();
 
             });
 
-            // Panel de contenido
             JPanel content = new JPanel();
             content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
             content.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
@@ -972,7 +936,6 @@ public class UIUserVenta extends Panel {
             dialogoQR.setVisible(true);
         });
 
-        // Mostrar el diálogo modal y esperar la selección
         dialogoPago.setLocationRelativeTo(compraDialog);
         dialogoPago.setVisible(true);
 
@@ -981,14 +944,14 @@ public class UIUserVenta extends Panel {
             return null;
         }
 
-         if(ConfigAdminManager.isElectronicBillingEnabled()) {
+         /*if(ConfigAdminManager.isElectronicBillingEnabled()) {
 
              JSONObject clienteSiigo = UIUserVenta.mostrarDialogoFactura(frame);
                    if (clienteSiigo != null) {
                        // Usar clienteSiigo en la creación de la factura
                         mostrarDialogoFactura(frame);
                     }
-        }
+        }*/
 
         return tipoPagoSeleccionado[ZERO];
     }
@@ -1043,7 +1006,7 @@ public class UIUserVenta extends Panel {
 
             continuarBtn.addActionListener(e -> {
                 dialogoQR.dispose();
-                onSuccess.run(); // Acción al confirmar
+                onSuccess.run();
             });
 
             JPanel content = new JPanel();

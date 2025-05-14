@@ -22,24 +22,21 @@ public class UIUserGastos {
         gastosPanel.setBackground(FONDO_PRINCIPAL);
         gastosPanel.setPreferredSize(new Dimension(800, 600));
 
-        // Cargar fuente personalizada una sola vez
         Font customFont = loadCustomFont();
         if (customFont == null) {
-            customFont = new Font(ARIAL_FONT, Font.BOLD, 36); // Fuente de respaldo
+            customFont = new Font(ARIAL_FONT, Font.BOLD, 36);
         }
 
-        // Panel del título
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(FONDO_PRINCIPAL);
         titlePanel.setBorder(BorderFactory.createEmptyBorder(30, ZERO, 30, ZERO));
 
         JLabel titleLabel = new JLabel("Registrar Gastos", SwingConstants.CENTER);
-        titleLabel.setFont(customFont.deriveFont(Font.BOLD, 50f)); // Aplicar negrita y tamaño 50
+        titleLabel.setFont(customFont.deriveFont(Font.BOLD, 50f));
         titleLabel.setForeground(new Color(36, 36, 36));
         titlePanel.add(titleLabel, BorderLayout.CENTER);
         gastosPanel.add(titlePanel, BorderLayout.NORTH);
 
-        // Panel principal para imagen y formulario
         JPanel mainContentPanel = new JPanel(new GridBagLayout());
         mainContentPanel.setBackground(FONDO_PRINCIPAL);
         mainContentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -48,7 +45,6 @@ public class UIUserGastos {
         gbc.insets = new Insets(15, 15, 15, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Panel para la imagen (izquierda)
         JPanel imagePanel = new JPanel(new BorderLayout());
         imagePanel.setBackground(FONDO_PRINCIPAL);
         imagePanel.setPreferredSize(new Dimension(200, 200));
@@ -76,7 +72,6 @@ public class UIUserGastos {
         gbc.gridheight = TWO;
         mainContentPanel.add(imagePanel, gbc);
 
-        // Panel para los campos de entrada (derecha)
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBackground(FONDO_PRINCIPAL);
         formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -85,11 +80,9 @@ public class UIUserGastos {
         gbcForm.insets = new Insets(TEN, TEN, TEN, TEN);
         gbcForm.anchor = GridBagConstraints.WEST;
 
-        // Configurar fuente para los labels
         Font labelFont = customFont.deriveFont(20f);
         Color labelColor = new Color(36, 36, 36);
 
-        // Campo Descripción
         JLabel descLabel = new JLabel("Descripción");
         descLabel.setFont(labelFont);
         descLabel.setForeground(labelColor);
@@ -103,7 +96,6 @@ public class UIUserGastos {
         nombreGastoField.setPreferredSize(new Dimension(300, 35));
         formPanel.add(nombreGastoField, gbcForm);
 
-        // Campo Precio
         JLabel precioLabel = new JLabel("Total");
         precioLabel.setFont(labelFont);
         precioLabel.setForeground(labelColor);
@@ -117,7 +109,6 @@ public class UIUserGastos {
         precioField.setPreferredSize(new Dimension(300, 35));
         formPanel.add(precioField, gbcForm);
 
-        // Botón Confirmar
         gbcForm.gridx = ZERO;
         gbcForm.gridy = TWO;
         gbcForm.gridwidth = TWO;
@@ -129,7 +120,6 @@ public class UIUserGastos {
         addGastoButton.setForeground(Color.WHITE);
         formPanel.add(addGastoButton, gbcForm);
 
-        // Acción del botón "Confirmar"
         addGastoButton.addActionListener(e -> {
             try {
                 String nombreGasto = nombreGastoField.getText();
@@ -157,7 +147,6 @@ public class UIUserGastos {
 
         gastosPanel.add(mainContentPanel, BorderLayout.CENTER);
 
-        // Botón Volver
         JButton backButton = createBackButton(contentPanel);
         JPanel bottomPanel = new JPanel();
         bottomPanel.setBackground(FONDO_PRINCIPAL);
@@ -181,7 +170,6 @@ public class UIUserGastos {
     }
 
     private static JButton createBackButton(JPanel contentPanel) {
-        // Botón "Volver"
         JButton backButton = new JButton("Volver") {
             @Override
             protected void paintComponent(Graphics g) {
@@ -195,7 +183,7 @@ public class UIUserGastos {
             }
         };
 
-        backButton.setPreferredSize(new Dimension(150, 40)); // Aumenta tamaño del botón
+        backButton.setPreferredSize(new Dimension(150, 40));
         backButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
         backButton.setForeground(Color.WHITE);
         backButton.setBackground(FONDO_PRINCIPAL);

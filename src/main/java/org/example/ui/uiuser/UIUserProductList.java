@@ -53,12 +53,10 @@ public class UIUserProductList {
         titleLabel.setForeground(new Color(28, 28, 28));
         try {
 
-            // Cargar la fuente desde los recursos dentro del JAR
             InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream(LOBSTER_FONT);
 
-            // Crear la fuente desde el InputStream
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            customFont = customFont.deriveFont(Font.BOLD, 50); // Ajustar tamaño y peso
+            customFont = customFont.deriveFont(Font.BOLD, 50);
             titleLabel.setFont(customFont);
         } catch (Exception e) {
             logger.error("Error al cargar las fuente personalizada: {}", e.getMessage());
@@ -101,7 +99,7 @@ public class UIUserProductList {
             }
 
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            customFont = customFont.deriveFont(Font.ITALIC, 26); // Ajustar tamaño
+            customFont = customFont.deriveFont(Font.ITALIC, 26);
 
 
             header = productTable.getTableHeader();
@@ -122,7 +120,6 @@ public class UIUserProductList {
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-                // Fondo por cantidad
                 if (!isSelected) {
                     try {
                         int cantidad = Integer.parseInt(table.getValueAt(row, ONE).toString());
@@ -134,7 +131,6 @@ public class UIUserProductList {
                     cell.setBackground(table.getSelectionBackground());
                 }
 
-                // Alineación centrada para cantidad y precio
                 if (column == ONE || column == TWO) {
                     ((JLabel) cell).setHorizontalAlignment(SwingConstants.CENTER);
                 } else {
@@ -148,7 +144,6 @@ public class UIUserProductList {
             }
         };
 
-        // Asignar a todas las columnas el mismo renderer
         for (int i = ZERO; i < productTable.getColumnCount(); i++) {
             productTable.getColumnModel().getColumn(i).setCellRenderer(customRenderer);
         }

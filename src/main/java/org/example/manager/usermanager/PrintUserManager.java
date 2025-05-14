@@ -37,14 +37,11 @@ public class PrintUserManager {
 
     public static void imprimirPDF(String pdfFilePath) {
         try {
-            // Cargar el archivo PDF
             PDDocument document = Loader.loadPDF(new File(pdfFilePath));
 
-            // Obtener la impresora guardada en config.properties
             String printerName = ConfigAdminManager.getPrinterName();
             PrintService selectedPrintService = null;
 
-            // Buscar la impresora en el sistema
             PrintService[] printServices = PrintServiceLookup.lookupPrintServices(null, null);
             for (PrintService service : printServices) {
                 if (service.getName().equalsIgnoreCase(printerName)) {
@@ -53,19 +50,15 @@ public class PrintUserManager {
                 }
             }
 
-            // Si no se encuentra la impresora guardada, usar la predeterminada
             if (selectedPrintService == null) {
                 selectedPrintService = PrintServiceLookup.lookupDefaultPrintService();
             }
 
-            // Crear un trabajo de impresión sin mostrar cuadro de diálogo
             PrinterJob printerJob = PrinterJob.getPrinterJob();
             printerJob.setPrintService(selectedPrintService);
             printerJob.setPageable(new PDFPageable(document));
 
-            // Realizar la impresión
             printerJob.print();
-            // Cerrar el documento
             document.close();
         } catch (IOException | PrinterException e) {
             logger.error("Error al imprimir el PDF: ", e);

@@ -16,17 +16,14 @@ public class ProductoUserManager {
 
     private static final int MINUS_ONE = -ONE;
 
-    // Obtener todos los productos
     public static List<Producto> getProducts() {
         return excelUserManager.getProducts();
     }
 
-    // Obtener un producto por nombre
     public static Producto getProductByName(String name) {
         return excelUserManager.getProductByName(name);
     }
 
-    // Obtener el monto total de la compra
     public double getTotalCartAmount() {
         double total = ZERO_DOUBLE;
         for (int i = ZERO; i < cartProducts.size(); i++) {
@@ -37,7 +34,6 @@ public class ProductoUserManager {
         return total;
     }
 
-    // Eliminar un producto del carrito por índice
     public static void removeProductFromCart(int row) {
         if (row >= ZERO && row < cartProducts.size()) {
             cartProducts.remove(row);
@@ -45,13 +41,11 @@ public class ProductoUserManager {
         }
     }
 
-    //  para limpiar el carrito después de cada venta
     public static void limpiarCarrito() {
         cartProducts.clear();
         cartQuantities.clear();
     }
 
-    //  para actualizar la cantidad de un producto en el carrito
     public void updateProductQuantity(Producto producto, int nuevaCantidad) {
         int index = cartProducts.indexOf(producto);
         if (index != MINUS_ONE) {

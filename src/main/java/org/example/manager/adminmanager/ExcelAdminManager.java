@@ -32,7 +32,7 @@ public class ExcelAdminManager {
             for (int i = ONE; i <= lastRowNum; i++) {
                 Row row = sheet.getRow(i);
                 if (row != null) {
-                    Cell idCell = row.getCell(ZERO); // Suponiendo que ID está en la columna 0
+                    Cell idCell = row.getCell(ZERO);
                     if (idCell != null && idCell.getCellType() == CellType.NUMERIC) {
                         int idEnExcel = (int) idCell.getNumericCellValue();
 
@@ -48,7 +48,6 @@ public class ExcelAdminManager {
                 }
             }
 
-            // Si no se encontró, agregar al final
             if (!found) {
                 Row newRow = sheet.createRow(++lastRowNum);
                 newRow.createCell(ZERO).setCellValue(productoActualizado.getId());
@@ -96,7 +95,6 @@ public class ExcelAdminManager {
         }
     }
 
-    //  para leer los productos del archivo Excel
     public List<Producto> getProducts() {
         List<Producto> products = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
@@ -121,7 +119,7 @@ public class ExcelAdminManager {
         return products;
     }
 
-    //  para obtener un producto por nombre
+
     public Producto getProductByName(String selectedProduct) {
         List<Producto> products = getProducts();
         for (Producto p : products) {
@@ -132,7 +130,7 @@ public class ExcelAdminManager {
         return null;
     }
 
-    // para obtener todas las facturas desde la hoja de "compras"
+
     public List<Factura> getFacturas() {
         List<Factura> facturas = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
@@ -163,7 +161,7 @@ public class ExcelAdminManager {
 
     public boolean eliminarFacturaYActualizarProductos(String facturaId) {
         try {
-            // Carga el archivo Excel y accede a las hojas "Ventas" y "Productos"
+
             FileInputStream file = new FileInputStream(FILE_PATH);
             boolean facturaEliminada;
             try (Workbook workbook = new XSSFWorkbook(file)) {
@@ -172,57 +170,47 @@ public class ExcelAdminManager {
 
                 facturaEliminada = false;
 
-                // Busca la factura en la hoja "Ventas" por su Id
-                for (int i = ONE; i <= ventasSheet.getLastRowNum(); i++) { // Empieza en 1 para evitar encabezados
+                for (int i = ONE; i <= ventasSheet.getLastRowNum(); i++) {
                     Row row = ventasSheet.getRow(i);
                     if (row == null) continue;
 
-                    Cell idCell = row.getCell(ZERO); // Columna "Id"
+                    Cell idCell = row.getCell(ZERO);
                     if (idCell != null && idCell.getStringCellValue().equals(facturaId)) {
-                        // Extrae los productos de la factura en la columna "Productos"
                         Cell productosCell = row.getCell(ONE);
                         if (productosCell != null) {
                             String productosStr = productosCell.getStringCellValue();
-                            String[] productos = productosStr.split(" "); // Separa por espacio
+                            String[] productos = productosStr.split(" ");
 
-                            // Variables temporales para almacenar producto y cantidad
                             String nombreProducto = null;
                             int cantidad;
 
-                            // Itera sobre cada segmento del string de productos
                             for (String part : productos) {
-                                if (part.startsWith("x")) { // Si comienza con 'x', es la cantidad
-                                    cantidad = Integer.parseInt(part.substring(ONE).trim()); // Convierte "x1" a 1
+                                if (part.startsWith("x")) {
+                                    cantidad = Integer.parseInt(part.substring(ONE).trim());
 
-                                    // Sumar la cantidad eliminada a la hoja "Productos"
                                     for (int j = ONE; j <= productosSheet.getLastRowNum(); j++) {
                                         Row productoRow = productosSheet.getRow(j);
                                         if (productoRow == null) continue;
 
-                                        // Verificar y limpiar espacios en blanco del nombre del producto
-                                        Cell nombreCell = productoRow.getCell(ONE); // Columna "Nombre"
+                                        Cell nombreCell = productoRow.getCell(ONE);
                                         if (nombreCell != null) {
                                             String nombreEnProductos = nombreCell.getStringCellValue().trim();
                                             if (nombreEnProductos.equals(nombreProducto)) {
-                                                // Obtener la cantidad actual y sumarle la cantidad eliminada
-                                                Cell cantidadCell = productoRow.getCell(TWO); // Columna "Cantidad"
+                                                Cell cantidadCell = productoRow.getCell(TWO);
                                                 int cantidadActual = (int) cantidadCell.getNumericCellValue();
                                                 cantidadCell.setCellValue(cantidadActual + cantidad);
                                                 break;
                                             }
                                         }
                                     }
-                                    // Reiniciar para el siguiente producto
                                     nombreProducto = null;
 
                                 } else if (!part.startsWith("$") && !part.equals("=")) {
-                                    // Asume que este segmento es el nombre del producto si no es un símbolo de precio o total
-                                    nombreProducto = part.trim(); // Limpiar espacios en blanco en el nombre del producto
+                                    nombreProducto = part.trim();
                                 }
                             }
                         }
 
-                        // Eliminar la fila de la factura en la hoja "Ventas"
                         ventasSheet.removeRow(row);
                         if (i < ventasSheet.getLastRowNum()) {
                             ventasSheet.shiftRows(i + ONE, ventasSheet.getLastRowNum(), -ONE);
@@ -232,7 +220,6 @@ public class ExcelAdminManager {
                     }
                 }
 
-                // Guarda los cambios en el archivo Excel
                 file.close();
                 FileOutputStream outputFile = new FileOutputStream(FILE_PATH);
                 workbook.write(outputFile);

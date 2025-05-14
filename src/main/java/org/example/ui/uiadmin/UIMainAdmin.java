@@ -40,13 +40,11 @@ public class UIMainAdmin {
             frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 
-            // Cargar icono de la aplicación
             ImageIcon icon = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png")));
             if (icon.getImage() != null) {
                 frame.setIconImage(icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
             }
 
-            // Listener para manejar cierre de ventana
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
@@ -73,12 +71,10 @@ public class UIMainAdmin {
             JLabel titleLabel = new JLabel("Panel de Administración", SwingConstants.CENTER);            titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
             titleLabel.setForeground(new Color(FIFTY, FIFTY, FIFTY));
 
-            // Panel de botones
             JPanel buttonPanel = new JPanel(new GridLayout(TWO, TWO, TEN, TEN));
             buttonPanel.setBackground(new Color(245, 245, 245));
             buttonPanel.setBorder(BorderFactory.createEmptyBorder(TWENTY, FIFTY, TEN, FIFTY));
 
-            // Panel superior con logo y nombre del empleado centrados
             JPanel logoPanel = new JPanel();
             logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.Y_AXIS));
             logoPanel.setBackground(FONDO_PRINCIPAL);
@@ -111,19 +107,17 @@ public class UIMainAdmin {
             JPanel buttonsPanel = new JPanel();
             buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
 
-            // Agregar ComponentListener para cambiar tamaño dinámicamente
             sidebarPanel.addComponentListener(new ComponentAdapter() {
                 @Override
                 public void componentResized(ComponentEvent e) {
                     int panelWidth = sidebarPanel.getWidth();
                     int panelHeight = sidebarPanel.getHeight();
 
-                    int buttonWidth = (int) (panelWidth * 1.0);  // 90% del ancho del sidebar
-                    int buttonHeight = (int) (panelHeight * 0.13);  // 12% del alto del sidebar
+                    int buttonWidth = (int) (panelWidth * 1.0);
+                    int buttonHeight = (int) (panelHeight * 0.13);
 
                     Dimension buttonSize = new Dimension(buttonWidth, buttonHeight);
 
-                    // Ajustar tamaño de todos los botones dentro de buttonsPanel
                     for (Component comp : buttonsPanel.getComponents()) {
                         if (comp instanceof JButton) {
                             comp.setPreferredSize(buttonSize);
@@ -132,7 +126,6 @@ public class UIMainAdmin {
                         }
                     }
 
-                    // Forzar revalidación y repintado
                     buttonsPanel.revalidate();
                     buttonsPanel.repaint();
                 }
@@ -198,25 +191,24 @@ public class UIMainAdmin {
         JLabel logoLabel = new JLabel(new ImageIcon(imgLogo));
         logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // **Añadir efectos al pasar el mouse**
         logoLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // **Obtener el CardLayout y mostrar el panel "mesas"**
                 CardLayout layout = (CardLayout) contentPanel.getLayout();
                 layout.show(contentPanel, PRODUCTOS);
             }
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                logoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Cambia el cursor a "mano"
-                logoLabel.setBorder(BorderFactory.createLineBorder(FONDO_PRINCIPAL, ONE)); // Borde amarillo al pasar el mouse
+                logoLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                logoLabel.setBorder(BorderFactory.createLineBorder(FONDO_PRINCIPAL, ONE));
+                amarillo al pasar el mouse
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                logoLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); // Restaurar cursor normal
-                logoLabel.setBorder(null); // Eliminar borde al salir
+                logoLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                logoLabel.setBorder(null);
             }
         });
         return logoLabel;
@@ -224,19 +216,18 @@ public class UIMainAdmin {
 
     public static void adminPassword(Frame frame) {
         JPasswordField passwordField = new JPasswordField();
-        passwordField.setEchoChar('*'); // Oculta la contraseña con '*'
+        passwordField.setEchoChar('*');
 
-        // Mostrar cuadro de diálogo con opciones OK y CANCEL
+
         int option = JOptionPane.showConfirmDialog(null, passwordField,
                 "Ingrese la contraseña del Administrador:",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 
-        // Si el usuario presionó "OK"
         if (option == JOptionPane.OK_OPTION) {
             String inputPassword = new String(passwordField.getPassword());
 
             if (inputPassword.equals("admin2024")) {
-                showAdminPanel(); // Abrir panel de administrador si la contraseña es correcta
+                showAdminPanel();
                 frame.dispose();
             } else {
                 JOptionPane.showMessageDialog(null,

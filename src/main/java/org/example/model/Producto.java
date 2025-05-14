@@ -38,13 +38,12 @@ public class Producto {
         this.quantity = cantidad;
     }
 
-    // Implementamos equals para comparar productos por nombre
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         Producto producto = (Producto) obj;
-        return name.equalsIgnoreCase(producto.name); // Comparación basada en nombre (ignorar mayúsculas/minúsculas)
+        return name.equalsIgnoreCase(producto.name);
     }
 
     @Override

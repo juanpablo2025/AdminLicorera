@@ -29,7 +29,6 @@ public class UIConfigAdmin {
         }
         String currentPrinter = ConfigAdminManager.getPrinterName();
 
-        // Leer datáfonos reales desde puertos COM
         SerialPort[] ports = SerialPort.getCommPorts();
         String[] dataphoneOptions = new String[ports.length + ONE];
         dataphoneOptions[ZERO] = "Ninguno";
@@ -76,7 +75,6 @@ public class UIConfigAdmin {
         printerComboBox.setPreferredSize(new Dimension(300, THIRTY));
         panel.add(printerComboBox, gbc);
 
-        // Datáfono detectado por COM
         gbc.gridy++;
         JLabel dataphoneLabel = new JLabel("Seleccione el datáfono:");
         panel.add(dataphoneLabel, gbc);
@@ -101,7 +99,6 @@ public class UIConfigAdmin {
 
         outputComboBox.addActionListener(e -> printerComboBox.setEnabled(Objects.equals(outputComboBox.getSelectedItem(), IMPRESORA)));
 
-        // Facturación electrónica
         gbc.gridy++;
         JCheckBox feCheckBox = new JCheckBox("Activar facturación electrónica");
         feCheckBox.setFont(feCheckBox.getFont().deriveFont(Font.PLAIN, 14f));

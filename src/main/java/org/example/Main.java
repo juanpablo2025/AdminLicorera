@@ -45,11 +45,9 @@ public class Main {
         }
 
         JFrame frame = new JFrame("Bienvenido - Licorera CR");
-        // Cargar el icono desde el classpath
         ImageIcon icon = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png")));
 
         if (icon.getImage() != null) {
-            // Redimensionar la imagen a 64x64 píxeles (ajusta según necesidad)
             Image scaledImage = icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
             frame.setIconImage(scaledImage);
         }
@@ -67,13 +65,11 @@ public class Main {
         gbc.insets = new Insets(FIFTEEN, FIFTEEN, FIFTEEN, FIFTEEN);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Logo
         JLabel logoLabel = new JLabel();
         ImageIcon logo = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png")));
         Image img = logo.getImage().getScaledInstance(300, 280, Image.SCALE_SMOOTH);
         logoLabel.setIcon(new ImageIcon(img));
 
-        // Etiqueta y campo de usuario
         JLabel userLabel = new JLabel("Encargado de caja");
         userLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, TWENTY));
         userLabel.setForeground(Color.BLACK);
@@ -96,7 +92,7 @@ public class Main {
         adminButton.setFocusPainted(false);
         adminButton.setBorder(BorderFactory.createEmptyBorder(TEN, TEN, TEN, TEN));
 
-        // Agregar componentes al panel
+
         gbc.gridx = ZERO;
         gbc.gridy = ZERO;
         gbc.gridwidth = TWO;
@@ -130,6 +126,7 @@ public class Main {
             }
         });
 
+        frame.getRootPane().setDefaultButton(loginButton);
         adminButton.addActionListener(e -> adminPassword(frame));
     }
 }

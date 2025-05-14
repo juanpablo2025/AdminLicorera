@@ -55,7 +55,7 @@ public class ConfigAdminManager {
                     properties.setProperty("output_type", "PDF");
                     properties.setProperty("printer_name", "Default Printer");
                     properties.setProperty("message_sending_enabled", "true");
-                    properties.setProperty("trm_enabled", "true"); // ✅ ahora se guarda
+                    properties.setProperty("trm_enabled", "true");
                     properties.store(output, "Configuración de la Aplicación");
                 }
             }

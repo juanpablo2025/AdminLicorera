@@ -124,7 +124,7 @@ public class Updater {
         progressBar.setValue(ZERO);
 
         JLabel label = new JLabel("Descargando actualización...", SwingConstants.CENTER);
-        label.setFont(new Font("Segoe UI", Font.BOLD, SIXTEEN)); // Fuente más grande
+        label.setFont(new Font("Segoe UI", Font.BOLD, SIXTEEN));
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(label, BorderLayout.NORTH);

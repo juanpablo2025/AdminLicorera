@@ -45,7 +45,6 @@ public class UIAdminProducts {
 
     private static final NumberFormat formatCOP = NumberFormat.getInstance(new Locale("es", "CO"));
 
-    // Panel principal con tabla y botones
     public static JPanel getAdminProductListPanel() {
         JPanel productListPanel = new JPanel(new BorderLayout());
         productListPanel.setBackground(FONDO_PRINCIPAL);
@@ -93,17 +92,14 @@ public class UIAdminProducts {
         productTable.setSelectionForeground(Color.BLACK);
         productTable.setFillsViewportHeight(true);
 
-        // 🎯 CREAR EL SORTER PARA FILTRAR
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
         productTable.setRowSorter(sorter);
 
-        // 🎯 CREAR LA BARRA DE BÚSQUEDA
         JTextField searchField = new JTextField(COMBO_BOX_TEXT);
         searchField.setForeground(Color.GRAY);
         searchField.setPreferredSize(new Dimension(760, 35));
         searchField.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
 
-        // Focus events para limpiar/restaurar el texto
         searchField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -141,7 +137,6 @@ public class UIAdminProducts {
         searchPanel.setBackground(FONDO_PRINCIPAL);
         searchPanel.add(searchField);
 
-        // RENDERER personalizado para colores en celdas (mantienes el tuyo)
         DefaultTableCellRenderer customRenderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -181,7 +176,6 @@ public class UIAdminProducts {
             productTable.getColumnModel().getColumn(i).setCellRenderer(customRenderer);
         }
 
-        // Ocultar columna Id
         productTable.getColumnModel().getColumn(ZERO).setMinWidth(ZERO);
         productTable.getColumnModel().getColumn(ZERO).setMaxWidth(ZERO);
         productTable.getColumnModel().getColumn(ZERO).setWidth(ZERO);
@@ -201,18 +195,15 @@ public class UIAdminProducts {
         }
 
         JScrollPane scrollPane = new JScrollPane(productTable);
-        // 🧩 Panel de top (titulo + barra de búsqueda)
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.Y_AXIS));
         topPanel.setBackground(FONDO_PRINCIPAL);
 
-        // 🧩 Centrar título
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         topPanel.add(titleLabel);
-        topPanel.add(Box.createVerticalStrut(TEN)); // Espacio
+        topPanel.add(Box.createVerticalStrut(TEN));
 
-        // 🧩 Centrar barra de búsqueda
-        searchField.setMaximumSize(new Dimension(300, 30)); // Limita el ancho de la barra
+        searchField.setMaximumSize(new Dimension(300, 30));
         searchPanel.setBackground(FONDO_PRINCIPAL);
         searchPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         topPanel.add(searchPanel);
@@ -224,7 +215,6 @@ public class UIAdminProducts {
         return productListPanel;
     }
 
-    // Botones con mismo estilo redondeado y hover
     private static JButton createStyledButton(String text, Color baseColor, Color hoverColor, int fontSize) {
         JButton button = new JButton(text) {
             @Override
@@ -255,7 +245,7 @@ public class UIAdminProducts {
     }
 
     private static JPanel createButtonPanel(DefaultTableModel tableModel, JTable productTable) {
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10)); // ← centrado
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
 
         JButton addButton = createStyledButton("Nuevo", new Color(66, 133, 244), new Color(30, 70, 160), 22);
         addButton.addActionListener(e -> {
@@ -273,12 +263,10 @@ public class UIAdminProducts {
                             tableModel.getValueAt(row, THREE),
                             productTable);
 
-                    // 🚨 Si el usuario NO edita correctamente (o cancela), BORRAR la fila recién agregada
                     if (!productoEditado) {
                         tableModel.removeRow(row);
                     }
 
-                    // 🔄 Forzar actualización de botones y selección
                     productTable.clearSelection();
                     productTable.revalidate();
                     productTable.repaint();
@@ -300,7 +288,6 @@ public class UIAdminProducts {
                 }
         });
 
-
         JButton saveButton = createStyledButton("Guardar Cambios", new Color(ZERO, 204, 136), new Color(ZERO, 153, 102), 18);
         saveButton.addActionListener(e -> saveProducts(tableModel, productTable));
 
@@ -309,21 +296,19 @@ public class UIAdminProducts {
         reabastecimientoButton.addActionListener(e -> {
             int viewRow = productTable.getSelectedRow();
             if (viewRow != -1) {
-                int modelRow = productTable.convertRowIndexToModel(viewRow); // ✅ usa el índice real
+                int modelRow = productTable.convertRowIndexToModel(viewRow);
                 String nombre = (String) tableModel.getValueAt(modelRow, ONE);
                 int cantidad = Integer.parseInt(tableModel.getValueAt(modelRow, TWO).toString());
                 showReabastecimientoDialog(productTable, nombre, cantidad);
             }
         });
 
-        // Botón eliminar
         JButton eliminarBtn = createStyledButton("Eliminar", new Color(255, 111, 97), new Color(201, 41, 41), 22);
         eliminarBtn.setBackground(new Color(220, 53, 69));
         eliminarBtn.setForeground(Color.WHITE);
         eliminarBtn.setFocusPainted(false);
-        eliminarBtn.setEnabled(false); // deshabilitado por defecto
+        eliminarBtn.setEnabled(false);
 
-        // Listener para habilitar o deshabilitar el botón según selección
         productTable.getSelectionModel().addListSelectionListener(e -> {
             boolean isSelected = productTable.getSelectedRow() != -ONE;
             eliminarBtn.setEnabled(isSelected);
@@ -575,7 +560,7 @@ public class UIAdminProducts {
                             fondo = new Color(255, 100, 100);
 
                         } else if (cantidad == ZERO) {
-                            fondo = new Color(255, 200, 100); // Naranja claro para 0
+                            fondo = new Color(255, 200, 100);
 
                         }
                         }catch (Exception e) {
@@ -612,17 +597,15 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
             return;
         }
 
-        int modelRow = table.convertRowIndexToModel(selectedRow); // por si la tabla está ordenada o filtrada
+        int modelRow = table.convertRowIndexToModel(selectedRow);
         int id = Integer.parseInt(tableModel.getValueAt(modelRow, ZERO).toString());
         String name = tableModel.getValueAt(modelRow, ONE).toString().toUpperCase().replace(" ", "_");
         int quantity = Integer.parseInt(tableModel.getValueAt(modelRow, TWO).toString());
         double price = Double.parseDouble(tableModel.getValueAt(modelRow, THREE).toString().replace(".", "").replace(",", ""));
 
-        // Obtener producto existente
         Producto productoActualizado = new Producto(id, name, quantity, price,
                 "\\Calculadora del Administrador\\Fotos\\" + name + ".png");
 
-        // Actualizar solo ese producto en el archivo Excel
         ExcelAdminManager.updateProduct(productoActualizado);
 
         JOptionPane.showMessageDialog(null, "Producto actualizado exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
@@ -633,7 +616,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
     }
 }
 
-    //  para cargar la imagen en un JLabel
+
     private static void cargarImagen(String ruta, JLabel imageLabel) {
         new SwingWorker<ImageIcon, Void>() {
             @Override
@@ -642,7 +625,6 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
                     File archivo = new File(ruta);
                     BufferedImage img;
 
-                    // Si la imagen no existe, usar imagen de respaldo
                     if (!archivo.exists() || !archivo.isFile()) {
                         InputStream is = getClass().getResourceAsStream("/icons/sinfoto.png");
                         if (is != null) {
@@ -674,7 +656,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
                 try {
                     ImageIcon icon = get();
                     if (icon != null) {
-                        imageLabel.setIcon(icon); // ✅ Ahora actualiza correctamente el JLabel
+                        imageLabel.setIcon(icon);
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -691,7 +673,6 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         }.execute();
     }
 
-    // para mostrar el diálogo de reabastecimiento
     public static void showReabastecimientoDialog(JTable productTable, String nombre, int cantidad) {
         JDialog dialog = new JDialog();
         dialog.setTitle("Reabastecimiento de Productos");
@@ -883,27 +864,21 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
 
     private static void handleReplenishment(JDialog dialog, JTable productTable, String productName, int quantity, String priceText) {
         try {
-            // Validar que el precio no esté vacío
             priceText = priceText.trim().replace(".", "").replace(",", "");
 
-            // Convertir a número
             double price = Double.parseDouble(priceText);
 
-            // Buscar el producto en la lista
             Producto product = productoAdminManager.getProductByName(productName);
             if (product == null) {
                 JOptionPane.showMessageDialog(dialog, "Producto no encontrado.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            // Reabastecer producto
             new GastosAdminManager().reabastecerProducto(product, quantity, price);
 
-            // Actualizar cantidad en la tabla (si aplica)
             product.setCantidad(product.getQuantity() + quantity);
 
             JOptionPane.showMessageDialog(dialog, "Producto reabastecido correctamente.");
 
-            // Actualizar la tabla
             updateProductTable(productTable);
             productTable.clearSelection();
         }  catch (Exception ex) {

@@ -22,7 +22,7 @@ public class UIUserMesas {
 
     private UIUserMesas() {}
 
-    //  para mostrar las mesas en la interfaz
+
     public static JPanel crearMesaPanel(Mesa mesa, JFrame mainFrame, JPanel mainPanel) {
         JPanel mesaPanel = new JPanel(new BorderLayout());
         mesaPanel.setPreferredSize(new Dimension(ONE_HUNDRED, ONE_HUNDRED));
@@ -33,11 +33,9 @@ public class UIUserMesas {
         titleLabel.setForeground(new Color(28, 28, 28));
         try {
 
-            // Cargar la fuente desde los recursos dentro del JAR
             InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream(LOBSTER_FONT);
-            // Crear la fuente desde el InputStream
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            customFont = customFont.deriveFont(Font.BOLD, 50); // Ajustar tamaño y peso
+            customFont = customFont.deriveFont(Font.BOLD, 50);
             titleLabel.setFont(customFont);
         } catch (Exception e) {
             logger.error("Error al cargar la fuente personalizada: ", e);
@@ -62,25 +60,19 @@ public class UIUserMesas {
             @Override
             public void mouseClicked(MouseEvent e) {
 
-                // Cargar productos de la mesa desde Excel
                 List<String[]> productosMesa = cargarProductosMesaDesdeExcel(tituloMesa);
 
-                // Asegurarse de que mainPanel tiene CardLayout
                 if (!(mainPanel.getLayout() instanceof CardLayout)) {
                     mainPanel.setLayout(new CardLayout());
                 }
 
-                // Obtener el CardLayout
                 CardLayout cl = (CardLayout) mainPanel.getLayout();
-
-                // Agregar el nuevo panel de venta de mesa si no está agregado ya
                 mainPanel.add(new UIUserVenta(productosMesa, tituloMesa, mainPanel,mainFrame), "VentaMesaPanel");
                 mainPanel.setBorder(BorderFactory.createCompoundBorder(
                         new LineBorder(new Color(100, 100, 100), ZERO, true),
                         new EmptyBorder(TEN, 20, 20, 20)
                 ));
                 mainPanel.setBackground(FONDO_PRINCIPAL);
-                // Mostrar el panel de ventas
                 cl.show(mainPanel, "VentaMesaPanel");
             }
 
@@ -93,7 +85,7 @@ public class UIUserMesas {
                 );
                 mesaPanel.setBackground(mesa.isOcupada() ? new Color(255, 60, 60) : new Color(ZERO, 201, 87));
 
-                newBorder.setTitleFont(new Font(ARIAL_FONT, Font.BOLD, 20)); // Cambiar fuente a 28
+                newBorder.setTitleFont(new Font(ARIAL_FONT, Font.BOLD, 20));
                 mesaPanel.setBorder(newBorder);
                 mesaLabel.setForeground(Color.WHITE);
                 newBorder.setTitleColor(Color.white);
@@ -157,7 +149,7 @@ public class UIUserMesas {
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(addMesaButton);
-        bottomPanel.setBackground(FONDO_PRINCIPAL);// Color de fondo amarillo
+        bottomPanel.setBackground(FONDO_PRINCIPAL);
         mesasPanel.add(titleLabel, BorderLayout.NORTH);
         mesasPanel.add(gridMesasPanel, BorderLayout.CENTER);
         mesasPanel.add(bottomPanel, BorderLayout.SOUTH);
@@ -171,16 +163,14 @@ public class UIUserMesas {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                // Sombra del botón
                 g2.setColor(new Color(ZERO, ZERO, ZERO, 30));
                 g2.fillRoundRect(TWO, FOUR, getWidth() - FOUR, getHeight() - FOUR, 40, 40);
 
-                // Color de fondo normal
+
                 if (getModel().isPressed()) {
-                    g2.setColor(new Color(255, 193, SEVEN)); // Amarillo oscuro al presionar
+                    g2.setColor(new Color(255, 193, SEVEN));
                 } else {
-                    g2.setColor(new Color(228, 185, 42)); // Amarillo Material Design
+                    g2.setColor(new Color(228, 185, 42));
                 }
 
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
@@ -188,10 +178,9 @@ public class UIUserMesas {
             }
         };
 
-        // Estilos del botón
-        addMesaButton.setPreferredSize(new Dimension(160, 40)); // Más grande
-        addMesaButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22)); // Fuente grande
-        addMesaButton.setForeground(Color.WHITE); // Texto negro
+        addMesaButton.setPreferredSize(new Dimension(160, 40));
+        addMesaButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        addMesaButton.setForeground(Color.WHITE);
         addMesaButton.setFocusPainted(false);
         addMesaButton.setContentAreaFilled(false);
         addMesaButton.setBorderPainted(false);

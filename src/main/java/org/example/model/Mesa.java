@@ -5,9 +5,9 @@ import java.util.List;
 
 public class Mesa {
 
-    private String id; // Contador estático para el ID auto-incremental
+    private String id;
     private boolean ocupada;
-    private List<Producto> productos; // Lista de productos añadidos a la mesa
+    private List<Producto> productos;
 
     public Mesa(String id) {
         this.id = id;

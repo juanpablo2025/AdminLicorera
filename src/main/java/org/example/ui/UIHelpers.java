@@ -68,18 +68,14 @@ public class UIHelpers {
         textLabel.setForeground(Color.WHITE);
 
         try {
-            // Cargar la fuente desde el classpath dentro del JAR
             InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
 
             if (fontStream == null) {
                 throw new IOException("No se pudo encontrar la fuente en los recursos.");
             }
 
-            // Crear la fuente desde el InputStream
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            customFont = customFont.deriveFont(Font.ITALIC, 18); // Ajustar tamaño
-
-            // Aplicar la fuente al JLabel
+            customFont = customFont.deriveFont(Font.ITALIC, 18);
             textLabel.setFont(customFont);
 
         } catch (Exception e) {
@@ -132,7 +128,6 @@ public class UIHelpers {
 
         JTextField comboBoxEditor = (JTextField) productComboBox.getEditor().getEditorComponent();
 
-        // Admin: No filtrar por stock
         List<String> productList = ProductoUserManager.getProducts().stream()
                 .map(Producto::getName)
                 .sorted(String::compareToIgnoreCase)
@@ -178,7 +173,6 @@ public class UIHelpers {
         return productComboBox;
     }
 
-
     public static JPanel createInputPanel(JTable table) {
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
@@ -187,7 +181,6 @@ public class UIHelpers {
 
         Font labelFont = new Font(ARIAL_FONT, Font.BOLD, EIGHTEEN);
 
-        // 🟦 Search Panel
         JPanel searchPanel = new JPanel();
         searchPanel.setLayout(new BoxLayout(searchPanel, BoxLayout.X_AXIS));
         searchPanel.setBackground(new Color(28, 28, 28));
@@ -197,7 +190,6 @@ public class UIHelpers {
         searchPanel.add(searchField);
         inputPanel.add(searchPanel);
 
-        // 🟦 Quantity Panel
         JPanel quantityPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         quantityPanel.setBackground(new Color(28, 28, 28));
         quantityPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
@@ -234,7 +226,6 @@ public class UIHelpers {
         quantityPanel.add(cantidadSpinner);
         inputPanel.add(quantityPanel);
 
-        // 🟦 Scrollable Product Panel
         JPanel productPanel = new JPanel(new GridLayout(ZERO, TWO, TWO, FIVE));
         productPanel.setBackground(new Color(28, 28, 28));
         JScrollPane scrollPane = new JScrollPane(productPanel);
@@ -261,10 +252,8 @@ public class UIHelpers {
 
         inputPanel.add(scrollPane);
 
-        //  Cargar productos
         List<Producto> productList = ProductoUserManager.getProducts();
 
-        //  Aumentar el grosor de la barra de desplazamiento
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(FIFTEEN, ZERO));
 
         Runnable updateProducts = () -> {
@@ -279,8 +268,6 @@ public class UIHelpers {
                                 super.paintComponent(g);
                                 Graphics2D g2 = (Graphics2D) g;
                                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                                // Crear un fondo con esquinas redondeadas
                                 g2.setColor(getBackground());
                                 g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), TWENTY, TWENTY);
                             }
@@ -289,16 +276,13 @@ public class UIHelpers {
                             protected void paintBorder(Graphics g) {
                                 Graphics2D g2 = (Graphics2D) g;
                                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                                // Dibujar borde redondeado
-                                g2.setColor(new Color(74, 50, 28)); // Color del borde
+                                g2.setColor(new Color(74, 50, 28));
                                 g2.drawRoundRect(ZERO, ZERO, getWidth() - ONE, getHeight() - ONE, 20, 20);
                             }
                         };
 
-                        // 🔹 Ajustar la transparencia del fondo para evitar el color cuadrado
                         card.setOpaque(false);
-                        card.setBackground(new Color(58, 58, 58)); // Fondo oscuro
+                        card.setBackground(new Color(58, 58, 58));
                         card.setPreferredSize(new Dimension(80, 210));
                         card.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
@@ -327,7 +311,7 @@ public class UIHelpers {
                         card.setToolTipText(formattedName);
 
                         namePanel.setLayout(new BorderLayout());
-                        namePanel.setBorder(BorderFactory.createEmptyBorder(FOUR, EIGHT, FOUR, EIGHT)); // Espaciado interno
+                        namePanel.setBorder(BorderFactory.createEmptyBorder(FOUR, EIGHT, FOUR, EIGHT));
 
                         JLabel nameLabel = new JLabel(formattedName);
                         nameLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, SIXTEEN));
@@ -358,11 +342,9 @@ public class UIHelpers {
                             @Override
                             protected ImageIcon doInBackground() {
                                 try {
-                                    // Obtener la ruta de la imagen del producto
                                     String imagePath = System.getProperty(FOLDER_PATH) + product.getFoto();
                                     File imageFile = new File(imagePath);
                                     BufferedImage img;
-                                    // Si la imagen del producto no existe, usar la imagen de respaldo
                                     if (!imageFile.exists() || !imageFile.isFile()) {
                                         InputStream is = getClass().getResourceAsStream(NO_FOTO);
                                         if (is != null) {
@@ -400,26 +382,25 @@ public class UIHelpers {
                             }
                         }.execute();
 
-                        // 🟢 Aplicar efecto de pulsado al botón (Cambio de color temporal)
                         card.addMouseListener(new MouseAdapter() {
                             @Override
                             public void mouseEntered(MouseEvent e) {
-                                card.setBackground(new Color(186, 27, 26)); // Color al pasar el mouse
+                                card.setBackground(new Color(186, 27, 26));
                             }
 
                             @Override
                             public void mouseExited(MouseEvent e) {
-                                card.setBackground(new Color(147, 89, 49)); // Volver al color original
+                                card.setBackground(new Color(147, 89, 49));
                             }
 
                             @Override
                             public void mousePressed(MouseEvent e) {
-                                card.setBackground(new Color(220, TWENTY, 60)); // Color al hacer clic
+                                card.setBackground(new Color(220, TWENTY, 60));
                             }
 
                             @Override
                             public void mouseReleased(MouseEvent e) {
-                                card.setBackground(new Color(186, 27, 26)); // Volver al color hover
+                                card.setBackground(new Color(186, 27, 26));
                             }
 
                             @Override
@@ -475,13 +456,11 @@ public class UIHelpers {
         return searchField;
     }
 
-    // para redondear imágenes
     private static ImageIcon makeRoundedImage(Image img) {
         BufferedImage roundedImage = new BufferedImage(180, 150, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = roundedImage.createGraphics();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Crear una máscara circular
         g2.setClip(new RoundRectangle2D.Float(ZERO, ZERO, 180, 150, 20, 20));
         g2.drawImage(img, ZERO, ZERO, 180, 150, null);
         g2.dispose();
@@ -536,16 +515,13 @@ public class UIHelpers {
                     "X"
             });
 
-            // Agregar nuevo producto al carrito de compra
             productoUserManager.updateProductQuantity(producto, cantidad);
         }
     }
 
-    // Renderer personalizado para formato de moneda con alineación centrada
     public static class CurrencyRenderer extends DefaultTableCellRenderer {
-        public CurrencyRenderer() {
-            setHorizontalAlignment(SwingConstants.CENTER); // Centrar texto en la celda
-        }
+
+        public CurrencyRenderer() {setHorizontalAlignment(SwingConstants.CENTER);}
 
         @Override
         protected void setValue(Object value) {
@@ -562,14 +538,13 @@ public class UIHelpers {
         tableModel = new DefaultTableModel(columnNames, ZERO) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == FOUR; // Solo la columna de quitar unidad es editable
+                return column == FOUR;
             }
         };
 
         JTable table = new JTable(tableModel);
         UnifiedEditorRenderer editorRenderer = new UnifiedEditorRenderer();
 
-        // Ajustar tamaño de columnas
         TableColumnModel columnModel = table.getColumnModel();
         columnModel.getColumn(ZERO).setPreferredWidth(250);
         columnModel.getColumn(ONE).setPreferredWidth(FIFTY);
@@ -581,17 +556,13 @@ public class UIHelpers {
         quitarColumn.setMinWidth(ONE_HUNDRED);
         quitarColumn.setMaxWidth(ONE_HUNDRED);
 
-        // Evitar que se puedan mover las columnas
         table.getTableHeader().setReorderingAllowed(false);
 
-        // Centrar texto de las columnas Cantidad, Unid. $, y Total $
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
         table.getColumnModel().getColumn(ONE).setCellRenderer(centerRenderer);
-        // Aplicar un CurrencyRenderer centrado a las columnas de precios
         table.getColumnModel().getColumn(TWO).setCellRenderer(new CurrencyRenderer());
         table.getColumnModel().getColumn(THREE).setCellRenderer(new CurrencyRenderer());
-        // Asignar editor y renderer personalizados a la columna del botón
         table.getColumnModel().getColumn(FOUR).setCellRenderer(editorRenderer);
         table.getColumnModel().getColumn(FOUR).setCellEditor(editorRenderer);
 
