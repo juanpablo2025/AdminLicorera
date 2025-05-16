@@ -17,7 +17,6 @@ import org.example.model.Factura;
 import org.example.model.Producto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import javax.swing.*;
 import java.io.*;
 import java.net.URI;
@@ -33,7 +32,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
-
 import static org.example.manager.usermanager.ExcelUserManager.*;
 import static org.example.manager.usermanager.PrintUserManager.abrirPDF;
 import static org.example.manager.usermanager.PrintUserManager.imprimirPDF;
@@ -87,18 +85,7 @@ public class FacturacionUserManager {
             String paperSize = ConfigAdminManager.getPaperSize();
             String outputType = ConfigAdminManager.getOutputType();
 
-            float anchoMm = paperSize.equals("48mm") ? 48 : (paperSize.equals("A4") ? 210 : 80);
-            float anchoPuntos = anchoMm * WIDE_DOTS;
-            float altoBaseMm = 130;
-            float altoPorProductoMm = 10;
-            float extraSpaceMm = 50;
-            float altoMinimoMm = 150;
-
-
-            float altoTotalMm = Math.max(altoBaseMm + (productos.size() * altoPorProductoMm) + extraSpaceMm, altoMinimoMm);
-            float altoPuntos = altoTotalMm * HEIGHT_DOTS;
-
-            PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
+            PageSize pageSize = getPageSize(productos, paperSize);
             String nombreArchivo = System.getProperty(FOLDER_PATH) + "\\Calculadora del Administrador\\Facturas\\" + BILL_FILE + ventaID + PDF_FORMAT;
             PdfWriter writer = new PdfWriter(nombreArchivo);
             PdfDocument pdfDoc = new PdfDocument(writer);
@@ -221,6 +208,22 @@ public class FacturacionUserManager {
             logger.error("Error inesperado: {}", e.getMessage());
             JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private static PageSize getPageSize(List<String> productos, String paperSize) {
+        float anchoMm = paperSize.equals("48mm") ? 48 : (paperSize.equals("A4") ? 210 : 80);
+        float anchoPuntos = anchoMm * WIDE_DOTS;
+        float altoBaseMm = 60;
+        float altoPorProductoMm = 10;
+        float extraSpaceMm = 25;
+        float altoMinimoMm = 60;
+
+
+        float altoTotalMm = Math.max(altoBaseMm + (productos.size() * altoPorProductoMm) + extraSpaceMm, altoMinimoMm);
+        float altoPuntos = altoTotalMm * HEIGHT_DOTS;
+
+        PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
+        return pageSize;
     }
 
     public static void generarResumenDiarioEstilizadoPDF() throws InterruptedException {
@@ -460,8 +463,6 @@ public class FacturacionUserManager {
         }
     }
 
-
-
 public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorPago,double totalFacturado) throws IOException {
         Map<String, Integer> productosVendidos = obtenerProductosVendidos();
 
@@ -492,10 +493,11 @@ public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorP
             }
             double totalGastos = restarTotalesGastos(gastosSheet);
             float anchoMm = 48;
-            float altoBaseMm = 250;
-            float altoPorProductoMm = 12;
-            float altoFooterMm = 40;
-            float altoTotalMm = altoBaseMm + (productosVendidos.size() * altoPorProductoMm) + altoFooterMm;
+            float altoBaseMm = 80;
+            float altoPorProductoMm = 8;
+            float altoFooterMm = 2;
+            float altoMinimoMm = 80;
+            float altoTotalMm = Math.max(altoBaseMm + (productosVendidos.size() * altoPorProductoMm) +  altoFooterMm, altoMinimoMm);
             float anchoPuntos = anchoMm * 2.83465f;
             float altoPuntos = altoTotalMm * 2.83465f;
 

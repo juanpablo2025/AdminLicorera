@@ -21,7 +21,7 @@ public class Updater {
     private Updater() {}
     private static final Logger logger =  LoggerFactory.getLogger(Updater.class);
 
-    private static final String CURRENT_VERSION = "v1.1.3";
+    private static final String CURRENT_VERSION = "v1.1.4";
     private static final String TEMP_EXE_NAME = "update_temp.exe";
     private static final String APP_EXE_NAME = "Licorera CR.exe";
     private static final String GITHUB_API_URL = "https://api.github.com/repos/juanpablo2025/AdminLicorera/releases/latest";

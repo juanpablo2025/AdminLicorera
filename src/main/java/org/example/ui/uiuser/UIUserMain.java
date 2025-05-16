@@ -94,7 +94,6 @@ public class UIUserMain {
             buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
             buttonsPanel.setBackground(FONDO_PRINCIPAL);
 
-
             sidebarPanel.addComponentListener(new ComponentAdapter() {
                 @Override
                 public void componentResized(ComponentEvent e) {
@@ -105,8 +104,6 @@ public class UIUserMain {
                     int buttonHeight = (int) (panelHeight * 0.13);
 
                     Dimension buttonSize = new Dimension(buttonWidth, buttonHeight);
-
-
                     for (Component comp : buttonsPanel.getComponents()) {
                         if (comp instanceof JButton) {
                             comp.setPreferredSize(buttonSize);
@@ -114,7 +111,6 @@ public class UIUserMain {
                             comp.setMinimumSize(buttonSize);
                         }
                     }
-
 
                     buttonsPanel.revalidate();
                     buttonsPanel.repaint();
@@ -291,6 +287,7 @@ public class UIUserMain {
         gbcForm.gridy = TWO;
         gbcForm.gridwidth = TWO;
         gbcForm.fill = GridBagConstraints.CENTER;
+
         JButton addGastoButton = new JButton("Confirmar");
         addGastoButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
         addGastoButton.setPreferredSize(new Dimension(295, 40));
@@ -315,7 +312,6 @@ public class UIUserMain {
                 logger.error("Error al registrar el gasto: {}", ex.getMessage());
             }
         });
-
         gbc.gridx = ONE;
         gbc.gridy = ZERO;
         gbc.gridheight = ONE;
