@@ -7,7 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
+import java.time.LocalTime;
 import java.util.Objects;
 import static org.example.manager.usermanager.ExcelUserManager.*;
 import static org.example.manager.usermanager.MainUserManager.crearDirectorios;
@@ -18,7 +21,7 @@ import static org.example.utils.Constants.*;
 
 public class Main {
 
-    private static final Logger logger =  LoggerFactory.getLogger(Main.class);
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
         crearDirectorios();
@@ -115,12 +118,61 @@ public class Main {
         frame.setVisible(true);
 
         loginButton.addActionListener(e -> {
+            frame.dispose();
             String nombreUsuario = userField.getText();
             if (!nombreUsuario.isEmpty()) {
                 registrarDia(nombreUsuario);
-                JOptionPane.showMessageDialog(frame, "¡Bienvenido!");
-                frame.dispose();
-                mainUser();
+
+                ImageIcon iconEmpleado = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/Bienvenida.png"));
+                if (iconEmpleado.getImageLoadStatus() != MediaTracker.COMPLETE) {
+                    iconEmpleado = null;
+                }
+
+                String saludo;
+                LocalTime horaActual = LocalTime.now();
+                if (horaActual.isBefore(LocalTime.of(12, 0))) {
+                    saludo = "¡Buenos días, " + nombreUsuario + "!";
+                } else if (horaActual.isBefore(LocalTime.of(18, 0))) {
+                    saludo = "¡Buenas tardes, " + nombreUsuario + "!";
+                } else {
+                    saludo = "¡Buenas noches, " + nombreUsuario + "!";
+                }
+
+                JLabel textLabel = new JLabel(saludo);
+                textLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                textLabel.setFont(new Font(LOBSTER_FONT, Font.BOLD, 30));
+
+                JPanel panelEmpleado = new JPanel();
+                panelEmpleado.setLayout(new BoxLayout(panelEmpleado, BoxLayout.Y_AXIS));
+                panelEmpleado.add(textLabel);
+                panelEmpleado.add(Box.createVerticalStrut(10));
+                panelEmpleado.add(new JLabel(iconEmpleado));
+
+
+                JOptionPane pane = new JOptionPane(panelEmpleado,
+                        JOptionPane.PLAIN_MESSAGE,
+                        JOptionPane.DEFAULT_OPTION,
+                        null,
+                        new Object[]{},  // sin botones
+                        null);
+                JDialog dialog = pane.createDialog(frame, "¡Ventana de Bienvenida!");
+                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+                // Mostrar diálogo en nuevo hilo
+                SwingUtilities.invokeLater(() -> dialog.setVisible(true));
+
+                // Timer para cerrarlo automáticamente
+                Timer timer = new Timer(2000, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        dialog.dispose();
+
+                        mainUser();
+                    }
+                });
+                timer.setRepeats(false);
+                timer.start();
+
             } else {
                 JOptionPane.showMessageDialog(frame, "Por favor ingresa un nombre de usuario.");
             }

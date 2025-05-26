@@ -1,5 +1,6 @@
 package org.example.utils;
 
+import org.example.manager.adminmanager.ConfigAdminManager;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -13,15 +14,16 @@ public class SiigoInvoice {
 
     private static final String AUTH_URL = "https://api.siigo.com/auth";
     private static final String INVOICE_URL = "https://api.siigo.com/v1/invoices";
-    private static final String CLIENT_ID = "TU_CLIENT_ID";
-    private static final String CLIENT_SECRET = "TU_CLIENT_SECRET";
-    private static final String CORREO_SIIGO = "TU_CORREO_SIIGO";
-    private static final String CLAVE_API = "TU_CLAVE_API";
 
     private String accessToken;
 
     public void authenticate() throws IOException {
-        String auth = CLIENT_ID + ":" + CLIENT_SECRET;
+        String clientId = ConfigAdminManager.getSiigoClientId();
+        String clientSecret = ConfigAdminManager.getSiigoClientSecret();
+        String correo = ConfigAdminManager.getSiigoUsername();
+        String claveApi = ConfigAdminManager.getSiigoAccessKey();
+
+        String auth = clientId + ":" + clientSecret;
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
 
         HttpURLConnection conn = (HttpURLConnection) new URL(AUTH_URL).openConnection();
@@ -31,8 +33,8 @@ public class SiigoInvoice {
         conn.setDoOutput(true);
 
         JSONObject authBody = new JSONObject();
-        authBody.put("username", CORREO_SIIGO);
-        authBody.put("access_key", CLAVE_API);
+        authBody.put("username", correo);
+        authBody.put("access_key", claveApi);
 
         try (OutputStream os = conn.getOutputStream()) {
             os.write(authBody.toString().getBytes(StandardCharsets.UTF_8));
@@ -71,3 +73,4 @@ public class SiigoInvoice {
         }
     }
 }
+

@@ -1,13 +1,16 @@
 package org.example.manager.usermanager;
 
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.model.Factura;
 import org.example.model.Mesa;
 import org.example.model.Producto;
+import org.example.ui.uiuser.UIUserMain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -320,8 +323,32 @@ public class ExcelUserManager {
                 limpiarFacturas();
                 String nombreCapitalizado = nombreEmpleado.substring(ZERO, ONE).toUpperCase() + nombreEmpleado.substring(ONE).toLowerCase();
 
-                JOptionPane.showMessageDialog(null, "Muchas gracias por tu ayuda "+nombreCapitalizado+ ".", "Día finalizado correctamente.", JOptionPane.INFORMATION_MESSAGE);
+                // Cargar la imagen
+                ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/Despedida.png")); // Reemplaza con la ruta de tu imagen
+                if (icon.getImageLoadStatus() != MediaTracker.COMPLETE) {
+                    // Manejar error si la imagen no carga
+                    icon = null; // o podrías usar una imagen de marcador de posición
+                }
 
+                // Crear un JLabel para el mensaje de texto
+                JLabel textLabel = new JLabel("Gracias por tu ayuda " + nombreCapitalizado + ".");
+                textLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+
+                // Crear un JPanel para organizar la imagen y el texto
+                JPanel panel = new JPanel();
+                panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+                panel.add(textLabel);
+                panel.add(Box.createVerticalStrut(10)); // Espaciado
+                panel.add(new JLabel(icon));
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        panel,
+                        "Día finalizado correctamente.",
+                        JOptionPane.PLAIN_MESSAGE,
+                        null
+                );
             }
         } catch (IOException e) {
             logger.error("Error al abrir el archivo Excel: {}", e.getMessage());

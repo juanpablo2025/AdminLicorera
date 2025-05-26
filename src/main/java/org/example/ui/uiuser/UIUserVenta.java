@@ -1,11 +1,13 @@
 package org.example.ui.uiuser;
 
 import org.apache.poi.ss.usermodel.*;
+import org.example.manager.adminmanager.ConfigAdminManager;
 import org.example.manager.usermanager.ExcelUserManager;
 import org.example.manager.usermanager.ProductoUserManager;
 import org.example.model.Producto;
 import org.example.ui.UIHelpers;
 import org.example.utils.FormatterHelpers;
+import org.example.utils.SiigoInvoice;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -24,10 +26,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.NumberFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
+import javax.swing.Timer;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import static org.example.manager.usermanager.ExcelUserManager.actualizarCantidadStockExcel;
 import static org.example.manager.usermanager.ExcelUserManager.cargarProductosMesaDesdeExcel;
@@ -244,7 +249,6 @@ public class UIUserVenta extends Panel {
         return closeButton;
     }
 
-
     private static Map<String, Integer> actualizarProductosDesdeTabla(JTable productosTable) {
         Map<String, Integer> productosActualizados = new HashMap<>();
         DefaultTableModel tableModel = (DefaultTableModel) productosTable.getModel();
@@ -368,31 +372,84 @@ public class UIUserVenta extends Panel {
                     logger.error("Error al guardar la compra en Excel", ex);
                 }
 
-                int respuesta = JOptionPane.showConfirmDialog(null, PRINT_BILL, COMFIRM_TITLE, JOptionPane.YES_NO_OPTION);
-                if (respuesta == JOptionPane.YES_OPTION) {
+                // Cargar la imagen
+                ImageIcon iconBill = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/ImprimirFactura.png")); // Reemplaza con la ruta de tu imagen
+
+                if (iconBill.getImageLoadStatus() != MediaTracker.COMPLETE) {
+                    // Manejar error si la imagen no carga
+                    iconBill = null; // o podrías usar una imagen de marcador de posición
+                }
+                iconBill = new ImageIcon(iconBill.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
+
+
+                JLabel textLabelBill = new JLabel(PRINT_BILL, SwingConstants.CENTER);
+                textLabelBill.setFont(new Font(LOBSTER_FONT, Font.BOLD, 30));
+
+                JLabel countdownLabel = new JLabel("Imprimiendo en 7...", SwingConstants.CENTER);
+                countdownLabel.setFont(new Font(LOBSTER_FONT, Font.BOLD, 18));
+                countdownLabel.setForeground(Color.RED);
+
+                JPanel panelBill = new JPanel();
+                panelBill.setLayout(new BoxLayout(panelBill, BoxLayout.Y_AXIS));
+                panelBill.add(textLabelBill);
+                panelBill.add(Box.createVerticalStrut(10));
+                panelBill.add(new JLabel(iconBill));
+                panelBill.add(Box.createVerticalStrut(10));
+                panelBill.add(countdownLabel);
+
+                JOptionPane optionPane = new JOptionPane(
+                        panelBill,
+                        JOptionPane.QUESTION_MESSAGE,
+                        JOptionPane.YES_NO_OPTION
+                );
+
+                JDialog dialog = optionPane.createDialog(null, COMFIRM_TITLE);
+                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+                // CORRECTO: usar javax.swing.Timer
+                final int[] secondsLeft = {7};
+                double finalTotal = total;
+                javax.swing.Timer countdownTimer = new javax.swing.Timer(1000, new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        secondsLeft[0]--;
+                        countdownLabel.setText("Imprimiendo en " + secondsLeft[0] + "...");
+                        if (secondsLeft[0] <= 0) {
+                            ((javax.swing.Timer) e.getSource()).stop();
+                            optionPane.setValue(JOptionPane.YES_OPTION);
+                            dialog.dispose();
+                            generarFacturadeCompra(ventaID, Arrays.asList(listaProductosEnLinea.toString().split("\n")), finalTotal, dateTime, tipoPago);
+                        }
+                    }
+                });
+                countdownTimer.setRepeats(true);
+                countdownTimer.start();
+
+                dialog.setVisible(true);
+
+                Object selectedValue = optionPane.getValue();
+                if (Integer.valueOf(JOptionPane.YES_OPTION).equals(selectedValue)) {
+                    countdownTimer.stop();
                     generarFacturadeCompra(ventaID, Arrays.asList(listaProductosEnLinea.toString().split("\n")), total, dateTime, tipoPago);
                 }
 
+
                 NumberFormat formatusd = NumberFormat.getCurrencyInstance(Locale.US);
                 Double totalDolar = total/TRM;
-                String mensaje = String.format(
-                        "<html>" +
-                                "<div style='font-size:16pt;'>" +
-                                "✔ <b>%s</b><br><br>" +
-                                "Por un total de:<br>" +
-                                "<span style='font-size:28pt; color:#2ecc71;'><b>$%s Pesos</b></span><br>" +
-                                "<span style='font-size:20pt; color:#000080;'><b>%s USD</b></span>" +
-                                "</div></html>",
-                        PURCHASE_SUCCEDED,
-                        NumberFormat.getInstance(new Locale("es", "CO")).format(total),
-                        formatusd.format(totalDolar)
-                );
 
-                JOptionPane.showMessageDialog(
+                // Cargar la imagen
+                ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/VentaRealizada.png")); // Ruta de la imagen
+                if (icon.getImageLoadStatus() != MediaTracker.COMPLETE) {
+                    // Manejar error.
+                    icon = null;
+                }
+                icon = new ImageIcon(icon.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
+
+                mostrarDialogoCompraExitosa(
                         compraDialog,
-                        mensaje,
-                        "Compra Exitosa",
-                        JOptionPane.INFORMATION_MESSAGE
+                        total,
+                        TRM,
+                        icon,
+                        null  // Puedes pasar null si no quieres ejecutar nada al cerrar
                 );
                 actualizarCantidadStockExcel(cantidadTotalPorProducto);
                 ProductoUserManager.limpiarCarrito();
@@ -414,7 +471,87 @@ public class UIUserVenta extends Panel {
 
         return confirmarCompraButton;
     }
+    public static void mostrarDialogoCompraExitosa(Window parent, double total, double trm, Icon icon, Runnable onClose) {
+        NumberFormat formatusd = NumberFormat.getCurrencyInstance(Locale.US);
+        double totalDolar = total / trm;
 
+        Font lobsterFont = new Font("SansSerif", Font.BOLD, 28); // fallback
+        try (InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream(LOBSTER_FONT)) {
+            if (fontStream != null) {
+                lobsterFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.PLAIN, 28f);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        JLabel tituloLabel = new JLabel("¡Venta realizada con éxito!", SwingConstants.CENTER);
+        tituloLabel.setFont(lobsterFont);
+        tituloLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        String mensaje = String.format(
+                "<html><div style='font-size:14pt; text-align:center;'>"
+                        + "<span style='font-size:30pt; color:#2ecc71;'><b>$%s Pesos</b></span><br>"
+                        + "<span style='font-size:16pt; color:#000080;'><b>%s USD</b></span>"
+                        + "</div></html>",
+                NumberFormat.getInstance(new Locale("es", "CO")).format(total),
+                formatusd.format(totalDolar)
+        );
+        JLabel mensajeLabel = new JLabel(mensaje, SwingConstants.CENTER);
+        mensajeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel imageLabel = new JLabel(icon);
+        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel countdownLabel = new JLabel("Limpiando mesa en 5...", SwingConstants.CENTER);
+        countdownLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        countdownLabel.setForeground(Color.RED);
+        countdownLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton aceptarBtn = new JButton("Aceptar");
+        aceptarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        aceptarBtn.setFont(new Font("Arial", Font.BOLD, 14));
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(tituloLabel);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(mensajeLabel);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(imageLabel);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(countdownLabel);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(aceptarBtn);
+
+        JOptionPane optionPane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}, null);
+        JDialog dialog = optionPane.createDialog(parent, "Venta Exitosa");
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        final int[] countdown = {5};
+        Timer timer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                countdown[0]--;
+                countdownLabel.setText("Limpiando mesa en " + countdown[0] + "...");
+                if (countdown[0] <= 0) {
+                    ((Timer) e.getSource()).stop();
+                    dialog.dispose();
+                    if (onClose != null) onClose.run();
+                }
+            }
+        });
+        timer.start();
+
+        aceptarBtn.addActionListener(e -> {
+            timer.stop();
+            dialog.dispose();
+            if (onClose != null) onClose.run();
+        });
+
+        dialog.setVisible(true);
+    }
     public static JButton createSavePurchaseMesaButton( String mesaID, JTable productosTable) {
         JButton saveCompraButton = new JButton("Guardar Compra");
 
@@ -571,67 +708,119 @@ public class UIUserVenta extends Panel {
     }
 
     public static JSONObject mostrarDialogoFactura(JFrame parentFrame) {
-        JTextField nombreField = new JTextField(20);
-        JTextField apellidoField = new JTextField(20);
+        Font lobsterFont = new Font("SansSerif", Font.BOLD, 26);
+        try (InputStream fontStream = UIUserVenta.class.getClassLoader().getResourceAsStream(LOBSTER_FONT)) {
+            if (fontStream != null) {
+                lobsterFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(32f);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        JLabel titulo = new JLabel("Facturación Electrónica", SwingConstants.CENTER);
+        titulo.setFont(lobsterFont);
+
+        JLabel logoLabel = new JLabel();
+        try {
+            ImageIcon icon = new ImageIcon(UIUserVenta.class.getResource("/icons/siigo.png"));
+            Image resized = icon.getImage().getScaledInstance(330, 70, Image.SCALE_SMOOTH);
+            logoLabel.setIcon(new ImageIcon(resized));
+        } catch (Exception e) {
+            logoLabel.setText("Siigo");
+        }
+
+        JTextField nombreField = new JTextField(15);
+        JTextField apellidoField = new JTextField(15);
         JTextField identificacionField = new JTextField(15);
-        JTextField direccionField = new JTextField(30);
-        JTextField ciudadField = new JTextField("11001"); // Bogotá
-        JTextField estadoField = new JTextField("11");    // Cundinamarca
-        JTextField paisField = new JTextField("CO");
-        JTextField telefonoField = new JTextField("3001234567");
-        JTextField correoField = new JTextField(25);
+        JTextField direccionField = new JTextField(15);
+        JTextField ciudadField = new JTextField("11001", 15);
+        JTextField estadoField = new JTextField("11", 15);
+        JTextField paisField = new JTextField("CO", 15);
+        JTextField telefonoField = new JTextField("3001234567", 15);
+        JTextField correoField = new JTextField(15);
 
-        JPanel panel = new JPanel(new GridLayout(ZERO, TWO, FIVE, FIVE));
-        panel.add(new JLabel("Nombre:"));
-        panel.add(nombreField);
-        panel.add(new JLabel("Apellido:"));
-        panel.add(apellidoField);
-        panel.add(new JLabel("Identificación:"));
-        panel.add(identificacionField);
-        panel.add(new JLabel("Dirección:"));
-        panel.add(direccionField);
-        panel.add(new JLabel("Ciudad (Código):"));
-        panel.add(ciudadField);
-        panel.add(new JLabel("Departamento (Código):"));
-        panel.add(estadoField);
-        panel.add(new JLabel("País (Código):"));
-        panel.add(paisField);
-        panel.add(new JLabel("Teléfono:"));
-        panel.add(telefonoField);
-        panel.add(new JLabel("Correo electrónico:"));
-        panel.add(correoField);
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(4, 6, 4, 6);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
 
-        int result = JOptionPane.showConfirmDialog(parentFrame, panel, "Datos de Facturación Electrónica",
+        formPanel.add(new JLabel("Nombre:"), gbc);
+        gbc.gridx = 1; formPanel.add(nombreField, gbc);
+        gbc.gridx = 0; gbc.gridy++;
+        formPanel.add(new JLabel("Apellido:"), gbc);
+        gbc.gridx = 1; formPanel.add(apellidoField, gbc);
+        gbc.gridx = 0; gbc.gridy++;
+        formPanel.add(new JLabel("Identificación:"), gbc);
+        gbc.gridx = 1; formPanel.add(identificacionField, gbc);
+        gbc.gridx = 0; gbc.gridy++;
+        formPanel.add(new JLabel("Dirección:"), gbc);
+        gbc.gridx = 1; formPanel.add(direccionField, gbc);
+        gbc.gridx = 0; gbc.gridy++;
+        formPanel.add(new JLabel("Ciudad (Código):"), gbc);
+        gbc.gridx = 1; formPanel.add(ciudadField, gbc);
+        gbc.gridx = 0; gbc.gridy++;
+        formPanel.add(new JLabel("Departamento (Código):"), gbc);
+        gbc.gridx = 1; formPanel.add(estadoField, gbc);
+        gbc.gridx = 0; gbc.gridy++;
+        formPanel.add(new JLabel("País (Código):"), gbc);
+        gbc.gridx = 1; formPanel.add(paisField, gbc);
+        gbc.gridx = 0; gbc.gridy++;
+        formPanel.add(new JLabel("Teléfono:"), gbc);
+        gbc.gridx = 1; formPanel.add(telefonoField, gbc);
+        gbc.gridx = 0; gbc.gridy++;
+        formPanel.add(new JLabel("Correo electrónico:"), gbc);
+        gbc.gridx = 1; formPanel.add(correoField, gbc);
+
+        JPanel wrapper = new JPanel();
+        wrapper.setLayout(new BoxLayout(wrapper, BoxLayout.Y_AXIS));
+        wrapper.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        titulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        formPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        wrapper.add(titulo);
+        wrapper.add(Box.createVerticalStrut(5));
+        wrapper.add(logoLabel);
+        wrapper.add(Box.createVerticalStrut(10));
+        wrapper.add(formPanel);
+
+        int result = JOptionPane.showConfirmDialog(parentFrame, wrapper, "Datos de Facturación Electrónica",
                 JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
         if (result == JOptionPane.OK_OPTION) {
+            if (Stream.of(nombreField, apellidoField, identificacionField, direccionField,
+                            ciudadField, estadoField, paisField, telefonoField, correoField)
+                    .anyMatch(f -> f.getText().trim().isEmpty())) {
+                JOptionPane.showMessageDialog(parentFrame, "⚠ Por favor complete todos los campos.");
+                return mostrarDialogoFactura(parentFrame); // Reintentar
+            }
+
             return new JSONObject()
                     .put("person_type", "Person")
                     .put("id_type", "13")
                     .put("identification", identificacionField.getText().trim())
                     .put("branch_office", 0)
-                    .put("name", new JSONArray().put(nombreField.getText().trim()).put(apellidoField.getText().trim()))
+                    .put("name", new JSONArray()
+                            .put(nombreField.getText().trim())
+                            .put(apellidoField.getText().trim()))
                     .put("address", new JSONObject()
                             .put("address", direccionField.getText().trim())
                             .put("city", new JSONObject()
                                     .put("country_code", paisField.getText().trim())
                                     .put("state_code", estadoField.getText().trim())
-                                    .put("city_code", ciudadField.getText().trim())
-                            )
-                    )
+                                    .put("city_code", ciudadField.getText().trim())))
                     .put("phones", new JSONArray()
-                            .put(new JSONObject().put("number", telefonoField.getText().trim()))
-                    )
+                            .put(new JSONObject().put("number", telefonoField.getText().trim())))
                     .put("contacts", new JSONArray()
                             .put(new JSONObject()
                                     .put("first_name", nombreField.getText().trim())
                                     .put("last_name", apellidoField.getText().trim())
-                                    .put("email", correoField.getText().trim())
-                            )
-                    );
-        } else {
-            return null;
+                                    .put("email", correoField.getText().trim())));
         }
+
+        return null;
     }
 
     private static void limpiarMesaEnExcel(String mesaID) {
@@ -692,31 +881,35 @@ public class UIUserVenta extends Panel {
         ImageIcon iconoPaypal = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/Paypal.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
 
         JDialog dialogoPago = new JDialog(compraDialog, "Seleccione el método de pago", true);
-        dialogoPago.setSize(1300, 400);
+        dialogoPago.setSize(910, 400);
         dialogoPago.setLayout(new BorderLayout(20, 20));
         dialogoPago.setResizable(false);
         double totalDollar = total/TRM;
         JLabel totalLabel = getJLabel(total, totalDollar);
 
+        String tilte = "Seleccione el método de pago";
+        JLabel titleLabelMetodo = new JLabel(tilte);
+        titleLabelMetodo.setFont(new Font(ARIAL_FONT, Font.BOLD, 20));
+        dialogoPago.add( titleLabelMetodo, BorderLayout.CENTER);
+
         JPanel panelPago = new JPanel();
-        panelPago.setLayout(new GridLayout(TWO, THREE, 20, 20));
+        panelPago.setLayout(new GridLayout(TWO, THREE, 5, 5));
         panelPago.setBorder(BorderFactory.createEmptyBorder(TEN, 20, 20, 20));
         panelPago.setBackground(Color.WHITE);
-
-        JButton botonEfectivo = new JButton(EFECTIVO, iconoEfectivo);
-        JButton botonBancolombia = new JButton("Bancolombia - Transferencia", iconoBancolombia);
-        JButton botonNequi = new JButton("Nequi - Transferencia", iconoNequi);
         JButton botonDaviplata = new JButton("Daviplata - Transferencia", iconoDaviplata);
-        JButton botonDatafono = new JButton("Datafono", iconoDatafono);
+        JButton botonNequi = new JButton("Nequi - Transferencia", iconoNequi);
         JButton botonPaypal = new JButton("Paypal", iconoPaypal);
+        JButton botonBancolombia = new JButton("Bancolombia - Transferencia", iconoBancolombia);
+        JButton botonDatafono = new JButton("Datafono", iconoDatafono);
+        JButton botonEfectivo = new JButton(EFECTIVO, iconoEfectivo);
 
-        JButton[] botones = { botonEfectivo, botonBancolombia, botonNequi, botonDaviplata, botonDatafono, botonPaypal };
+        JButton[] botones = { botonDaviplata,  botonBancolombia, botonEfectivo, botonPaypal, botonNequi, botonDatafono};
         for (JButton btn : botones) {
             btn.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
             btn.setBackground(new Color(245, 245, 245));
             btn.setFocusPainted(false);
             btn.setHorizontalAlignment(SwingConstants.LEFT);
-            btn.setIconTextGap(TEN);
+            btn.setIconTextGap(5);
             panelPago.add(btn);
         }
 
@@ -750,8 +943,29 @@ public class UIUserVenta extends Panel {
 
             JTextField inputField = new JTextField(TWELVE);
             inputField.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
+            inputField.setText("Ingrese el dinero recibido:"); // Establecer el texto inicial
+            inputField.setForeground(Color.GRAY); // Establecer el color del texto inicial como gris
 
-            JLabel title = new JLabel("Ingrese el dinero recibido:");
+            // Agregar un listener para borrar el texto cuando el campo de texto obtiene el foco
+            inputField.addFocusListener(new FocusListener() {
+                @Override
+                public void focusGained(FocusEvent e) {
+                    if (inputField.getText().equals("Ingrese el dinero recibido:")) {
+                        inputField.setText(""); // Borrar el texto
+                        inputField.setForeground(Color.BLACK); // Cambiar el color del texto a negro
+                    }
+                }
+
+                @Override
+                public void focusLost(FocusEvent e) {
+                    if (inputField.getText().isEmpty()) {
+                        inputField.setText("Ingrese el dinero recibido:"); // Restaurar el texto
+                        inputField.setForeground(Color.GRAY); // Restaurar el color del texto a gris
+                    }
+                }
+            });
+
+            JLabel title = new JLabel(""); // Eliminar el JLabel title
             title.setFont(new Font(ARIAL_FONT, Font.BOLD, 20));
             title.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -760,7 +974,36 @@ public class UIUserVenta extends Panel {
             content.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
             content.setBackground(Color.WHITE);
 
-            content.add(title);
+            // Cargar la imagen
+            ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/CalcularDevuelta.png"));
+            // Crear un JLabel para mostrar la imagen
+            icon = new ImageIcon(icon.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
+            JLabel imageLabel = new JLabel(icon);
+            imageLabel.setPreferredSize(new Dimension(300, 300)); // Ajustar el tamaño de la imagen
+            imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            // Crear la fuente personalizada
+            Font customFont = null;
+            try {
+                InputStream fontStream = UIUserMain.class.getClassLoader().getResourceAsStream(LOBSTER_FONT); // Reemplaza con la ruta de tu fuente
+                if (fontStream != null) {
+                    customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 24); // Tamaño 24
+                } else {
+                    customFont = new Font(ARIAL_FONT, Font.BOLD, 48); // Si la fuente no se carga, usa Arial
+                }
+            } catch (IOException | FontFormatException e) {
+                e.printStackTrace();
+                customFont = new Font(ARIAL_FONT, Font.BOLD, 24); // Si hay un error, usa Arial
+            }
+
+            // Crear el JLabel para el título
+            JLabel titleLabel = new JLabel("¿Quieres calcular la devuelta?");
+            titleLabel.setFont(customFont);
+            titleLabel.setForeground(Color.BLACK);
+            titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+            content.add(titleLabel);       // Agregar el título primero
+            content.add(Box.createVerticalStrut(10)); // Espacio entre el título y la imagen
+            content.add(imageLabel);         // Luego la imagen
             content.add(Box.createVerticalStrut(15));
             content.add(inputField);
             content.add(Box.createVerticalStrut(25));
@@ -787,10 +1030,16 @@ public class UIUserVenta extends Panel {
             btnPanel.add(continuarBtn);
             btnPanel.add(omitirBtn);
 
+            // Crear un JPanel para contener los botones
+            JPanel buttonPanel = new JPanel();
+            buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS)); // Apilar verticalmente
+            buttonPanel.setBackground(Color.WHITE);
+            buttonPanel.add(btnPanel);
+
             JDialog dialog = new JDialog(compraDialog, "Calcula la Devuelta", true);
             dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             dialog.getContentPane().add(content, BorderLayout.CENTER);
-            dialog.getContentPane().add(btnPanel, BorderLayout.SOUTH);
+            dialog.getContentPane().add(buttonPanel, BorderLayout.SOUTH); // Usar el panel de botones
             dialog.pack();
             dialog.setLocationRelativeTo(compraDialog);
             dialog.setResizable(false);
@@ -855,7 +1104,7 @@ public class UIUserVenta extends Panel {
             });
 
 
-            omitirBtn.addActionListener(es -> {
+        omitirBtn.addActionListener(es -> {
                 tipoPagoSeleccionado[ZERO] = EFECTIVO;
                 dialogoPago.dispose();
                 dialog.dispose();
@@ -866,7 +1115,10 @@ public class UIUserVenta extends Panel {
                     dialog.dispose();
                 }
             });
+
+
             dialog.setVisible(true);
+
         });
 
         botonDatafono.addActionListener(event -> {
@@ -944,14 +1196,40 @@ public class UIUserVenta extends Panel {
             return null;
         }
 
-         /*if(ConfigAdminManager.isElectronicBillingEnabled()) {
+        if (ConfigAdminManager.isElectronicBillingEnabled()) {
 
-             JSONObject clienteSiigo = UIUserVenta.mostrarDialogoFactura(frame);
-                   if (clienteSiigo != null) {
-                       // Usar clienteSiigo en la creación de la factura
-                        mostrarDialogoFactura(frame);
-                    }
-        }*/
+            JSONObject clienteSiigo = UIUserVenta.mostrarDialogoFactura(frame);
+
+            if (clienteSiigo != null) {
+
+                JSONObject facturaJson = new JSONObject()
+                        .put("document", new JSONObject().put("id", 1)) // Ajustar ID documento
+                        .put("date", LocalDate.now().toString())
+                        .put("customer", clienteSiigo)
+                        .put("seller", new JSONObject().put("id", 1)) // Ajustar ID vendedor
+                        .put("payments", new JSONArray().put(
+                                new JSONObject()
+                                        .put("payment_method", new JSONObject().put("id", 1)) // efectivo
+                                        .put("value", 10000) // valor ejemplo
+                                        .put("due_date", LocalDate.now().toString())
+                        ))
+                        .put("items", new JSONArray().put(
+                                new JSONObject()
+                                        .put("code", "001")
+                                        .put("description", "Producto Genérico")
+                                        .put("quantity", 1)
+                                        .put("price", 10000)
+                                        .put("discount", 0)
+                                        .put("taxes", new JSONArray().put(new JSONObject().put("id", 1)))
+                        ));
+
+                try {
+                    new SiigoInvoice().crearFactura(facturaJson);
+                } catch (IOException e) {
+                    JOptionPane.showMessageDialog(frame, "❌ Error al enviar factura: " + e.getMessage());
+                }
+            }
+        }
 
         return tipoPagoSeleccionado[ZERO];
     }

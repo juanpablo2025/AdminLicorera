@@ -340,7 +340,7 @@ public class UIAdminProducts {
 
                 JOptionPane.showMessageDialog(null,
                         "Producto eliminado correctamente.",
-                        "Eliminado", JOptionPane.INFORMATION_MESSAGE);
+                        "Eliminado", JOptionPane.PLAIN_MESSAGE);
 
                 updateProductTable(productTable);
             }

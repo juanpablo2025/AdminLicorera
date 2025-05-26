@@ -72,7 +72,7 @@ public class Constants {
     public static final String THANKS_BILL = "Gracias por su compra!";
     public static final String SLASH_ZERO = "\0";
     public static final String COMFIRM_TITLE = "Confirmar Compra";
-    public static final String PRINT_BILL = "¿Desea imprimir el recibo?";
+    public static final String PRINT_BILL = "¿Imprimir la factura?";
     public static final String FACTURAS = "Facturas";
     public static final String IMPRESORA = "IMPRESORA";
 

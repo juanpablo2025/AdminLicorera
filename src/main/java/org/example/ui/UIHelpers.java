@@ -283,7 +283,7 @@ public class UIHelpers {
 
                         card.setOpaque(false);
                         card.setBackground(new Color(58, 58, 58));
-                        card.setPreferredSize(new Dimension(80, 210));
+                        card.setPreferredSize(new Dimension(100, 200));
                         card.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
                         JLabel imageLabel = new JLabel();
@@ -300,7 +300,8 @@ public class UIHelpers {
                                 g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), TWENTY, TWENTY);
                             }
                         };
-                        namePanel.setPreferredSize(new Dimension(240, 50));
+
+                        namePanel.setPreferredSize(new Dimension(100, 50));
                         namePanel.setOpaque(false);
                         namePanel.setLayout(new BorderLayout());
 
@@ -314,7 +315,7 @@ public class UIHelpers {
                         namePanel.setBorder(BorderFactory.createEmptyBorder(FOUR, EIGHT, FOUR, EIGHT));
 
                         JLabel nameLabel = new JLabel(formattedName);
-                        nameLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, SIXTEEN));
+                        nameLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 14));
                         nameLabel.setForeground(Color.WHITE);
                         nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
                         namePanel.add(nameLabel, BorderLayout.NORTH);
@@ -357,7 +358,7 @@ public class UIHelpers {
                                     }
 
                                     if (img != null) {
-                                        Image scaledImg = img.getScaledInstance(180, 150, Image.SCALE_SMOOTH);
+                                        Image scaledImg = img.getScaledInstance(170, 140, Image.SCALE_SMOOTH);
                                         return makeRoundedImage(scaledImg);
 
                                     }
@@ -457,12 +458,12 @@ public class UIHelpers {
     }
 
     private static ImageIcon makeRoundedImage(Image img) {
-        BufferedImage roundedImage = new BufferedImage(180, 150, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage roundedImage = new BufferedImage(170, 140, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = roundedImage.createGraphics();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2.setClip(new RoundRectangle2D.Float(ZERO, ZERO, 180, 150, 20, 20));
-        g2.drawImage(img, ZERO, ZERO, 180, 150, null);
+        g2.setClip(new RoundRectangle2D.Float(ZERO, ZERO, 170, 140, 20, 20));
+        g2.drawImage(img, ZERO, ZERO, 170, 140, null);
         g2.dispose();
 
         return new ImageIcon(roundedImage);
