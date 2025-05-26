@@ -408,6 +408,7 @@ public class UIUserVenta extends Panel {
 
                 // CORRECTO: usar javax.swing.Timer
                 final int[] secondsLeft = {7};
+
                 double finalTotal = total;
                 javax.swing.Timer countdownTimer = new javax.swing.Timer(1000, new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
@@ -425,8 +426,9 @@ public class UIUserVenta extends Panel {
                 countdownTimer.start();
 
                 dialog.setVisible(true);
-
                 Object selectedValue = optionPane.getValue();
+                countdownTimer.stop();
+
                 if (Integer.valueOf(JOptionPane.YES_OPTION).equals(selectedValue)) {
                     countdownTimer.stop();
                     generarFacturadeCompra(ventaID, Arrays.asList(listaProductosEnLinea.toString().split("\n")), total, dateTime, tipoPago);
@@ -1068,28 +1070,21 @@ public class UIUserVenta extends Panel {
                     String cambioFormateado = FormatterHelpers.formatearMoneda(cambio);
 
                     JLabel label = new JLabel("<html><div style='text-align: center;'>"
-                            + "<span style='font-size:16pt;font-weight:bold;'>¿Desea calcular el cambio?</span><br><br>"
                             + "<span style='font-size:20pt;color:green;'>$" + cambioFormateado + " Pesos</span>"
                             + "</div></html>");
                     label.setHorizontalAlignment(SwingConstants.CENTER);
 
-                    Object[] options = {"Calcular cambio", "Omitir"};
 
-                    int option = JOptionPane.showOptionDialog(
+
+                    JOptionPane.showMessageDialog(
                             compraDialog,
                             label,
                             "Devuelta",
-                            JOptionPane.YES_NO_OPTION,
-                            JOptionPane.INFORMATION_MESSAGE,
-                            null,
-                            options,
-                            options[ZERO]
+                            JOptionPane.INFORMATION_MESSAGE
                     );
 
-                    if (option == JOptionPane.YES_OPTION) {
 
-                        JOptionPane.showMessageDialog(compraDialog, label, "Cambio devuelto", JOptionPane.INFORMATION_MESSAGE);
-                    }
+
 
                     dialog.dispose();
                     tipoPagoSeleccionado[ZERO] = EFECTIVO;
