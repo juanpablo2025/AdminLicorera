@@ -283,7 +283,7 @@ public class UIHelpers {
 
                         card.setOpaque(false);
                         card.setBackground(new Color(58, 58, 58));
-                        card.setPreferredSize(new Dimension(100, 200));
+                        card.setPreferredSize(new Dimension(100, 220));
                         card.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
                         JLabel imageLabel = new JLabel();
@@ -301,24 +301,28 @@ public class UIHelpers {
                             }
                         };
 
-                        namePanel.setPreferredSize(new Dimension(100, 50));
+                        namePanel.setPreferredSize(new Dimension(100, 65));
                         namePanel.setOpaque(false);
                         namePanel.setLayout(new BorderLayout());
 
                         String formattedName = Arrays.stream(product.getName().replace("_", " ").toLowerCase().split(" "))
-                                .map(word -> word.isEmpty() ? "" : Character.toUpperCase(word.charAt(ZERO)) + word.substring(ONE))
+                                .map(word -> word.isEmpty() ? "" : Character.toUpperCase(word.charAt(0)) + word.substring(1))
                                 .collect(Collectors.joining(" "));
 
-                        card.setToolTipText(formattedName);
-
+                        // Usa <html> para permitir salto de línea automático
+                        JLabel nameLabel = new JLabel("<html><div style='text-align:center;'>" + formattedName + "</div></html>");
                         namePanel.setLayout(new BorderLayout());
                         namePanel.setBorder(BorderFactory.createEmptyBorder(FOUR, EIGHT, FOUR, EIGHT));
-
-                        JLabel nameLabel = new JLabel(formattedName);
-                        nameLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 14));
+                        nameLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 15));
                         nameLabel.setForeground(Color.WHITE);
                         nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                        nameLabel.setVerticalAlignment(SwingConstants.TOP);
                         namePanel.add(nameLabel, BorderLayout.NORTH);
+
+                        //card.setToolTipText("<html>" + formattedName + "</html>");
+
+
+
 
                         JLabel quantityPLabel = new JLabel("x" + product.getQuantity());
                         quantityPLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, FOURTEEN));

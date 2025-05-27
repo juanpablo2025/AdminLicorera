@@ -215,7 +215,7 @@ public class UIUserMain {
 
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(FONDO_PRINCIPAL);
-        titlePanel.setBorder(BorderFactory.createEmptyBorder(30, ZERO, 30, ZERO));
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 30, 0));
 
         JLabel titleLabel = new JLabel("Finalizar Día", SwingConstants.CENTER);
         titleLabel.setFont(customFont.deriveFont(Font.BOLD, 50f));
@@ -225,15 +225,15 @@ public class UIUserMain {
 
         JPanel mainContentPanel = new JPanel(new GridBagLayout());
         mainContentPanel.setBackground(FONDO_PRINCIPAL);
-        mainContentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
+        mainContentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(15, 15, 15, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        // Logo
         JPanel imagePanel = new JPanel(new BorderLayout());
         imagePanel.setBackground(FONDO_PRINCIPAL);
-        imagePanel.setPreferredSize(new Dimension(200, 200));
+        imagePanel.setPreferredSize(new Dimension(230, 230));
 
         try {
             URL imageUrl = UIUserGastos.class.getResource("/icons/image.png");
@@ -243,84 +243,67 @@ public class UIUserMain {
                 JLabel logoLabel = new JLabel(new ImageIcon(scaledImage), SwingConstants.CENTER);
                 imagePanel.add(logoLabel, BorderLayout.CENTER);
             } else {
-                JLabel missingLabel = new JLabel("Imagen no encontrada", SwingConstants.CENTER);
-                missingLabel.setFont(customFont.deriveFont(14f));
-                imagePanel.add(missingLabel, BorderLayout.CENTER);
+                imagePanel.add(new JLabel("Imagen no encontrada", SwingConstants.CENTER));
             }
         } catch (Exception e) {
-            JLabel errorLabel = new JLabel("Error cargando imagen", SwingConstants.CENTER);
-            errorLabel.setFont(customFont.deriveFont(14f));
-            imagePanel.add(errorLabel, BorderLayout.CENTER);
+            imagePanel.add(new JLabel("Error cargando imagen", SwingConstants.CENTER));
         }
 
-        gbc.gridx = ZERO;
-        gbc.gridy = ZERO;
-        gbc.gridheight = TWO;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridheight = 1;
         mainContentPanel.add(imagePanel, gbc);
 
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBackground(FONDO_PRINCIPAL);
-        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        // Botón Finalizar Día
+        JButton finalizarBtn = new JButton("Finalizar");
+        finalizarBtn.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        finalizarBtn.setPreferredSize(new Dimension(295, 40));
+        finalizarBtn.setBackground(new Color(0, 201, 87));
+        finalizarBtn.setForeground(Color.WHITE);
 
-        GridBagConstraints gbcForm = new GridBagConstraints();
-        gbcForm.insets = new Insets(TEN, TEN, TEN, TEN);
-        gbcForm.anchor = GridBagConstraints.WEST;
+        finalizarBtn.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                    gastosPanel,
+                    "¿Estás seguro de que deseas finalizar el día?",
+                    "Confirmar Facturación",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE
+            );
 
-        Font labelFont = customFont.deriveFont(20f);
-        Color labelColor = new Color(36, 36, 36);
-
-        JLabel descLabel = new JLabel("Por favor escribe 'Facturar'");
-        descLabel.setFont(labelFont);
-        descLabel.setForeground(labelColor);
-        gbcForm.gridx = ZERO;
-        gbcForm.gridy = ZERO;
-        formPanel.add(descLabel, gbcForm);
-
-        gbcForm.gridx = ZERO;
-        gbcForm.gridy = ONE;
-        JTextField nombreGastoField = new JTextField(20);
-        nombreGastoField.setFont(labelFont.deriveFont(Font.PLAIN, 18f));
-        nombreGastoField.setPreferredSize(new Dimension(100, 35));
-        formPanel.add(nombreGastoField, gbcForm);
-
-        gbcForm.gridx = ZERO;
-        gbcForm.gridy = TWO;
-        gbcForm.gridwidth = TWO;
-        gbcForm.fill = GridBagConstraints.CENTER;
-
-        JButton addGastoButton = new JButton("Confirmar");
-        addGastoButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
-        addGastoButton.setPreferredSize(new Dimension(295, 40));
-        addGastoButton.setBackground(new Color(ZERO, 201, 87));
-        addGastoButton.setForeground(Color.WHITE);
-        formPanel.add(addGastoButton, gbcForm);
-
-        addGastoButton.addActionListener(e -> {
-            try {
-
-                if (FacturacionUserManager.verificarFacturacion(nombreGastoField.getText())) {
+            if (confirm == JOptionPane.YES_OPTION) {
+                try {
                     FacturacionUserManager.facturarYSalir();
-
-                } else {
-                    FacturacionUserManager.mostrarErrorFacturacion();
+                    CardLayout cl = (CardLayout) contentPanel.getLayout();
+                    cl.show(contentPanel, "main");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(gastosPanel,
+                            "Ocurrió un error al finalizar el día.",
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                    logger.error("Error al facturar y salir: {}", ex.getMessage());
                 }
-
-                CardLayout cl = (CardLayout) contentPanel.getLayout();
-                cl.show(contentPanel, "main");
-            }  catch (Exception ex) {
-                JOptionPane.showMessageDialog(null, "Ocurrió un error al registrar el gasto.", "Error", JOptionPane.ERROR_MESSAGE);
-                logger.error("Error al registrar el gasto: {}", ex.getMessage());
             }
         });
-        gbc.gridx = ONE;
-        gbc.gridy = ZERO;
-        gbc.gridheight = ONE;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.NORTH;
-        mainContentPanel.add(formPanel, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        mainContentPanel.add(finalizarBtn, gbc);
 
         gastosPanel.add(mainContentPanel, BorderLayout.CENTER);
+        JLabel infoLabel = new JLabel(
+                "<html><div style='text-align:center;'>¿Terminaste la jornada?.<br>Da clic en 'Finalizar' y genera el realizo del dia. </div></html>",
+                SwingConstants.CENTER
+        );
+        infoLabel.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
+        infoLabel.setForeground(new Color(36, 36, 36));
 
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        mainContentPanel.add(infoLabel, gbc);
+
+        // luego el botón debajo
+        gbc.gridy++;
+        mainContentPanel.add(finalizarBtn, gbc);
         JButton backButton = createBackButton(contentPanel);
         JPanel bottomPanel = new JPanel();
         bottomPanel.setBackground(FONDO_PRINCIPAL);

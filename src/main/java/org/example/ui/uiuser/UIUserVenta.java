@@ -382,8 +382,19 @@ public class UIUserVenta extends Panel {
                 iconBill = new ImageIcon(iconBill.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
 
 
+                // Cargar la fuente Lobster
+                Font lobsterFont = new Font("SansSerif", Font.BOLD, 30); // Fallback
+                try (InputStream fontStream = UIUserMain.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf")) {
+                    if (fontStream != null) {
+                        lobsterFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.PLAIN, 30f);
+                    }
+                } catch (Exception es) {
+                    es.printStackTrace();
+                }
+
+                // Crear el JLabel con la fuente personalizada
                 JLabel textLabelBill = new JLabel(PRINT_BILL, SwingConstants.CENTER);
-                textLabelBill.setFont(new Font(LOBSTER_FONT, Font.BOLD, 30));
+                textLabelBill.setFont(lobsterFont);
 
                 JLabel countdownLabel = new JLabel("Imprimiendo en 7...", SwingConstants.CENTER);
                 countdownLabel.setFont(new Font(LOBSTER_FONT, Font.BOLD, 18));
@@ -943,32 +954,32 @@ public class UIUserVenta extends Panel {
 
         botonEfectivo.addActionListener(event -> {
 
-            JTextField inputField = new JTextField(TWELVE);
+            JTextField inputField = new JTextField(12);
             inputField.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
-            inputField.setText("Ingrese el dinero recibido:"); // Establecer el texto inicial
-            inputField.setForeground(Color.GRAY); // Establecer el color del texto inicial como gris
+            inputField.setText("Ingrese el dinero recibido:");
+            inputField.setForeground(Color.GRAY);
 
-            // Agregar un listener para borrar el texto cuando el campo de texto obtiene el foco
-            inputField.addFocusListener(new FocusListener() {
+            // Focus listener para simular placeholder
+            inputField.addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusGained(FocusEvent e) {
                     if (inputField.getText().equals("Ingrese el dinero recibido:")) {
-                        inputField.setText(""); // Borrar el texto
-                        inputField.setForeground(Color.BLACK); // Cambiar el color del texto a negro
+                        inputField.setText("");
+                        inputField.setForeground(Color.BLACK);
                     }
                 }
 
                 @Override
                 public void focusLost(FocusEvent e) {
-                    if (inputField.getText().isEmpty()) {
-                        inputField.setText("Ingrese el dinero recibido:"); // Restaurar el texto
-                        inputField.setForeground(Color.GRAY); // Restaurar el color del texto a gris
+                    if (inputField.getText().trim().isEmpty()) {
+                        inputField.setText("Ingrese el dinero recibido:");
+                        inputField.setForeground(Color.GRAY);
                     }
                 }
             });
 
             JLabel title = new JLabel(""); // Eliminar el JLabel title
-            title.setFont(new Font(ARIAL_FONT, Font.BOLD, 20));
+            title.setFont(new Font(ARIAL_FONT, Font.BOLD, 30));
             title.setHorizontalAlignment(SwingConstants.CENTER);
 
             JPanel content = new JPanel();
@@ -988,7 +999,7 @@ public class UIUserVenta extends Panel {
             try {
                 InputStream fontStream = UIUserMain.class.getClassLoader().getResourceAsStream(LOBSTER_FONT); // Reemplaza con la ruta de tu fuente
                 if (fontStream != null) {
-                    customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 24); // Tamaño 24
+                    customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.PLAIN, 30); // Tamaño 24
                 } else {
                     customFont = new Font(ARIAL_FONT, Font.BOLD, 48); // Si la fuente no se carga, usa Arial
                 }
@@ -1003,12 +1014,22 @@ public class UIUserVenta extends Panel {
             titleLabel.setForeground(Color.BLACK);
             titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            content.add(titleLabel);       // Agregar el título primero
+            // Total label más pequeño y centrado
+            totalLabel.setFont(new Font(ARIAL_FONT, Font.PLAIN, 10));
+            totalLabel.setForeground(Color.DARK_GRAY);
+            totalLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+
+
+            content.add(totalLabel);
+            content.add(Box.createVerticalStrut(15));
+            // Añadir componentes en orden
+            content.add(titleLabel);
             content.add(Box.createVerticalStrut(10)); // Espacio entre el título y la imagen
-            content.add(imageLabel);         // Luego la imagen
+            content.add(imageLabel); // Imagen centrada
             content.add(Box.createVerticalStrut(15));
             content.add(inputField);
-            content.add(Box.createVerticalStrut(25));
+            content.add(Box.createVerticalStrut(10));
 
             JButton continuarBtn = new JButton("Continuar");
             continuarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -1017,6 +1038,7 @@ public class UIUserVenta extends Panel {
             continuarBtn.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
             continuarBtn.setFocusPainted(false);
             continuarBtn.setPreferredSize(new Dimension(150, 40));
+            continuarBtn.setFocusable(true);
 
 
             JButton omitirBtn = new JButton("Omitir");
@@ -1097,7 +1119,10 @@ public class UIUserVenta extends Panel {
                     );
                 }
             });
-
+            SwingUtilities.invokeLater(() -> {
+                // dar el foco a otro componente, por ejemplo el botón continuar
+                continuarBtn.requestFocusInWindow();
+            });
 
         omitirBtn.addActionListener(es -> {
                 tipoPagoSeleccionado[ZERO] = EFECTIVO;
@@ -1119,7 +1144,7 @@ public class UIUserVenta extends Panel {
         botonDatafono.addActionListener(event -> {
 
             ImageIcon qrIcon = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/NoDatafono.png"))
-                    .getImage().getScaledInstance(300, 400, Image.SCALE_SMOOTH));
+                    .getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
             JLabel qrLabel = new JLabel(qrIcon);
             qrLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 

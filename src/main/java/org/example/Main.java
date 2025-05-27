@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.InputStream;
 import java.time.LocalTime;
 import java.util.Objects;
 import static org.example.manager.usermanager.ExcelUserManager.*;
@@ -128,6 +129,13 @@ public class Main {
                     iconEmpleado = null;
                 }
 
+                Font lobsterFont;
+                try (InputStream fontStream = UIUserMain.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf")) {
+                    lobsterFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 30f);
+                } catch (Exception ex) {
+                    lobsterFont = new Font("Serif", Font.BOLD, 30);
+                }
+
                 String saludo;
                 LocalTime horaActual = LocalTime.now();
                 if (horaActual.isBefore(LocalTime.of(12, 0))) {
@@ -140,7 +148,7 @@ public class Main {
 
                 JLabel textLabel = new JLabel(saludo);
                 textLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                textLabel.setFont(new Font(LOBSTER_FONT, Font.BOLD, 30));
+                textLabel.setFont(lobsterFont);
 
                 JPanel panelEmpleado = new JPanel();
                 panelEmpleado.setLayout(new BoxLayout(panelEmpleado, BoxLayout.Y_AXIS));
@@ -148,27 +156,21 @@ public class Main {
                 panelEmpleado.add(Box.createVerticalStrut(10));
                 panelEmpleado.add(new JLabel(iconEmpleado));
 
-
                 JOptionPane pane = new JOptionPane(panelEmpleado,
                         JOptionPane.PLAIN_MESSAGE,
                         JOptionPane.DEFAULT_OPTION,
                         null,
-                        new Object[]{},  // sin botones
+                        new Object[]{},
                         null);
+
                 JDialog dialog = pane.createDialog(frame, "¡Ventana de Bienvenida!");
                 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-                // Mostrar diálogo en nuevo hilo
                 SwingUtilities.invokeLater(() -> dialog.setVisible(true));
 
-                // Timer para cerrarlo automáticamente
-                Timer timer = new Timer(2000, new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        dialog.dispose();
-
-                        mainUser();
-                    }
+                Timer timer = new Timer(2000, evt -> {
+                    dialog.dispose();
+                    mainUser();
                 });
                 timer.setRepeats(false);
                 timer.start();

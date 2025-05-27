@@ -451,7 +451,7 @@ public class FacturacionUserManager {
                 JOptionPane.showMessageDialog(null, "Error al leer la hoja de gastos: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             }
             String[] numeros = { "+573226094632","+573112599560"};
-            String mensaje = "*[Licorera CR]*\n¡Hola! se ha generado la liquidación del día de hoy por un total de: $ "
+            String mensaje = "*[Licorera CR]*\n¡Hola! se ha generado el realizo del día de hoy por un total de: $ "
                     + formatearMoneda(totalVentas) + " pesos.\nPuedes consultar los detalles en los resúmenes adjuntos en Google Drive: https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
             if (!gastosNA.isEmpty()) {
                 mensaje += "\n\n*Gastos del día:*" + gastosNA;

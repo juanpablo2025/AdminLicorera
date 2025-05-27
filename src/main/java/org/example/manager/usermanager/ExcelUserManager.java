@@ -1,7 +1,8 @@
 package org.example.manager.usermanager;
 
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.usermodel.Font;
+
+;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.model.Factura;
 import org.example.model.Mesa;
@@ -11,6 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -321,34 +326,8 @@ public class ExcelUserManager {
                 }
                 limpiarCantidadVendida();
                 limpiarFacturas();
-                String nombreCapitalizado = nombreEmpleado.substring(ZERO, ONE).toUpperCase() + nombreEmpleado.substring(ONE).toLowerCase();
+                mostrarDespedida(nombreEmpleado);
 
-                // Cargar la imagen
-                ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/Despedida.png")); // Reemplaza con la ruta de tu imagen
-                if (icon.getImageLoadStatus() != MediaTracker.COMPLETE) {
-                    // Manejar error si la imagen no carga
-                    icon = null; // o podrías usar una imagen de marcador de posición
-                }
-
-                // Crear un JLabel para el mensaje de texto
-                JLabel textLabel = new JLabel("Gracias por tu ayuda " + nombreCapitalizado + ".");
-                textLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-
-                // Crear un JPanel para organizar la imagen y el texto
-                JPanel panel = new JPanel();
-                panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-                panel.add(textLabel);
-                panel.add(Box.createVerticalStrut(10)); // Espaciado
-                panel.add(new JLabel(icon));
-
-                JOptionPane.showMessageDialog(
-                        null,
-                        panel,
-                        "Día finalizado correctamente.",
-                        JOptionPane.PLAIN_MESSAGE,
-                        null
-                );
             }
         } catch (IOException e) {
             logger.error("Error al abrir el archivo Excel: {}", e.getMessage());
@@ -482,7 +461,7 @@ public class ExcelUserManager {
 
     private CellStyle crearEstiloRojo(Workbook workbook) {
         CellStyle redStyle = workbook.createCellStyle();
-        Font font = workbook.createFont();
+        org.apache.poi.ss.usermodel.Font font = workbook.createFont();
         font.setColor(IndexedColors.RED.getIndex());
         font.setBold(true);
         redStyle.setFont(font);
@@ -939,5 +918,76 @@ public class ExcelUserManager {
             logger.error("Error al abrir el archivo Excel: {}", e.getMessage());
         }
         return "No se encontró un nombre de empleado";
+    }
+
+
+    public static void mostrarDespedida(String nombreEmpleado) {
+        String nombreCapitalizado = nombreEmpleado.substring(0, 1).toUpperCase() + nombreEmpleado.substring(1).toLowerCase();
+
+        ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/Despedida.png"));
+        if (icon.getImageLoadStatus() != MediaTracker.COMPLETE) {
+            icon = null;
+        } else {
+            icon = new ImageIcon(icon.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
+        }
+
+        Font lobsterFont;
+        try (InputStream fontStream = UIUserMain.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf")) {
+            lobsterFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 30f);
+        } catch (Exception e) {
+            lobsterFont = new Font("SansSerif", Font.BOLD, 30);
+        }
+
+        JLabel titleLabel = new JLabel("Gracias por tu ayuda, " + nombreCapitalizado + ".", SwingConstants.CENTER);
+        titleLabel.setFont(lobsterFont);
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel imageLabel = new JLabel(icon);
+        imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel countdownLabel = new JLabel("Cerrando en 3...", SwingConstants.CENTER);
+        countdownLabel.setFont(new Font("Arial", Font.BOLD, 22));
+        countdownLabel.setForeground(Color.RED);
+        countdownLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JButton aceptarBtn = new JButton("Aceptar");
+        aceptarBtn.setFont(new Font("Arial", Font.BOLD, 16));
+        aceptarBtn.setBackground(new Color(0, 153, 0));
+        aceptarBtn.setForeground(Color.WHITE);
+        aceptarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.add(titleLabel);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(imageLabel);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(countdownLabel);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(aceptarBtn);
+
+        JOptionPane optionPane = new JOptionPane(panel, JOptionPane.PLAIN_MESSAGE, JOptionPane.DEFAULT_OPTION, null, new Object[]{}, null);
+        JDialog dialog = optionPane.createDialog(null, "Día finalizado correctamente");
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+        aceptarBtn.addActionListener(e -> dialog.dispose());
+
+        final int[] seconds = {3};
+        Timer timer = new Timer(1000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                seconds[0]--;
+                countdownLabel.setText("Cerrando en " + seconds[0] + "...");
+                if (seconds[0] <= 0) {
+                    ((Timer) e.getSource()).stop();
+                    dialog.dispose();
+                }
+            }
+        });
+        timer.start();
+
+        dialog.setVisible(true);
     }
 }

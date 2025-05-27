@@ -250,20 +250,24 @@ public class UIAdminProducts {
         JButton addButton = createStyledButton("Nuevo", new Color(66, 133, 244), new Color(30, 70, 160), 22);
         addButton.addActionListener(e -> {
             int tempId = -System.identityHashCode(new Object());
-            tableModel.addRow(new Object[]{tempId, "NUEVO_PRODUCTO", ZERO, "0"});
+            tableModel.addRow(new Object[]{tempId, "NUEVO_PRODUCTO", 0, "0"});
 
             SwingUtilities.invokeLater(() -> {
-                int row = tableModel.getRowCount() - ONE;
-                if (row < productTable.getRowCount()) {
+                int row = tableModel.getRowCount() - 1;
+                if (row >= 0 && row < tableModel.getRowCount()) {
                     productTable.setRowSelectionInterval(row, row);
 
-                    boolean productoEditado = showEditProductDialog(tableModel, row,
-                            tableModel.getValueAt(row, ONE),
-                            tableModel.getValueAt(row, TWO),
-                            tableModel.getValueAt(row, THREE),
-                            productTable);
+                    Object nombre = tableModel.getValueAt(row, 1);
+                    Object cantidad = tableModel.getValueAt(row, 2);
+                    Object precio = tableModel.getValueAt(row, 3);
 
-                    if (!productoEditado) {
+                    boolean productoEditado = showEditProductDialog(tableModel, row, nombre, cantidad, precio, productTable);
+
+                    if (productoEditado) {
+                        // ✅ solo actualiza si se editó correctamente
+                        updateProductTable(productTable);
+                    } else {
+                        // ❌ elimina si se canceló
                         tableModel.removeRow(row);
                     }
 
@@ -297,9 +301,13 @@ public class UIAdminProducts {
             int viewRow = productTable.getSelectedRow();
             if (viewRow != -1) {
                 int modelRow = productTable.convertRowIndexToModel(viewRow);
-                String nombre = (String) tableModel.getValueAt(modelRow, ONE);
-                int cantidad = Integer.parseInt(tableModel.getValueAt(modelRow, TWO).toString());
-                showReabastecimientoDialog(productTable, nombre, cantidad);
+
+                DefaultTableModel currentModel = (DefaultTableModel) productTable.getModel(); // 🔁 usar modelo actual
+                if (modelRow >= 0 && modelRow < currentModel.getRowCount()) {
+                    String nombre = currentModel.getValueAt(modelRow, 1).toString();
+                    int cantidad = Integer.parseInt(currentModel.getValueAt(modelRow, 2).toString());
+                    showReabastecimientoDialog(productTable, nombre, cantidad);
+                }
             }
         });
 
@@ -846,9 +854,30 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         confirmButton.addActionListener(e -> {
             String selected = (String) searchBox.getSelectedItem();
             String precioTexto = priceField.getText().trim();
-            String precioCompra = precioTexto.isEmpty() ? "-10" : (precioTexto);
+            String precioCompra = precioTexto.isEmpty() ? "-10" : precioTexto;
+
             handleReplenishment(dialog, productTable, selected, (int) quantitySpinner.getValue(), precioCompra);
-            quantitySpinner.setValue(ONE);
+
+            // Mostrar opción de seguir o salir
+            int opcion = JOptionPane.showOptionDialog(
+                    dialog,
+                    "¿Deseas seguir reabasteciendo productos?",
+                    "Reabastecimiento",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    new String[]{"Seguir", "Volver"},
+                    "Seguir"
+            );
+
+            if (opcion == JOptionPane.NO_OPTION) {
+                dialog.dispose(); // cerrar si elige volver
+            } else {
+                // resetear campos para seguir
+                quantitySpinner.setValue(ONE);
+                priceField.setText("");
+                searchBox.requestFocusInWindow();
+            }
         });
 
         JPanel bottomPanel = new JPanel();

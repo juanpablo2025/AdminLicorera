@@ -27,6 +27,9 @@ public class UIUserGastos {
             customFont = new Font(ARIAL_FONT, Font.BOLD, 36);
         }
 
+
+
+
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(FONDO_PRINCIPAL);
         titlePanel.setBorder(BorderFactory.createEmptyBorder(30, ZERO, 30, ZERO));
@@ -75,7 +78,21 @@ public class UIUserGastos {
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBackground(FONDO_PRINCIPAL);
         formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        // Descripción sobre el formulario
+        JLabel descripcionLabel = new JLabel(
+                "<html><div '>Registra gastos, servicios, compras o reparaciones de la tienda<br>en el realizo del día.</div></html>",
+                SwingConstants.CENTER
+        );
+        descripcionLabel.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
+        descripcionLabel.setForeground(new Color(36, 36, 36));
 
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        mainContentPanel.add(descripcionLabel, gbc);
+
+        // Luego el formPanel debajo
+        gbc.gridy++;
+        mainContentPanel.add(formPanel, gbc);
         GridBagConstraints gbcForm = new GridBagConstraints();
         gbcForm.insets = new Insets(TEN, TEN, TEN, TEN);
         gbcForm.anchor = GridBagConstraints.WEST;
@@ -84,7 +101,6 @@ public class UIUserGastos {
         Color labelColor = new Color(36, 36, 36);
 
         JLabel descLabel = new JLabel("Descripción");
-        descLabel.setFont(labelFont);
         descLabel.setForeground(labelColor);
         gbcForm.gridx = ZERO;
         gbcForm.gridy = ZERO;
@@ -96,8 +112,7 @@ public class UIUserGastos {
         nombreGastoField.setPreferredSize(new Dimension(300, 35));
         formPanel.add(nombreGastoField, gbcForm);
 
-        JLabel precioLabel = new JLabel("Total");
-        precioLabel.setFont(labelFont);
+        JLabel precioLabel = new JLabel("Valor");
         precioLabel.setForeground(labelColor);
         gbcForm.gridx = ZERO;
         gbcForm.gridy = ONE;
@@ -109,13 +124,13 @@ public class UIUserGastos {
         precioField.setPreferredSize(new Dimension(300, 35));
         formPanel.add(precioField, gbcForm);
 
-        gbcForm.gridx = ZERO;
+        gbcForm.gridx = 1;
         gbcForm.gridy = TWO;
         gbcForm.gridwidth = TWO;
         gbcForm.fill = GridBagConstraints.CENTER;
-        JButton addGastoButton = new JButton("Confirmar");
+        JButton addGastoButton = new JButton("Registrar");
         addGastoButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
-        addGastoButton.setPreferredSize(new Dimension(405, 40));
+        addGastoButton.setPreferredSize(new Dimension(300, 40));
         addGastoButton.setBackground(new Color(ZERO, 201, 87));
         addGastoButton.setForeground(Color.WHITE);
         formPanel.add(addGastoButton, gbcForm);
@@ -139,7 +154,7 @@ public class UIUserGastos {
         });
 
         gbc.gridx = ONE;
-        gbc.gridy = ZERO;
+        gbc.gridy = 3;
         gbc.gridheight = ONE;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.NORTH;
