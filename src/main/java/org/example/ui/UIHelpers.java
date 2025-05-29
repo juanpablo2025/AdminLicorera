@@ -313,7 +313,7 @@ public class UIHelpers {
                         JLabel nameLabel = new JLabel("<html><div style='text-align:center;'>" + formattedName + "</div></html>");
                         namePanel.setLayout(new BorderLayout());
                         namePanel.setBorder(BorderFactory.createEmptyBorder(FOUR, EIGHT, FOUR, EIGHT));
-                        nameLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 15));
+                        nameLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 17));
                         nameLabel.setForeground(Color.WHITE);
                         nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
                         nameLabel.setVerticalAlignment(SwingConstants.TOP);

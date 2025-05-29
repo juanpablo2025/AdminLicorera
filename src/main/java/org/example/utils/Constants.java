@@ -27,7 +27,7 @@ public class Constants {
     public static final String FECHA_HORA = "Fecha y Hora";
     public static final String NOMBRE = "Nombre";
     public static final String ID ="Id";
-    public static final String CONFIRM_PURCHASE = "Confirmar Compra";
+    public static final String CONFIRM_PURCHASE = "Confirmar Venta";
     public static final String PURCHASE_SUCCEDED = "Venta realizada con éxito";
     public static final String EMPTY = " ";
     public static final String TOTAL_PRICE = "Total: $ ";

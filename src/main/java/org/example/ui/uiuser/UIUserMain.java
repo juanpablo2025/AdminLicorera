@@ -67,7 +67,7 @@ public class UIUserMain {
             logoPanel.setBackground(FONDO_PRINCIPAL);
 
             ImageIcon logoIcon = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png")));
-            Image imgLogo = logoIcon.getImage().getScaledInstance(130, 130, Image.SCALE_SMOOTH);
+            Image imgLogo = logoIcon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
             JLabel logoLabel = getJLabel(imgLogo, contentPanel);
 
             JLabel employeeLabel = new JLabel(EMPLOYEE_NAME);
@@ -117,7 +117,7 @@ public class UIUserMain {
                 }
             });
 
-            Dimension buttonSize = new Dimension(ONE_HUNDRED, 60);
+            Dimension buttonSize = new Dimension(10, 10);
 
             JButton listaProductosButton = createButton("Inventario", resizeIcon("/icons/lista-de_productos.png"), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
@@ -199,7 +199,7 @@ public class UIUserMain {
 
     public static ImageIcon resizeIcon(String path) {
         ImageIcon icon = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource(path)));
-        Image img = icon.getImage().getScaledInstance(85, 55, Image.SCALE_SMOOTH);
+        Image img = icon.getImage().getScaledInstance(65, 55, Image.SCALE_SMOOTH);
         return new ImageIcon(img);
     }
 
@@ -215,7 +215,7 @@ public class UIUserMain {
 
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(FONDO_PRINCIPAL);
-        titlePanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 30, 0));
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 10, 0));
 
         JLabel titleLabel = new JLabel("Finalizar Día", SwingConstants.CENTER);
         titleLabel.setFont(customFont.deriveFont(Font.BOLD, 50f));
@@ -225,10 +225,10 @@ public class UIUserMain {
 
         JPanel mainContentPanel = new JPanel(new GridBagLayout());
         mainContentPanel.setBackground(FONDO_PRINCIPAL);
-        mainContentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+        mainContentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(15, 15, 15, 15);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.fill = GridBagConstraints.CENTER;
 
         // Logo
         JPanel imagePanel = new JPanel(new BorderLayout());
@@ -251,8 +251,21 @@ public class UIUserMain {
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.gridheight = 1;
+        gbc.gridheight = 2;
         mainContentPanel.add(imagePanel, gbc);
+
+        // Info Label
+        JLabel infoLabel = new JLabel(
+                "<html><div style='text-align:center;'>¿Terminaste la jornada?<br>Da clic en 'Finalizar' y genera el realizo del día.</div></html>",
+                SwingConstants.CENTER
+        );
+        infoLabel.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
+        infoLabel.setForeground(new Color(36, 36, 36));
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.gridheight = 1;
+        mainContentPanel.add(infoLabel, gbc);
 
         // Botón Finalizar Día
         JButton finalizarBtn = new JButton("Finalizar");
@@ -286,24 +299,11 @@ public class UIUserMain {
         });
 
         gbc.gridx = 1;
-        gbc.gridy = 0;
+        gbc.gridy = 1;
         mainContentPanel.add(finalizarBtn, gbc);
 
         gastosPanel.add(mainContentPanel, BorderLayout.CENTER);
-        JLabel infoLabel = new JLabel(
-                "<html><div style='text-align:center;'>¿Terminaste la jornada?.<br>Da clic en 'Finalizar' y genera el realizo del dia. </div></html>",
-                SwingConstants.CENTER
-        );
-        infoLabel.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
-        infoLabel.setForeground(new Color(36, 36, 36));
 
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        mainContentPanel.add(infoLabel, gbc);
-
-        // luego el botón debajo
-        gbc.gridy++;
-        mainContentPanel.add(finalizarBtn, gbc);
         JButton backButton = createBackButton(contentPanel);
         JPanel bottomPanel = new JPanel();
         bottomPanel.setBackground(FONDO_PRINCIPAL);

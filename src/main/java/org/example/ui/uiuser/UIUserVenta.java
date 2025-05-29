@@ -99,7 +99,7 @@ public class UIUserVenta extends Panel {
         JTable table = createProductTable();
         table.getColumnModel().getColumn(TWO).setCellRenderer(new UIHelpers.CurrencyRenderer());
 
-        Font font = new Font(ARIAL_FONT, Font.PLAIN, 18);
+        Font font = new Font(ARIAL_FONT, Font.TRUETYPE_FONT, 15);
         table.setFont(font);
         table.setRowHeight(30);
 
@@ -414,7 +414,7 @@ public class UIUserVenta extends Panel {
                         JOptionPane.YES_NO_OPTION
                 );
 
-                JDialog dialog = optionPane.createDialog(null, COMFIRM_TITLE);
+                JDialog dialog = optionPane.createDialog(null, "Imprimiendo Factura");
                 dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
                 // CORRECTO: usar javax.swing.Timer
@@ -566,7 +566,7 @@ public class UIUserVenta extends Panel {
         dialog.setVisible(true);
     }
     public static JButton createSavePurchaseMesaButton( String mesaID, JTable productosTable) {
-        JButton saveCompraButton = new JButton("Guardar Compra");
+        JButton saveCompraButton = new JButton("Guardar Venta");
 
 
         saveCompraButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
