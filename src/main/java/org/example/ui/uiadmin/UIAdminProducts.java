@@ -85,7 +85,7 @@ public class UIAdminProducts {
         };
 
         JTable productTable = new JTable(tableModel);
-        productTable.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
+        productTable.setFont(new Font("Segoe UI Variable", Font.PLAIN, 18));
         productTable.setRowHeight(35);
         productTable.setBackground(FONDO_PRINCIPAL);
         productTable.setSelectionBackground(new Color(173, 216, 230));
@@ -98,7 +98,7 @@ public class UIAdminProducts {
         JTextField searchField = new JTextField(COMBO_BOX_TEXT);
         searchField.setForeground(Color.GRAY);
         searchField.setPreferredSize(new Dimension(760, 35));
-        searchField.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
+        searchField.setFont(new Font("Segoe UI Variable", Font.PLAIN, 18));
 
         searchField.addFocusListener(new FocusAdapter() {
             @Override
@@ -232,7 +232,7 @@ public class UIAdminProducts {
             }
         };
 
-        button.setFont(new Font(ARIAL_FONT, Font.BOLD, fontSize));
+        button.setFont(new Font("Segoe UI Variable", Font.BOLD, fontSize));
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
         button.setContentAreaFilled(false);
@@ -394,11 +394,11 @@ public class UIAdminProducts {
 
         JLabel cantidadLabel = new JLabel("x" + cantidad + " Uds");
         cantidadLabel.setForeground(Color.WHITE);
-        cantidadLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        cantidadLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
 
         JLabel precioLabel = new JLabel("$ " + precio.toString() + " Pesos");
         precioLabel.setForeground(Color.WHITE);
-        precioLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        precioLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
 
         infoBar.add(cantidadLabel);
         infoBar.add(precioLabel);
@@ -409,7 +409,7 @@ public class UIAdminProducts {
         imageContainer.setBackground(new Color(80, 80, 80));
 
         JLabel productLabel = new JLabel(nombre.toString());
-        productLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 20));
+        productLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 20));
         productLabel.setHorizontalAlignment(SwingConstants.CENTER);
         productLabel.setForeground(Color.WHITE);
 
@@ -452,7 +452,7 @@ public class UIAdminProducts {
         centerPanel.add(priceField, gbc);
 
         JButton saveBtn = new JButton("Guardar");
-        saveBtn.setFont(new Font(ARIAL_FONT, Font.BOLD, 18));
+        saveBtn.setFont(new Font("Segoe UI Variable", Font.BOLD, 18));
         saveBtn.setBackground(new Color(76, 175, 80));
         saveBtn.setForeground(Color.WHITE);
         saveBtn.setPreferredSize(new Dimension(400, 40));
@@ -497,7 +497,7 @@ public class UIAdminProducts {
 
     private static JButton getJButton(JDialog dialog, String rutaImagen, JLabel imageLabel) {
         JButton examinarBtn = new JButton("Examinar imagen");
-        examinarBtn.setFont(new Font(ARIAL_FONT, Font.BOLD, 14));
+        examinarBtn.setFont(new Font("Segoe UI Variable", Font.BOLD, 14));
         examinarBtn.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileFilter(new FileNameExtensionFilter("Imágenes", "png", "jpg", "jpeg"));
@@ -699,11 +699,11 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
 
         JLabel cantidadLabel = new JLabel("x" + cantidad + " Uds");
         cantidadLabel.setForeground(Color.WHITE);
-        cantidadLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        cantidadLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
 
         JLabel precioLabel = new JLabel();
         precioLabel.setForeground(Color.WHITE);
-        precioLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        precioLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
 
         infoBar.add(cantidadLabel);
         infoBar.add(precioLabel);
@@ -711,7 +711,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         JComboBox<String> searchBox = UIHelpers.createProductAdminComboBox();
         searchBox.setPreferredSize(new Dimension(400, 35));
         searchBox.setMaximumSize(new Dimension(400, 35));
-        searchBox.setFont(new Font(ARIAL_FONT, Font.PLAIN, 16));
+        searchBox.setFont(new Font("Segoe UI Variable", Font.PLAIN, 16));
         searchBox.setSelectedItem(nombre);
 
         JPanel searchPanel = new JPanel();
@@ -719,7 +719,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         searchPanel.add(searchBox);
 
         JLabel productLabel = new JLabel(nombre);
-        productLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 20));
+        productLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 20));
         productLabel.setHorizontalAlignment(SwingConstants.CENTER);
         productLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         productLabel.setForeground(Color.WHITE);
@@ -809,34 +809,34 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
 
         gbc.gridy++;
         JLabel quantityLabel = new JLabel("Cantidad");
-        quantityLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
+        quantityLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
         centerPanel.add(quantityLabel, gbc);
 
         gbc.gridy++;
         int min = ONE;
         int max = 1000;
         JSpinner quantitySpinner = new JSpinner(new SpinnerNumberModel(min, min, max, 1));
-        quantitySpinner.setFont(new Font(ARIAL_FONT, Font.PLAIN, 16));
+        quantitySpinner.setFont(new Font("Segoe UI Variable", Font.PLAIN, 16));
         quantitySpinner.setPreferredSize(new Dimension(400, 40));
         centerPanel.add(quantitySpinner, gbc);
 
         JComponent editor = quantitySpinner.getEditor();
         if (editor instanceof JSpinner.DefaultEditor defaultEditor) {
-            defaultEditor.getTextField().setFont(new Font(ARIAL_FONT, Font.PLAIN, 16));
+            defaultEditor.getTextField().setFont(new Font("Segoe UI Variable", Font.PLAIN, 16));
         }
 
         SwingUtilities.invokeLater(() -> {
             for (Component comp : quantitySpinner.getComponents()) {
                 if (comp instanceof JButton button) {
                     button.setPreferredSize(new Dimension(60, 60));
-                    button.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
+                    button.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
                 }
             }
         });
 
         gbc.gridy++;
         JLabel priceLabel = new JLabel("Valor de compra");
-        priceLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
+        priceLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
         centerPanel.add(priceLabel, gbc);
 
         gbc.gridy++;
@@ -845,7 +845,7 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         centerPanel.add(priceField, gbc);
 
         JButton confirmButton = new JButton("Confirmar");
-        confirmButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 18));
+        confirmButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 18));
         confirmButton.setPreferredSize(new Dimension(400, 40));
         confirmButton.setBackground(new Color(76, 175, 80));
         confirmButton.setForeground(Color.WHITE);

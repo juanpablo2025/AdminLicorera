@@ -44,7 +44,7 @@ public class UIAdminFacturas {
             titleLabel.setFont(customFont);
         } catch (Exception e) {
             logger.error("Error al cargar la fuente personalizada: {}", e.getMessage());
-            titleLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, FIFTY));
+            titleLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, FIFTY));
         }
         FacturasAdminManager facturasAdminManager = new FacturasAdminManager();
         List<Factura> facturas = facturasAdminManager.getFacturas();
@@ -73,12 +73,12 @@ public class UIAdminFacturas {
         facturasTable.setFillsViewportHeight(true);
         facturasTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-        Font font = new Font(ARIAL_FONT, Font.PLAIN, EIGHTEEN);
+        Font font = new Font("Segoe UI Variable", Font.PLAIN, EIGHTEEN);
         facturasTable.setFont(font);
         facturasTable.setRowHeight(THIRTY);
 
         JTableHeader header = facturasTable.getTableHeader();
-        header.setFont(new Font(ARIAL_FONT, Font.BOLD, TWENTY));
+        header.setFont(new Font("Segoe UI Variable", Font.BOLD, TWENTY));
         header.setBackground(new Color(TWENTY_EIGHT,TWENTY_EIGHT,TWENTY_EIGHT));
         header.setForeground(Color.BLACK);
 
@@ -103,7 +103,7 @@ public class UIAdminFacturas {
 
         } catch (Exception e) {
             logger.error("Error al cargar la fuente personalizada: {}", e.getMessage());
-            header.setFont(new Font(ARIAL_FONT, Font.BOLD, TWENTY));
+            header.setFont(new Font("Segoe UI Variable", Font.BOLD, TWENTY));
         }
 
         JScrollPane scrollPane = new JScrollPane(facturasTable);
@@ -167,7 +167,7 @@ public class UIAdminFacturas {
         });
 
         reprintButton.setPreferredSize(new Dimension(150, FORTY));
-        reprintButton.setFont(new Font(ARIAL_FONT, Font.BOLD, TWENTY_TWO));
+        reprintButton.setFont(new Font("Segoe UI Variable", Font.BOLD, TWENTY_TWO));
         reprintButton.setForeground(Color.WHITE);
         reprintButton.setFocusPainted(false);
         reprintButton.setContentAreaFilled(false);
@@ -223,7 +223,7 @@ public class UIAdminFacturas {
         };
 
         eliminarButton.setPreferredSize(new Dimension(160, FORTY));
-        eliminarButton.setFont(new Font(ARIAL_FONT, Font.BOLD, TWENTY_TWO));
+        eliminarButton.setFont(new Font("Segoe UI Variable", Font.BOLD, TWENTY_TWO));
         eliminarButton.setForeground(Color.WHITE);
         eliminarButton.setContentAreaFilled(false);
         eliminarButton.setBorderPainted(false);

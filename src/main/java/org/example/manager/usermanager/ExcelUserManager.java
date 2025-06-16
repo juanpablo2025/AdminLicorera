@@ -946,12 +946,12 @@ public class ExcelUserManager {
         imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel countdownLabel = new JLabel("Cerrando en 3...", SwingConstants.CENTER);
-        countdownLabel.setFont(new Font("Arial", Font.BOLD, 22));
+        countdownLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
         countdownLabel.setForeground(Color.RED);
         countdownLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JButton aceptarBtn = new JButton("Aceptar");
-        aceptarBtn.setFont(new Font("Arial", Font.BOLD, 16));
+        aceptarBtn.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
         aceptarBtn.setBackground(new Color(0, 153, 0));
         aceptarBtn.setForeground(Color.WHITE);
         aceptarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);

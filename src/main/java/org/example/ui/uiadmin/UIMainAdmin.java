@@ -35,7 +35,7 @@ public class UIMainAdmin {
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
 
-            JFrame frame = new JFrame("Ventas - Licorera CR");
+            JFrame frame = new JFrame("Ventas - "+EMPRESA_NAME);
             frame.setSize(1280, 720);
             frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             frame.setExtendedState(Frame.MAXIMIZED_BOTH);
@@ -92,7 +92,7 @@ public class UIMainAdmin {
                 employeeLabel.setFont(customFont);
             } catch (Exception e) {
                 logger.error("Error al cargar la fuente personalizada: ", e);
-                employeeLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 26));
+                employeeLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 26));
             }
 
             sidebarPanel.add(employeeLabel, BorderLayout.NORTH);
@@ -160,7 +160,7 @@ public class UIMainAdmin {
             });
             moreOptionsButton.setMaximumSize(buttonSize);
 
-            moreOptionsButton.setFont(new Font(ARIAL_FONT, Font.BOLD, SIXTEEN));
+            moreOptionsButton.setFont(new Font("Segoe UI Variable", Font.BOLD, SIXTEEN));
 
             buttonsPanel.add(moreOptionsButton);
             buttonsPanel.add(Box.createVerticalStrut(FIVE));

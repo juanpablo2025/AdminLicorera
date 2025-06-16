@@ -95,7 +95,7 @@ public class FacturacionUserManager {
 
                 float margenIzquierdo = TEN * HEIGHT_DOTS;
                 document.setMargins(FIVE, FIVE, FIVE, margenIzquierdo);
-                document.add(new Paragraph("Licorera CR")
+                document.add(new Paragraph(EMPRESA_NAME)
                         .setFont(lobsterFont)
                         .setFontSize(13)
                         .setTextAlignment(TextAlignment.CENTER)
@@ -421,7 +421,7 @@ public class FacturacionUserManager {
                     .setMarginTop(10)
                     .setTextAlignment(TextAlignment.CENTER));
 
-            document.add(new Paragraph("Sistema Licorera CR La 70")
+            document.add(new Paragraph("Sistema "+EMPRESA_NAME)
                     .setFont(fontBold)
                     .setFontSize(7)
                     .setTextAlignment(TextAlignment.CENTER)
@@ -631,7 +631,7 @@ public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorP
                         .setMarginTop(2)
                         .setMarginBottom(2));
 
-                document.add(new Paragraph("Licorera CR")
+                document.add(new Paragraph(EMPRESA_NAME)
                         .setFont(lobsterFont)
                         .setFontSize(13)
                         .setTextAlignment(TextAlignment.CENTER)

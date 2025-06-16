@@ -1,12 +1,15 @@
 package org.example.utils;
 
+import org.example.ui.uiuser.UIUserMesas;
+
 import java.awt.*;
+import java.io.InputStream;
 
 public class Constants {
 
-    private Constants() {}
-
-    public static final String ARIAL_FONT = "Arial";
+    //public static final String EMPRESA_NAME = "Denuedo";
+    public static final String EMPRESA_NAME = "Licorera CR";
+    ////public static final String "Segoe UI Variable" = "Arial";
     public static final String LOBSTER_FONT = "Lobster-Regular.ttf";
     public static final String COMBO_BOX_TEXT = "Busca un producto";
     public static final String CONTINUE = "continuar";
@@ -17,7 +20,6 @@ public class Constants {
     public static final String FOLDER_PATH = "user.home";
     public static final String EXPENSES_SHEET_NAME = "Gastos";
     public static final String NO_FOTO = "/icons/sinfoto.png";
-    
     //VENTA
     public static final String PRODUCTO = "Producto";
     public static final String PRECIO = "Precio";
@@ -26,7 +28,7 @@ public class Constants {
     public static final String TOTAL = "TOTAL";
     public static final String FECHA_HORA = "Fecha y Hora";
     public static final String NOMBRE = "Nombre";
-    public static final String ID ="Id";
+    public static final String ID = "Id";
     public static final String CONFIRM_PURCHASE = "Confirmar Venta";
     public static final String PURCHASE_SUCCEDED = "Venta realizada con éxito";
     public static final String EMPTY = " ";
@@ -35,8 +37,6 @@ public class Constants {
     public static final String FOTOS = "Fotos";
     public static final String MESA_TITLE = "Mesa ";
     public static final String CANTIDAD_VENDIDA = "Cantidad Vendida";
-
-
     // ARCHIVOS   CAMBIAR RUTAS
     public static final String PRODUCTS_SHEET_NAME = "Productos";
     public static final String PURCHASES_SHEET_NAME = "Ventas";
@@ -44,26 +44,14 @@ public class Constants {
     public static final String VENTAS = "Ventas";
     public static final String BILL_FILE = "Factura N°";
     public static final String MESAS_TITLE = "Mesas";
-
     // FActura config
     public static final float WIDE_DOTS = 2.83465f;
     public static final float HEIGHT_DOTS = 2.83465f;
-
     //ENCABEZADO DE LA FACTURA
     public static final String PDF_FORMAT = ".pdf";
     public static final String NIT = "NIT: 21468330-1";
     public static final String DIRECCION = "Dirección: CR 70 # 46 - 80";
     public static final String TELEFONO = "Teléfono: 411 19 00";
-
-
-
-
-    public static final Color FONDO_PRINCIPAL = new Color(250, 240, 230);
-
-
-
-
-
     //BILL DETAILS
     public static final String BILL_ID = "Factura ";
     public static final String TOTAL_BILL = "Total ";
@@ -75,13 +63,9 @@ public class Constants {
     public static final String PRINT_BILL = "¿Imprimir la factura?";
     public static final String FACTURAS = "Facturas";
     public static final String IMPRESORA = "IMPRESORA";
-
     //CALCULAR DEVUELTO
     public static final String ERROR_TITLE = "Error";
     public static final String ERROR_MENU = "Palabra incorrecta. Regresando al menú principal.";
-
-    //NUMEROS
-
     public static final double ZERO_DOUBLE = 0.0;
     public static final int ZERO = 0;
     public static final int ONE = 1;
@@ -91,6 +75,8 @@ public class Constants {
     public static final int FIVE = 5;
     public static final int SIX = 6;
     public static final int SEVEN = 7;
+
+    //NUMEROS
     public static final int EIGHT = 8;
     public static final int NINE = 9;
     public static final int TEN = 10;
@@ -139,8 +125,62 @@ public class Constants {
     public static final int THREE_HUNDRED = 300;
     public static final int FOUR_HUNDRED = 400;
     public static final int FIVE_HUNDRED = 500;
-
     public static final int MINUS_ONE = -ONE;
+    public static Color FONDO_PRINCIPAL;
+    public static Color FONTCOLOR_BUTTON_MENU;
+    public static Color BTN_MOUSE_ENTERED;
+    public static Color BTN_MOUSE_EXITED;
+    public static Color FONT_BUTTON_MENU;
+    public static Color SEPARATOR_COLOR;
+    public static Font TITTLE_FONT = new Font("Segoe UI Variable", Font.BOLD, 50);
+    public static Color PRODUCT_PANEL_COLOR;
+
+
+    static {
+        switch (EMPRESA_NAME.toLowerCase()) {
+            case "denuedo":
+                FONDO_PRINCIPAL = new Color(240, 240, 240);
+                FONTCOLOR_BUTTON_MENU = Color.BLACK;
+                BTN_MOUSE_ENTERED = Color.LIGHT_GRAY;
+                BTN_MOUSE_EXITED = FONDO_PRINCIPAL;
+                FONT_BUTTON_MENU = FONDO_PRINCIPAL;
+                break;
+            case "licorera cr":
+                FONDO_PRINCIPAL = new Color(250, 240, 230);
+                FONTCOLOR_BUTTON_MENU = Color.WHITE;
+                BTN_MOUSE_ENTERED = new Color(220, 40, 40);
+                BTN_MOUSE_EXITED = new Color(186, 27, 26);
+                FONT_BUTTON_MENU = (new Color(186, 27, 26));
+                SEPARATOR_COLOR = (new Color(200, 170, 100));
+                PRODUCT_PANEL_COLOR = (new Color(28, 28, 28));
+
+                /*BTN_PRODUCT_DESCRIPTION = (new Color(200, 170, 100));
+                BTN_PRODUCT_IMAGE = (new Color(200, 170, 100));
+                BTN_BACK = (new Color(200, 170, 100));
+
+
+                HEADER_COLOR = (new Color(200, 170, 100));
+                HEADER_FONT_COLOR = (new Color(36, 36, 36));*/
+
+
+
+
+                try (InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream(LOBSTER_FONT)) {
+                    Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 50);
+
+                 TITTLE_FONT = (customFont);
+                } catch (Exception e) {
+                    e.fillInStackTrace();
+                }
+
+
+                break;
+
+        }
+    }
+
+    private Constants() {
+    }
 
 
 }

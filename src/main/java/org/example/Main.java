@@ -46,7 +46,7 @@ public class Main {
             logger.error("Error al establecer el Look and Feel: ", ex);
         }
 
-        JFrame frame = new JFrame("Bienvenido - Licorera CR");
+        JFrame frame = new JFrame("Bienvenido - " +EMPRESA_NAME);
         ImageIcon icon = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png")));
 
         if (icon.getImage() != null) {
@@ -73,22 +73,22 @@ public class Main {
         logoLabel.setIcon(new ImageIcon(img));
 
         JLabel userLabel = new JLabel("Encargado de caja");
-        userLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, TWENTY));
+        userLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, TWENTY));
         userLabel.setForeground(Color.BLACK);
 
         JTextField userField = new JTextField(TWENTY);
-        userField.setFont(new Font(ARIAL_FONT, Font.PLAIN, EIGHTEEN));
+        userField.setFont(new Font("Segoe UI Variable", Font.PLAIN, EIGHTEEN));
         userField.setBorder(BorderFactory.createLineBorder(Color.RED, TWO));
 
         JButton loginButton = new JButton("Iniciar Día");
-        loginButton.setFont(new Font(ARIAL_FONT, Font.BOLD, TWENTY));
+        loginButton.setFont(new Font("Segoe UI Variable", Font.BOLD, TWENTY));
         loginButton.setBackground(Color.RED);
         loginButton.setForeground(Color.WHITE);
         loginButton.setFocusPainted(false);
         loginButton.setBorder(BorderFactory.createEmptyBorder(TEN, TEN, TEN, TEN));
 
         JButton adminButton = new JButton("Administrador");
-        adminButton.setFont(new Font("Arial", Font.BOLD, TWENTY));
+        adminButton.setFont(new Font("Segoe UI Variable", Font.BOLD, TWENTY));
         adminButton.setBackground(Color.BLACK);
         adminButton.setForeground(Color.WHITE);
         adminButton.setFocusPainted(false);

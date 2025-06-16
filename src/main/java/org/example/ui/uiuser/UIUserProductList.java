@@ -32,7 +32,7 @@ public class UIUserProductList {
     static Font titleFont;
     private static Font headerFont;
 
-    static {
+   /* static {
 
         try {
             InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream(LOBSTER_FONT);
@@ -42,7 +42,7 @@ public class UIUserProductList {
             titleFont = new Font("Serif", Font.BOLD, 50);
             headerFont = new Font("Serif", Font.ITALIC, 26);
         }
-    }
+    }*/
 
     public static JPanel getProductListPanel() {
         JPanel productListPanel = new JPanel(new BorderLayout());
@@ -51,17 +51,7 @@ public class UIUserProductList {
 
         JLabel titleLabel = new JLabel("Inventario", SwingConstants.CENTER);
         titleLabel.setForeground(new Color(28, 28, 28));
-        try {
-
-            InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream(LOBSTER_FONT);
-
-            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            customFont = customFont.deriveFont(Font.BOLD, 50);
-            titleLabel.setFont(customFont);
-        } catch (Exception e) {
-            logger.error("Error al cargar las fuente personalizada: {}", e.getMessage());
-            titleLabel.setFont(titleFont);
-        }
+        titleLabel.setFont(TITTLE_FONT);
 
          List<Producto>  products = ProductoUserManager.getProducts();
 
@@ -89,9 +79,10 @@ public class UIUserProductList {
 
         JTableHeader header = productTable.getTableHeader();
         header.setFont(headerFont);
+        header.setFont(TITTLE_FONT.deriveFont(Font.PLAIN, 22f));
         header.setForeground(new Color(201, 41, 41));
         header.setBackground(new Color(28, 28, 28));
-        try {
+        /*try {
             InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream(LOBSTER_FONT);
 
             if (fontStream == null) {
@@ -104,12 +95,13 @@ public class UIUserProductList {
 
             header = productTable.getTableHeader();
             header.setFont(customFont);
-            header.setForeground(new Color(201, 41, 41));
+        //    header.setForeground(new Color(201, 41, 41));
 
         } catch (Exception e) {
             logger.error("Error al cargar la fuente personalizada: {}", e.getMessage());
             header.setFont(headerFont);
-        }
+        }*/
+
         DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
         centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
         productTable.getColumnModel().getColumn(ONE).setCellRenderer(centerRenderer);
@@ -171,7 +163,7 @@ public class UIUserProductList {
             public boolean isCellEditable(int row, int column) { return false; }
         });
 
-        productTable.setFont(new Font("Arial", Font.PLAIN, 18));
+        productTable.setFont(new Font("Segoe UI Variable", Font.PLAIN, 18));
         productTable.setRowHeight(40);
         productTable.setBackground(FONDO_PRINCIPAL);
         productTable.setSelectionBackground(new Color(173, 216, 230));
@@ -189,13 +181,14 @@ public class UIUserProductList {
                 g2.setColor(new Color(ZERO, ZERO, ZERO, 30));
                 g2.fillRoundRect(TWO, FOUR, getWidth() - FOUR, getHeight() - FOUR, 40, 40);
                 g2.setColor(getModel().isPressed() ? new Color(255, 193, SEVEN) : new Color(228, 185, 42));
+                //g2.setColor(getModel().isPressed() ? Color.darkGray : Color.lightGray);
                 g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
             }
         };
 
         closeButton.setPreferredSize(new Dimension(150, 40));
-        closeButton.setFont(new Font("Arial", Font.BOLD, 22));
+        closeButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
         closeButton.setForeground(Color.WHITE);
         closeButton.setFocusPainted(false);
         closeButton.setContentAreaFilled(false);

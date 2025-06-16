@@ -36,7 +36,7 @@ public class UIUserMain {
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
 
-            JFrame frame = new JFrame("Ventas - Licorera CR");
+            JFrame frame = new JFrame("Ventas - "+EMPRESA_NAME);
             ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png"));
             if (icon.getImage() != null) {
                 Image scaledImage = icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
@@ -73,13 +73,14 @@ public class UIUserMain {
             JLabel employeeLabel = new JLabel(EMPLOYEE_NAME);
             employeeLabel.setForeground(Color.DARK_GRAY);
             employeeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            employeeLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 32));
             try {
                 InputStream fontStream = UIUserMain.class.getClassLoader().getResourceAsStream("Pacifico-Regular.ttf");
                 Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 32);
                 employeeLabel.setFont(customFont);
             } catch (Exception e) {
                 logger.error("Error al cargar la fuente personalizada: ", e);
-                employeeLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 32));
+                employeeLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 32));
             }
 
             logoPanel.add(Box.createVerticalStrut(ONE));
@@ -208,10 +209,7 @@ public class UIUserMain {
         gastosPanel.setBackground(FONDO_PRINCIPAL);
         gastosPanel.setPreferredSize(new Dimension(800, 600));
 
-        Font customFont = loadCustomFont();
-        if (customFont == null) {
-            customFont = new Font(ARIAL_FONT, Font.BOLD, 36);
-        }
+        Font customFont = TITTLE_FONT;
 
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(FONDO_PRINCIPAL);
@@ -256,10 +254,10 @@ public class UIUserMain {
 
         // Info Label
         JLabel infoLabel = new JLabel(
-                "<html><div style='text-align:center;'>¿Terminaste la jornada?<br>Da clic en 'Finalizar' y genera el realizo del día.</div></html>",
+                "<html><div style='text-align:center;'>¿Terminaste la jornada?<br>Da clic en <span style='color:#00C957; font-weight:bold;'>[Finalizar]</span> y genera el realizo del día.</div></html>",
                 SwingConstants.CENTER
         );
-        infoLabel.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
+        infoLabel.setFont(new Font("Segoe UI Variable", Font.PLAIN, 18));
         infoLabel.setForeground(new Color(36, 36, 36));
 
         gbc.gridx = 1;
@@ -269,7 +267,7 @@ public class UIUserMain {
 
         // Botón Finalizar Día
         JButton finalizarBtn = new JButton("Finalizar");
-        finalizarBtn.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        finalizarBtn.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
         finalizarBtn.setPreferredSize(new Dimension(295, 40));
         finalizarBtn.setBackground(new Color(0, 201, 87));
         finalizarBtn.setForeground(Color.WHITE);
@@ -335,13 +333,14 @@ public class UIUserMain {
                 g2.setColor(Color.BLACK);
                 g2.fillRoundRect(TWO, FOUR, getWidth() - FOUR, getHeight() - FOUR, 40, 40);
                 g2.setColor(getModel().isPressed() ? new Color(255, 193, SEVEN) : new Color(228, 185, 42));
+                //g2.setColor(getModel().isPressed() ? Color.darkGray : Color.lightGray);
                 g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
             }
         };
 
         backButton.setPreferredSize(new Dimension(150, 40));
-        backButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        backButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
         backButton.setForeground(Color.WHITE);
         backButton.setBackground(FONDO_PRINCIPAL);
         backButton.setFocusPainted(false);

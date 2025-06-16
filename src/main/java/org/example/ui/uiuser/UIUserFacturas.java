@@ -35,17 +35,7 @@ public class UIUserFacturas {
 
         JLabel titleLabel = new JLabel(FACTURAS, SwingConstants.CENTER);
         titleLabel.setForeground(new Color(36, 36, 36));
-        try {
-
-            InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream(LOBSTER_FONT);
-
-            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            customFont = customFont.deriveFont(Font.BOLD, 50);
-            titleLabel.setFont(customFont);
-        } catch (Exception e) {
-            logger.error("Error al cargar la fuente personalizada: ", e);
-            titleLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 50));
-        }
+        titleLabel.setFont(TITTLE_FONT);
 
         FacturasUserManager facturasUserManager = new FacturasUserManager();
         List<Factura> facturas = facturasUserManager.getFacturas();
@@ -77,14 +67,14 @@ public class UIUserFacturas {
         facturasTable.setFillsViewportHeight(true);
         facturasTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 
-        Font font = new Font(ARIAL_FONT, Font.PLAIN, 18);
+        Font font = new Font("Segoe UI Variable", Font.PLAIN, 18);
         facturasTable.setFont(font);
         facturasTable.setRowHeight(30);
 
         JTableHeader header = facturasTable.getTableHeader();
-        header.setFont(new Font(ARIAL_FONT, Font.BOLD, 20));
+        header.setFont(TITTLE_FONT.deriveFont(Font.PLAIN, 22f));
         header.setBackground(new Color(28,28,28));
-        header.setForeground(Color.BLACK);
+        header.setForeground(new Color(201, 41, 41));
 
         facturasTable.setBorder(BorderFactory.createLineBorder(Color.GRAY, ONE));
         facturasTable.setBackground(FONDO_PRINCIPAL);
@@ -92,24 +82,6 @@ public class UIUserFacturas {
         facturasTable.setSelectionForeground(Color.BLACK);
 
         facturasTable.getColumnModel().getColumn(TWO).setCellRenderer(new UIHelpers.CurrencyRenderer());
-        try {
-            InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
-
-            if (fontStream == null) {
-                throw new IOException("No se pudo encontrar la fuente en los recursos.");
-            }
-
-            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-            customFont = customFont.deriveFont(Font.ITALIC, 26);
-
-            header = facturasTable.getTableHeader();
-            header.setFont(customFont);
-            header.setForeground(new Color(201, 41, 41));
-
-        } catch (Exception e) {
-            logger.error("Error al cargar la fuente personalizada: {}", e.getMessage());
-            header.setFont(new Font(ARIAL_FONT, Font.BOLD, 20));
-        }
         JScrollPane scrollPane = new JScrollPane(facturasTable);
         facturasPanel.add(scrollPane, BorderLayout.CENTER);
 
@@ -152,8 +124,10 @@ public class UIUserFacturas {
 
                 if (getModel().isPressed()) {
                     g2.setColor(new Color(255, 193, SEVEN));
+                    //g2.setColor(Color.darkGray);
                 } else {
                     g2.setColor(new Color(228, 185, 42));
+                    //g2.setColor(Color.lightGray);
                 }
                 g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
@@ -161,7 +135,7 @@ public class UIUserFacturas {
         };
 
         closeButton.setPreferredSize(new Dimension(150, 40));
-        closeButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        closeButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
         closeButton.setForeground(Color.WHITE);
 
         closeButton.setFocusPainted(false);
@@ -219,7 +193,7 @@ public class UIUserFacturas {
         });
 
         reprintButton.setPreferredSize(new Dimension(150, 40));
-        reprintButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        reprintButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
         reprintButton.setForeground(Color.WHITE);
         reprintButton.setFocusPainted(false);
         reprintButton.setContentAreaFilled(false);

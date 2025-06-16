@@ -86,12 +86,7 @@ public class UIUserVenta extends Panel {
         titleLabel.setForeground(new Color(28, 28, 28));
         titleLabel.setOpaque(true);
         titleLabel.setBackground(FONDO_PRINCIPAL);
-        try (InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream(LOBSTER_FONT)) {
-            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 50);
-            titleLabel.setFont(customFont);
-        } catch (Exception e) {
-            e.fillInStackTrace();
-        }
+        titleLabel.setFont(TITTLE_FONT);
         return titleLabel;
     }
 
@@ -99,12 +94,12 @@ public class UIUserVenta extends Panel {
         JTable table = createProductTable();
         table.getColumnModel().getColumn(TWO).setCellRenderer(new UIHelpers.CurrencyRenderer());
 
-        Font font = new Font(ARIAL_FONT, Font.TRUETYPE_FONT, 15);
+        Font font = new Font("Segoe UI Variable", Font.TRUETYPE_FONT, 15);
         table.setFont(font);
         table.setRowHeight(30);
 
         JTableHeader header = table.getTableHeader();
-        header.setFont(new Font(ARIAL_FONT, Font.BOLD, 20));
+        header.setFont((TITTLE_FONT.deriveFont(Font.PLAIN, 22f)));
         header.setBackground(new Color(28, 28, 28));
         header.setForeground(new Color(201, 41, 41));
 
@@ -135,7 +130,7 @@ public class UIUserVenta extends Panel {
 
     private JTextField createTotalField(double total) {
         JTextField totalField = new JTextField(TOTAL_PRICE + FormatterHelpers.formatearMoneda(total) + PESOS);
-        totalField.setFont(new Font(ARIAL_FONT, Font.BOLD, 26));
+        totalField.setFont(new Font("Segoe UI Variable", Font.BOLD, 26));
         totalField.setForeground(Color.RED);
         totalField.setEditable(false);
         totalField.setHorizontalAlignment(SwingConstants.CENTER);
@@ -143,13 +138,13 @@ public class UIUserVenta extends Panel {
         totalField.setVisible(total > ZERO);
         totalField.setBackground(FONDO_PRINCIPAL);
 
-        try (InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream(LOBSTER_FONT)) {
+        /*try (InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream(LOBSTER_FONT)) {
             if (fontStream == null) throw new IOException("No se encontró la fuente");
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 26);
             totalField.setFont(customFont);
         } catch (Exception e) {
             logger.error("Error al cargar la fuente", e);
-        }
+        }*/
 
         return totalField;
     }
@@ -190,10 +185,10 @@ public class UIUserVenta extends Panel {
         JPanel buttonPanel = new JPanel(new BorderLayout());
         JPanel topButtonsPanel = new JPanel(new GridLayout(ONE, TWO, ONE, TEN));
         JButton guardarCompra = createSavePurchaseMesaButton( mesaID, table);
-        guardarCompra.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        guardarCompra.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
 
         JButton confirmarCompraButton = createConfirmPurchaseMesaButton(compraDialog, mesaID, table,frame);
-        confirmarCompraButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        confirmarCompraButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
 
         List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
         boolean productosEnExcel = !productosPrevios.isEmpty();
@@ -228,13 +223,14 @@ public class UIUserVenta extends Panel {
                 g2.setColor(Color.BLACK);
                 g2.fillRoundRect(TWO, FOUR, getWidth() - FOUR, getHeight() - FOUR, 40, 40);
                 g2.setColor(getModel().isPressed() ? new Color(255, 193, SEVEN) : new Color(228, 185, 42));
+               // g2.setColor(getModel().isPressed() ? Color.darkGray : Color.lightGray);
                 g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
             }
         };
 
         closeButton.setPreferredSize(new Dimension(150, 40));
-        closeButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        closeButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
         closeButton.setForeground(Color.WHITE);
         closeButton.setBackground(FONDO_PRINCIPAL);
         closeButton.setFocusPainted(false);
@@ -266,7 +262,7 @@ public class UIUserVenta extends Panel {
 
         JButton confirmarCompraButton = new JButton(CONFIRM_PURCHASE);
 
-        confirmarCompraButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        confirmarCompraButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
         confirmarCompraButton.setForeground(Color.WHITE);
         confirmarCompraButton.setBackground(new Color(168, 230, 207));
         confirmarCompraButton.setBorderPainted(false);
@@ -516,13 +512,13 @@ public class UIUserVenta extends Panel {
         imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel countdownLabel = new JLabel("Limpiando mesa en 5...", SwingConstants.CENTER);
-        countdownLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        countdownLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
         countdownLabel.setForeground(Color.RED);
         countdownLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JButton aceptarBtn = new JButton("Aceptar");
         aceptarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        aceptarBtn.setFont(new Font("Arial", Font.BOLD, 14));
+        aceptarBtn.setFont(new Font("Segoe UI Variable", Font.BOLD, 14));
 
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -569,7 +565,7 @@ public class UIUserVenta extends Panel {
         JButton saveCompraButton = new JButton("Guardar Venta");
 
 
-        saveCompraButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        saveCompraButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
         saveCompraButton.setForeground(Color.WHITE);
         saveCompraButton.setBackground(new Color(255, 111, 97));
         saveCompraButton.setOpaque(true);
@@ -902,7 +898,7 @@ public class UIUserVenta extends Panel {
 
         String tilte = "Seleccione el método de pago";
         JLabel titleLabelMetodo = new JLabel(tilte);
-        titleLabelMetodo.setFont(new Font(ARIAL_FONT, Font.BOLD, 20));
+        titleLabelMetodo.setFont(new Font("Segoe UI Variable", Font.BOLD, 20));
         dialogoPago.add( titleLabelMetodo, BorderLayout.CENTER);
 
         JPanel panelPago = new JPanel();
@@ -918,7 +914,7 @@ public class UIUserVenta extends Panel {
 
         JButton[] botones = { botonDaviplata,  botonBancolombia, botonEfectivo, botonPaypal, botonNequi, botonDatafono};
         for (JButton btn : botones) {
-            btn.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
+            btn.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
             btn.setBackground(new Color(245, 245, 245));
             btn.setFocusPainted(false);
             btn.setHorizontalAlignment(SwingConstants.LEFT);
@@ -955,7 +951,7 @@ public class UIUserVenta extends Panel {
         botonEfectivo.addActionListener(event -> {
 
             JTextField inputField = new JTextField(12);
-            inputField.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
+            inputField.setFont(new Font("Segoe UI Variable", Font.PLAIN, 18));
             inputField.setText("Ingrese el dinero recibido:");
             inputField.setForeground(Color.GRAY);
 
@@ -979,7 +975,7 @@ public class UIUserVenta extends Panel {
             });
 
             JLabel title = new JLabel(""); // Eliminar el JLabel title
-            title.setFont(new Font(ARIAL_FONT, Font.BOLD, 30));
+            title.setFont(new Font("Segoe UI Variable", Font.BOLD, 30));
             title.setHorizontalAlignment(SwingConstants.CENTER);
 
             JPanel content = new JPanel();
@@ -1001,11 +997,11 @@ public class UIUserVenta extends Panel {
                 if (fontStream != null) {
                     customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.PLAIN, 30); // Tamaño 24
                 } else {
-                    customFont = new Font(ARIAL_FONT, Font.BOLD, 48); // Si la fuente no se carga, usa Arial
+                    customFont = new Font("Segoe UI Variable", Font.BOLD, 48); // Si la fuente no se carga, usa Arial
                 }
             } catch (IOException | FontFormatException e) {
                 e.printStackTrace();
-                customFont = new Font(ARIAL_FONT, Font.BOLD, 24); // Si hay un error, usa Arial
+                customFont = new Font("Segoe UI Variable", Font.BOLD, 24); // Si hay un error, usa Arial
             }
 
             // Crear el JLabel para el título
@@ -1015,7 +1011,7 @@ public class UIUserVenta extends Panel {
             titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             // Total label más pequeño y centrado
-            totalLabel.setFont(new Font(ARIAL_FONT, Font.PLAIN, 10));
+            totalLabel.setFont(new Font("Segoe UI Variable", Font.PLAIN, 10));
             totalLabel.setForeground(Color.DARK_GRAY);
             totalLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -1035,7 +1031,7 @@ public class UIUserVenta extends Panel {
             continuarBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
             continuarBtn.setBackground(new Color(ZERO, 153, ZERO));
             continuarBtn.setForeground(Color.WHITE);
-            continuarBtn.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
+            continuarBtn.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
             continuarBtn.setFocusPainted(false);
             continuarBtn.setPreferredSize(new Dimension(150, 40));
             continuarBtn.setFocusable(true);
@@ -1045,7 +1041,7 @@ public class UIUserVenta extends Panel {
             omitirBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
             omitirBtn.setBackground(Color.red);
             omitirBtn.setForeground(Color.WHITE);
-            omitirBtn.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
+            omitirBtn.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
             omitirBtn.setFocusPainted(false);
             omitirBtn.setPreferredSize(new Dimension(150, 40));
 
@@ -1151,11 +1147,11 @@ public class UIUserVenta extends Panel {
 
             JLabel montoLabel = new JLabel(TOTAL_PRICE + FormatterHelpers.formatearMoneda(finalTotal) + PESOS);
 
-            montoLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+            montoLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
             montoLabel.setForeground(new Color(ZERO, 153, ZERO));
             montoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             JLabel montoLabel2 = new JLabel(FormatterHelpers.formatearMoneda(totalDollar) + " USD");
-            montoLabel2.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
+            montoLabel2.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
             montoLabel2.setForeground(new Color(ZERO, ZERO, 128));
             montoLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -1163,13 +1159,13 @@ public class UIUserVenta extends Panel {
             JLabel instruccion = new JLabel("<html><div style='text-align:center; color:red;'>"
                     + "Registra la compra en el Datafono.<br>Y verifica sí la transacción fue exitosa antes de continuar."
                     + "</div></html>");
-            instruccion.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
+            instruccion.setFont(new Font("Segoe UI Variable", Font.PLAIN, 18));
             instruccion.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             JButton continuarBtn = new JButton("Continuar");
             continuarBtn.setBackground(new Color(ZERO, 153, ZERO));
             continuarBtn.setForeground(Color.WHITE);
-            continuarBtn.setFont(new Font(ARIAL_FONT, Font.BOLD, 18));
+            continuarBtn.setFont(new Font("Segoe UI Variable", Font.BOLD, 18));
             continuarBtn.setFocusPainted(false);
             continuarBtn.setPreferredSize(new Dimension(200, 50));
             continuarBtn.setMaximumSize(new Dimension(200, 50));
@@ -1275,25 +1271,25 @@ public class UIUserVenta extends Panel {
             qrLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             JLabel montoLabel = new JLabel(TOTAL_PRICE + FormatterHelpers.formatearMoneda(total) + PESOS);
-            montoLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+            montoLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
             montoLabel.setForeground(new Color(ZERO, 153, ZERO));
             montoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             JLabel montoLabel2 = new JLabel(FormatterHelpers.formatearMoneda(totalDolar) + " USD");
-            montoLabel2.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
+            montoLabel2.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
             montoLabel2.setForeground(new Color(ZERO, ZERO, 128));
             montoLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             JLabel instruccion = new JLabel("<html><div style='text-align:center; color:red;'>"
                     + "Verifica en el teléfono del cliente<br>Sí la transacción fue exitosa antes de continuar."
                     + "</div></html>");
-            instruccion.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
+            instruccion.setFont(new Font("Segoe UI Variable", Font.PLAIN, 18));
             instruccion.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             JButton continuarBtn = new JButton(CONTINUE);
             continuarBtn.setBackground(new Color(ZERO, 153, ZERO));
             continuarBtn.setForeground(Color.WHITE);
-            continuarBtn.setFont(new Font(ARIAL_FONT, Font.BOLD, 18));
+            continuarBtn.setFont(new Font("Segoe UI Variable", Font.BOLD, 18));
             continuarBtn.setFocusPainted(false);
             continuarBtn.setPreferredSize(new Dimension(200, 50));
             continuarBtn.setMaximumSize(new Dimension(200, 50));

@@ -31,7 +31,8 @@ public class UIUserMesas {
 
         JLabel titleLabel = new JLabel("Mesa " + idMesa, SwingConstants.CENTER);
         titleLabel.setForeground(new Color(28, 28, 28));
-        try {
+        titleLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 50));
+        /*try {
 
             InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream(LOBSTER_FONT);
             Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
@@ -39,8 +40,8 @@ public class UIUserMesas {
             titleLabel.setFont(customFont);
         } catch (Exception e) {
             logger.error("Error al cargar la fuente personalizada: ", e);
-            titleLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 50));
-        }
+            titleLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 50));
+        }*/
 
         String tituloMesa = titleLabel.getText();
         TitledBorder titledBorder = BorderFactory.createTitledBorder(
@@ -49,11 +50,11 @@ public class UIUserMesas {
                 TitledBorder.CENTER, TitledBorder.TOP
         );
 
-        titledBorder.setTitleFont(new Font(ARIAL_FONT, Font.BOLD, 18));
+        titledBorder.setTitleFont(new Font("Segoe UI Variable", Font.BOLD, 18));
         mesaPanel.setBorder(titledBorder);
         mesaPanel.setBackground(mesa.isOcupada() ? new Color(255, 111, 97) : new Color(168, 230, 207));
         JLabel mesaLabel = new JLabel(mesa.isOcupada() ? "OCUPADA" : "LIBRE", SwingConstants.CENTER);
-        mesaLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 28));
+        mesaLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 28));
         mesaLabel.setForeground(Color.DARK_GRAY);
         mesaPanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         mesaPanel.addMouseListener(new MouseAdapter() {
@@ -85,7 +86,7 @@ public class UIUserMesas {
                 );
                 mesaPanel.setBackground(mesa.isOcupada() ? new Color(255, 60, 60) : new Color(ZERO, 201, 87));
 
-                newBorder.setTitleFont(new Font(ARIAL_FONT, Font.BOLD, 20));
+                newBorder.setTitleFont(new Font("Segoe UI Variable", Font.BOLD, 20));
                 mesaPanel.setBorder(newBorder);
                 mesaLabel.setForeground(Color.WHITE);
                 newBorder.setTitleColor(Color.white);
@@ -114,14 +115,8 @@ public class UIUserMesas {
 
         JLabel titleLabel = new JLabel("Mesas", SwingConstants.CENTER);
         titleLabel.setForeground(new Color (28, 28, 28));
-        try {
-            InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
-            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 50);
-            titleLabel.setFont(customFont);
-        } catch (Exception e) {
-            logger.error("Error al cargar la fuente personalizada: ", e);
-            titleLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 50));
-        }
+        titleLabel.setFont(TITTLE_FONT);
+
 
         JPanel gridMesasPanel = new JPanel(new GridLayout(ZERO, FIVE, FOUR, FOUR));
         gridMesasPanel.setBackground(FONDO_PRINCIPAL);
@@ -169,8 +164,10 @@ public class UIUserMesas {
 
                 if (getModel().isPressed()) {
                     g2.setColor(new Color(255, 193, SEVEN));
+                    //g2.setColor(Color.DARK_GRAY);
                 } else {
                     g2.setColor(new Color(228, 185, 42));
+                    //g2.setColor(Color.LIGHT_GRAY);
                 }
 
                 g2.fillRoundRect(0, 0, getWidth(), getHeight(), 40, 40);
@@ -179,7 +176,7 @@ public class UIUserMesas {
         };
 
         addMesaButton.setPreferredSize(new Dimension(160, 40));
-        addMesaButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        addMesaButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
         addMesaButton.setForeground(Color.WHITE);
         addMesaButton.setFocusPainted(false);
         addMesaButton.setContentAreaFilled(false);

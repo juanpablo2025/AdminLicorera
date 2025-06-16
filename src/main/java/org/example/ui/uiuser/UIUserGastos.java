@@ -22,17 +22,18 @@ public class UIUserGastos {
         gastosPanel.setBackground(FONDO_PRINCIPAL);
         gastosPanel.setPreferredSize(new Dimension(800, 600));
 
-        Font customFont = loadCustomFont();
+        /*Font customFont = loadCustomFont();
         if (customFont == null) {
-            customFont = new Font(ARIAL_FONT, Font.BOLD, 36);
-        }
+            customFont = new Font("Segoe UI Variable", Font.BOLD, 36);
+            titleLabel.setFont(customFont.deriveFont(Font.BOLD, 50f));
+        }*/
 
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(FONDO_PRINCIPAL);
         titlePanel.setBorder(BorderFactory.createEmptyBorder(30, ZERO, 0, ZERO));
 
         JLabel titleLabel = new JLabel("Registrar Gastos", SwingConstants.CENTER);
-        titleLabel.setFont(customFont.deriveFont(Font.BOLD, 50f));
+        titleLabel.setFont(TITTLE_FONT);
         titleLabel.setForeground(new Color(36, 36, 36));
         titlePanel.add(titleLabel, BorderLayout.CENTER);
         gastosPanel.add(titlePanel, BorderLayout.NORTH);
@@ -45,7 +46,7 @@ public class UIUserGastos {
         gbc.insets = new Insets(15, 15, 15, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JPanel imagePanel = new JPanel(new BorderLayout());
+       JPanel imagePanel = new JPanel(new BorderLayout());
         imagePanel.setBackground(FONDO_PRINCIPAL);
         imagePanel.setPreferredSize(new Dimension(230, 230));
 
@@ -58,12 +59,10 @@ public class UIUserGastos {
                 imagePanel.add(logoLabel, BorderLayout.CENTER);
             } else {
                 JLabel missingLabel = new JLabel("Imagen no encontrada", SwingConstants.CENTER);
-                missingLabel.setFont(customFont.deriveFont(14f));
                 imagePanel.add(missingLabel, BorderLayout.CENTER);
             }
         } catch (Exception e) {
             JLabel errorLabel = new JLabel("Error cargando imagen", SwingConstants.CENTER);
-            errorLabel.setFont(customFont.deriveFont(14f));
             imagePanel.add(errorLabel, BorderLayout.CENTER);
         }
 
@@ -77,26 +76,26 @@ public class UIUserGastos {
         formPanel.setBackground(FONDO_PRINCIPAL);
 
         JLabel descripcionLabel = new JLabel("<html><div style='text-align:left;'>Registra gastos, servicios, compras o reparaciones de la tienda<br>en el realizo del día.</div></html>");
-        descripcionLabel.setFont(new Font(ARIAL_FONT, Font.PLAIN, 18));
+        descripcionLabel.setFont(new Font("Segoe UI Variable", Font.PLAIN, 18));
         descripcionLabel.setForeground(new Color(36, 36, 36));
         descripcionLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel descLabel = new JLabel("Descripción");
         descLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        descLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
+        descLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
         descLabel.setForeground(Color.BLACK);
         JTextField nombreGastoField = new JTextField(20);
         nombreGastoField.setMaximumSize(new Dimension(400, 40));
 
         JLabel precioLabel = new JLabel("Valor");
         precioLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        precioLabel.setFont(new Font(ARIAL_FONT, Font.BOLD, 16));
+        precioLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
         precioLabel.setForeground(Color.BLACK);
         JTextField precioField = new JTextField(20);
         precioField.setMaximumSize(new Dimension(400, 40));
 
         JButton addGastoButton = new JButton("Registrar");
-        addGastoButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        addGastoButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
         addGastoButton.setPreferredSize(new Dimension(400, 40));
         addGastoButton.setBackground(new Color(ZERO, 201, 87));
         addGastoButton.setForeground(Color.WHITE);
@@ -169,13 +168,14 @@ public class UIUserGastos {
                 g2.setColor(Color.BLACK);
                 g2.fillRoundRect(TWO, FOUR, getWidth() - FOUR, getHeight() - FOUR, 40, 40);
                 g2.setColor(getModel().isPressed() ? new Color(255, 193, SEVEN) : new Color(228, 185, 42));
+                //g2.setColor(Color.LIGHT_GRAY);
                 g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
             }
         };
 
         backButton.setPreferredSize(new Dimension(150, 40));
-        backButton.setFont(new Font(ARIAL_FONT, Font.BOLD, 22));
+        backButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
         backButton.setForeground(Color.WHITE);
         backButton.setBackground(FONDO_PRINCIPAL);
         backButton.setFocusPainted(false);
