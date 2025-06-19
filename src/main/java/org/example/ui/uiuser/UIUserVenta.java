@@ -100,8 +100,8 @@ public class UIUserVenta extends Panel {
 
         JTableHeader header = table.getTableHeader();
         header.setFont((TITTLE_FONT.deriveFont(Font.PLAIN, 22f)));
-        header.setBackground(new Color(28, 28, 28));
-        header.setForeground(new Color(201, 41, 41));
+        header.setBackground(HEADER_COLOR);
+        header.setForeground(HEADER_FONT_COLOR);
 
         table.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
         table.setBackground(FONDO_PRINCIPAL);
@@ -137,14 +137,6 @@ public class UIUserVenta extends Panel {
         totalField.setBorder(BorderFactory.createEmptyBorder(TEN, TEN, TEN, TEN));
         totalField.setVisible(total > ZERO);
         totalField.setBackground(FONDO_PRINCIPAL);
-
-        /*try (InputStream fontStream = UIHelpers.class.getClassLoader().getResourceAsStream(LOBSTER_FONT)) {
-            if (fontStream == null) throw new IOException("No se encontró la fuente");
-            Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 26);
-            totalField.setFont(customFont);
-        } catch (Exception e) {
-            logger.error("Error al cargar la fuente", e);
-        }*/
 
         return totalField;
     }
@@ -220,10 +212,8 @@ public class UIUserVenta extends Panel {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(Color.BLACK);
                 g2.fillRoundRect(TWO, FOUR, getWidth() - FOUR, getHeight() - FOUR, 40, 40);
-                g2.setColor(getModel().isPressed() ? new Color(255, 193, SEVEN) : new Color(228, 185, 42));
-               // g2.setColor(getModel().isPressed() ? Color.darkGray : Color.lightGray);
+                g2.setColor(getModel().isPressed() ? BTN_BACK_PRESSED : BTN_BACK);
                 g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
             }
@@ -231,7 +221,7 @@ public class UIUserVenta extends Panel {
 
         closeButton.setPreferredSize(new Dimension(150, 40));
         closeButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
-        closeButton.setForeground(Color.WHITE);
+        closeButton.setForeground(BTN_BACK_FONT_COLOR);
         closeButton.setBackground(FONDO_PRINCIPAL);
         closeButton.setFocusPainted(false);
         closeButton.setContentAreaFilled(false);
@@ -441,9 +431,6 @@ public class UIUserVenta extends Panel {
                     generarFacturadeCompra(ventaID, Arrays.asList(listaProductosEnLinea.toString().split("\n")), total, dateTime, tipoPago);
                 }
 
-
-                NumberFormat formatusd = NumberFormat.getCurrencyInstance(Locale.US);
-                Double totalDolar = total/TRM;
 
                 // Cargar la imagen
                 ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/VentaRealizada.png")); // Ruta de la imagen

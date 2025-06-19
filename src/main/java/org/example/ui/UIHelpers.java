@@ -182,7 +182,7 @@ public class UIHelpers {
         quantityPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
         JLabel quantityLabel = new JLabel("Cantidad x");
-        quantityLabel.setForeground(Color.WHITE);
+        quantityLabel.setForeground(CANTIDAD_COLOR_FONT);
         quantityLabel.setFont(labelFont);
 
         SpinnerNumberModel model = new SpinnerNumberModel(ONE, ONE, 999, ONE);
@@ -237,7 +237,7 @@ public class UIHelpers {
         scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(FIFTEEN, 0));
 
         JLabel pageLabel = new JLabel("Página 1");
-        pageLabel.setForeground(Color.WHITE);
+        pageLabel.setForeground(CANTIDAD_COLOR_FONT);
 
         JButton prevButton = new JButton("<");
         JButton nextButton = new JButton(">");
@@ -459,15 +459,14 @@ public class UIHelpers {
                 protected void paintBorder(Graphics g) {
                     Graphics2D g2 = (Graphics2D) g;
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                    g2.setColor(new Color(74, 50, 28));
-                    //g2.setColor(FONDO_PRINCIPAL);
+                    //g2.setColor(new Color(74, 50, 28));
+                    g2.setColor(Color.lightGray);
                     g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 20, 20);
                 }
             };
 
             card.setOpaque(false);
             card.setBackground(new Color(58, 58, 58));
-            //card.setBackground(Color.lightGray);
             card.setPreferredSize(new Dimension(100, 220));
             card.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
@@ -480,8 +479,7 @@ public class UIHelpers {
                     super.paintComponent(g);
                     Graphics2D g2 = (Graphics2D) g;
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                  g2.setColor(new Color(186, 27, 26));
-                    //  g2.setColor(new Color(0, 120, 212));
+                    g2.setColor(CARD_BACKGROUND_SELECT);
                     g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
                 }
             };
@@ -516,7 +514,7 @@ public class UIHelpers {
             namePanel.add(subInfoPanel, BorderLayout.SOUTH);
 
             card.add(namePanel, BorderLayout.SOUTH);
-            card.setBackground(new Color(147, 89, 49));
+            card.setBackground(new Color(230, 220, 210));
 
             new SwingWorker<ImageIcon, Void>() {
                 protected ImageIcon doInBackground() {
@@ -564,15 +562,11 @@ public class UIHelpers {
                         cantidadSpinner.setValue(ONE);
                     }
                 }
-                public void mouseEntered(MouseEvent e) { card.setBackground(new Color(186, 27, 26)); }
-                public void mouseExited(MouseEvent e) { card.setBackground(new Color(147, 89, 49)); }
-                public void mousePressed(MouseEvent e) { card.setBackground(new Color(220, 20, 60)); }
-                public void mouseReleased(MouseEvent e) { card.setBackground(new Color(186, 27, 26)); }
+                public void mouseEntered(MouseEvent e) { card.setBackground(CARD_BACKGROUND_SELECT); }
+                public void mouseExited(MouseEvent e) { card.setBackground(CARD_BACKGROUND); }
+                public void mousePressed(MouseEvent e) { card.setBackground(CARD_BACKGROUND_PRESSED); }
+                public void mouseReleased(MouseEvent e) { card.setBackground(CARD_BACKGROUND_RELEASE); }
 
-               // public void mouseEntered(MouseEvent e) { card.setBackground(new Color(0, 120, 212)); }
-                //public void mouseExited(MouseEvent e) { card.setBackground(Color.lightGray); }
-               // public void mousePressed(MouseEvent e) { card.setBackground(new Color(0, 150, 212)); }
-               // public void mouseReleased(MouseEvent e) { card.setBackground(new Color(0, 120, 212)); }
             });
 
             productPanel.add(card);

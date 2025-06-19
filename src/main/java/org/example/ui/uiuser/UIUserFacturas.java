@@ -11,8 +11,6 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -73,9 +71,8 @@ public class UIUserFacturas {
 
         JTableHeader header = facturasTable.getTableHeader();
         header.setFont(TITTLE_FONT.deriveFont(Font.PLAIN, 22f));
-        header.setBackground(new Color(28,28,28));
-        header.setForeground(new Color(201, 41, 41));
-
+        header.setBackground(HEADER_COLOR);
+        header.setForeground(HEADER_FONT_COLOR);
         facturasTable.setBorder(BorderFactory.createLineBorder(Color.GRAY, ONE));
         facturasTable.setBackground(FONDO_PRINCIPAL);
         facturasTable.setSelectionBackground(new Color(173, 216, 230));
@@ -118,17 +115,8 @@ public class UIUserFacturas {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-                g2.setColor(new Color(ZERO, ZERO, ZERO, 30));
                 g2.fillRoundRect(TWO, FOUR, getWidth() - FOUR, getHeight() - FOUR, 40, 40);
-
-                if (getModel().isPressed()) {
-                    g2.setColor(new Color(255, 193, SEVEN));
-                    //g2.setColor(Color.darkGray);
-                } else {
-                    g2.setColor(new Color(228, 185, 42));
-                    //g2.setColor(Color.lightGray);
-                }
+                g2.setColor(getModel().isPressed() ? BTN_BACK_PRESSED : BTN_BACK);
                 g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
             }
@@ -136,7 +124,7 @@ public class UIUserFacturas {
 
         closeButton.setPreferredSize(new Dimension(150, 40));
         closeButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
-        closeButton.setForeground(Color.WHITE);
+        closeButton.setForeground(BTN_BACK_FONT_COLOR);
 
         closeButton.setFocusPainted(false);
         closeButton.setContentAreaFilled(false);

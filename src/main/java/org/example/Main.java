@@ -47,8 +47,7 @@ public class Main {
         }
 
         JFrame frame = new JFrame("Bienvenido - " +EMPRESA_NAME);
-        ImageIcon icon = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png")));
-
+        ImageIcon icon = LOGO_EMPRESA;
         if (icon.getImage() != null) {
             Image scaledImage = icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
             frame.setIconImage(scaledImage);
@@ -68,8 +67,7 @@ public class Main {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         JLabel logoLabel = new JLabel();
-        ImageIcon logo = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png")));
-        Image img = logo.getImage().getScaledInstance(300, 280, Image.SCALE_SMOOTH);
+        ImageIcon logo = LOGO_EMPRESA;        Image img = logo.getImage().getScaledInstance(300, 280, Image.SCALE_SMOOTH);
         logoLabel.setIcon(new ImageIcon(img));
 
         JLabel userLabel = new JLabel("Encargado de caja");

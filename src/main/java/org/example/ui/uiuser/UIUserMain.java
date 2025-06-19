@@ -12,7 +12,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Objects;
@@ -37,7 +36,7 @@ public class UIUserMain {
             UIManager.setLookAndFeel(new FlatLightLaf());
 
             JFrame frame = new JFrame("Ventas - "+EMPRESA_NAME);
-            ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png"));
+            ImageIcon icon = LOGO_EMPRESA;
             if (icon.getImage() != null) {
                 Image scaledImage = icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH);
                 frame.setIconImage(scaledImage);
@@ -66,7 +65,7 @@ public class UIUserMain {
             logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.Y_AXIS));
             logoPanel.setBackground(FONDO_PRINCIPAL);
 
-            ImageIcon logoIcon = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png")));
+            ImageIcon logoIcon = LOGO_EMPRESA;
             Image imgLogo = logoIcon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
             JLabel logoLabel = getJLabel(imgLogo, contentPanel);
 
@@ -120,30 +119,30 @@ public class UIUserMain {
 
             Dimension buttonSize = new Dimension(10, 10);
 
-            JButton listaProductosButton = createButton("Inventario", resizeIcon("/icons/lista-de_productos.png"), e -> {
+            JButton listaProductosButton = createButton("Inventario", resizeIcon(PRODUCT_LIST_ICON), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "productos");
             });
 
-            JButton gastosButton = createButton("Gastos", resizeIcon("/icons/Gastos.png"), e -> {
+            JButton gastosButton = createButton("Gastos", resizeIcon(GASTOS_ICON), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "gastos");
             });
             gastosButton.setMaximumSize(buttonSize);
 
-            JButton salirButton = createButton("Finalizar Día", resizeIcon("/icons/Facturar.png"), e -> {
+            JButton salirButton = createButton("Finalizar Día", resizeIcon(FACTURAR_ICON), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "facturar");
             });
             salirButton.setMaximumSize(buttonSize);
 
-            JButton moreOptionsButton =  createButton(FACTURAS, resizeIcon("/icons/admin/beneficios.png"), e -> {
+            JButton moreOptionsButton =  createButton(FACTURAS, resizeIcon(FACTURAS_ICON), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, FACTURAS);
             });
             moreOptionsButton.setMaximumSize(buttonSize);
 
-            JButton moreOptionsButtons = createButton("Administrador", resizeIcon("/icons/obrero.png"), e -> adminPassword(frame));
+            JButton moreOptionsButtons = createButton("Administrador", resizeIcon(ADMIN_ICON), e -> adminPassword(frame));
 
             moreOptionsButtons.setMaximumSize(buttonSize);
 
@@ -311,18 +310,6 @@ public class UIUserMain {
         return gastosPanel;
     }
 
-    private static Font loadCustomFont() {
-        try {
-            InputStream fontStream = UIUserGastos.class.getClassLoader().getResourceAsStream(LOBSTER_FONT);
-            if (fontStream != null) {
-                Font font = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-                return font.deriveFont((float) 36.0);
-            }
-        } catch (IOException | FontFormatException e) {
-            logger.error("Error al cargar la fuente personalizada: {}", e.getMessage());
-        }
-        return null;
-    }
 
     private static JButton createBackButton(JPanel contentPanel) {
         JButton backButton = new JButton("Volver") {
@@ -330,10 +317,8 @@ public class UIUserMain {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(Color.BLACK);
                 g2.fillRoundRect(TWO, FOUR, getWidth() - FOUR, getHeight() - FOUR, 40, 40);
-                g2.setColor(getModel().isPressed() ? new Color(255, 193, SEVEN) : new Color(228, 185, 42));
-                //g2.setColor(getModel().isPressed() ? Color.darkGray : Color.lightGray);
+                g2.setColor(getModel().isPressed() ? BTN_BACK_PRESSED : BTN_BACK);
                 g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
             }
@@ -341,7 +326,7 @@ public class UIUserMain {
 
         backButton.setPreferredSize(new Dimension(150, 40));
         backButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
-        backButton.setForeground(Color.WHITE);
+        backButton.setForeground(BTN_BACK_FONT_COLOR);
         backButton.setBackground(FONDO_PRINCIPAL);
         backButton.setFocusPainted(false);
         backButton.setContentAreaFilled(false);

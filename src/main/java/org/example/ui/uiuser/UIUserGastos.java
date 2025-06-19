@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.InputStream;
 import java.net.URL;
 
 import static org.example.utils.Constants.*;
@@ -21,12 +20,6 @@ public class UIUserGastos {
         JPanel gastosPanel = new JPanel(new BorderLayout());
         gastosPanel.setBackground(FONDO_PRINCIPAL);
         gastosPanel.setPreferredSize(new Dimension(800, 600));
-
-        /*Font customFont = loadCustomFont();
-        if (customFont == null) {
-            customFont = new Font("Segoe UI Variable", Font.BOLD, 36);
-            titleLabel.setFont(customFont.deriveFont(Font.BOLD, 50f));
-        }*/
 
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setBackground(FONDO_PRINCIPAL);
@@ -146,29 +139,14 @@ public class UIUserGastos {
     }
 
 
-    private static Font loadCustomFont() {
-        try {
-            InputStream fontStream = UIUserGastos.class.getClassLoader().getResourceAsStream(LOBSTER_FONT);
-            if (fontStream != null) {
-                Font font = Font.createFont(Font.TRUETYPE_FONT, fontStream);
-                return font.deriveFont((float) 36.0);
-            }
-        } catch (Exception e) {
-            logger.error("Error al cargar la fuente personalizada: {}", e.getMessage());
-        }
-        return null;
-    }
-
     private static JButton createBackButton(JPanel contentPanel) {
         JButton backButton = new JButton("Volver") {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(Color.BLACK);
                 g2.fillRoundRect(TWO, FOUR, getWidth() - FOUR, getHeight() - FOUR, 40, 40);
-                g2.setColor(getModel().isPressed() ? new Color(255, 193, SEVEN) : new Color(228, 185, 42));
-                //g2.setColor(Color.LIGHT_GRAY);
+                g2.setColor(getModel().isPressed() ? BTN_BACK_PRESSED : BTN_BACK);
                 g2.fillRoundRect(ZERO, ZERO, getWidth(), getHeight(), 40, 40);
                 super.paintComponent(g);
             }
@@ -176,7 +154,7 @@ public class UIUserGastos {
 
         backButton.setPreferredSize(new Dimension(150, 40));
         backButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
-        backButton.setForeground(Color.WHITE);
+        backButton.setForeground(BTN_BACK_FONT_COLOR);
         backButton.setBackground(FONDO_PRINCIPAL);
         backButton.setFocusPainted(false);
         backButton.setContentAreaFilled(false);

@@ -1,14 +1,17 @@
 package org.example.utils;
 
+import org.example.ui.uiuser.UIUserMain;
 import org.example.ui.uiuser.UIUserMesas;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.InputStream;
+import java.util.Objects;
 
 public class Constants {
 
-    //public static final String EMPRESA_NAME = "Denuedo";
-    public static final String EMPRESA_NAME = "Licorera CR";
+    public static final String EMPRESA_NAME = "Denuedo";
+    //public static final String EMPRESA_NAME = "Licorera CR";
     ////public static final String "Segoe UI Variable" = "Arial";
     public static final String LOBSTER_FONT = "Lobster-Regular.ttf";
     public static final String COMBO_BOX_TEXT = "Busca un producto";
@@ -134,6 +137,27 @@ public class Constants {
     public static Color SEPARATOR_COLOR;
     public static Font TITTLE_FONT = new Font("Segoe UI Variable", Font.BOLD, 50);
     public static Color PRODUCT_PANEL_COLOR;
+    public static Color BTN_PRODUCT_DESCRIPTION;
+    public static Color BTN_PRODUCT_IMAGE;
+    public static Color BTN_BACK;
+    public static Color BTN_BACK_PRESSED;
+    public static Color HEADER_COLOR;
+    public static Color HEADER_FONT_COLOR;
+    public static Color CARD_BACKGROUND;
+    public static Color CARD_BACKGROUND_PRESSED;
+    public static Color CARD_BACKGROUND_SELECT;
+    public static Color CARD_BACKGROUND_RELEASE;
+    public static Color CANTIDAD_COLOR_FONT;
+    public static ImageIcon LOGO_EMPRESA;
+    public static String PRODUCT_LIST_ICON;
+    public static String GASTOS_ICON;
+    public static String FACTURAS_ICON;
+    public static String FACTURAR_ICON;
+    public static String ADMIN_ICON;
+    public static Color BTN_BACK_FONT_COLOR;
+
+
+
 
 
     static {
@@ -144,6 +168,29 @@ public class Constants {
                 BTN_MOUSE_ENTERED = Color.LIGHT_GRAY;
                 BTN_MOUSE_EXITED = FONDO_PRINCIPAL;
                 FONT_BUTTON_MENU = FONDO_PRINCIPAL;
+
+                CARD_BACKGROUND = (new Color(230, 220, 210));
+                CARD_BACKGROUND_PRESSED = (new Color(0, 150, 212));
+                CARD_BACKGROUND_SELECT = (new Color(0, 120, 212));
+                CARD_BACKGROUND_RELEASE = (new Color(0, 120, 212));
+
+                CANTIDAD_COLOR_FONT= (new Color(28, 28, 28));
+
+                BTN_BACK = (Color.lightGray);
+                BTN_BACK_PRESSED = (Color.darkGray);
+                BTN_BACK_FONT_COLOR = (new Color(28, 28, 28));
+
+                LOGO_EMPRESA = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource("/icons/denuedo-icons/Denuedo_transparent.png")));
+                PRODUCT_LIST_ICON = ("/icons/denuedo-icons/lista-de_productos.png");
+                GASTOS_ICON = "/icons/denuedo-icons/Gastos.png";
+                //FACTURAS_ICON = "/icons/denuedo-icons/beneficios.png";
+                FACTURAS_ICON = "/icons/admin/beneficios.png";
+                FACTURAR_ICON = "/icons/denuedo-icons/Facturar.png";
+                ADMIN_ICON = "/icons/denuedo-icons/obrero.png";
+
+
+
+
                 break;
             case "licorera cr":
                 FONDO_PRINCIPAL = new Color(250, 240, 230);
@@ -154,13 +201,30 @@ public class Constants {
                 SEPARATOR_COLOR = (new Color(200, 170, 100));
                 PRODUCT_PANEL_COLOR = (new Color(28, 28, 28));
 
-                /*BTN_PRODUCT_DESCRIPTION = (new Color(200, 170, 100));
+                BTN_PRODUCT_DESCRIPTION = (new Color(200, 170, 100));
                 BTN_PRODUCT_IMAGE = (new Color(200, 170, 100));
-                BTN_BACK = (new Color(200, 170, 100));
+                BTN_BACK = (new Color(228, 185, 42));
+                BTN_BACK_PRESSED = (new Color(255, 193, 7));
+                BTN_BACK_FONT_COLOR = (Color.WHITE);
+
+                HEADER_COLOR = (new Color (28, 28, 28));
+                HEADER_FONT_COLOR = (new Color(201, 41, 41));
+
+                CARD_BACKGROUND = (new Color(230, 220, 210));
+                CARD_BACKGROUND_PRESSED = (new Color(220, 20, 60));
+                CARD_BACKGROUND_SELECT = (new Color(186, 27, 26));
+                CARD_BACKGROUND_RELEASE = (new Color(186, 27, 26));
+
+                CANTIDAD_COLOR_FONT= (new Color(230, 220, 210));
+
+                LOGO_EMPRESA = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png")));
+                PRODUCT_LIST_ICON = ("/icons/lista-de_productos.png");
+                GASTOS_ICON = "/icons/Gastos.png";
+                FACTURAS_ICON = "/icons/admin/beneficios.png";
+                FACTURAR_ICON = "/icons/Facturar.png";
+                ADMIN_ICON = "/icons/obrero.png";
 
 
-                HEADER_COLOR = (new Color(200, 170, 100));
-                HEADER_FONT_COLOR = (new Color(36, 36, 36));*/
 
 
 

@@ -40,7 +40,7 @@ public class UIMainAdmin {
             frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 
-            ImageIcon icon = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png")));
+            ImageIcon icon = LOGO_EMPRESA;
             if (icon.getImage() != null) {
                 frame.setIconImage(icon.getImage().getScaledInstance(64, 64, Image.SCALE_SMOOTH));
             }
@@ -79,7 +79,7 @@ public class UIMainAdmin {
             logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.Y_AXIS));
             logoPanel.setBackground(FONDO_PRINCIPAL);
 
-            ImageIcon logoIcon = new ImageIcon(Objects.requireNonNull(UIUserMain.class.getResource("/icons/Licorera_CR_transparent.png")));
+            ImageIcon logoIcon = LOGO_EMPRESA;
             Image imgLogo = logoIcon.getImage().getScaledInstance(130, 130, Image.SCALE_SMOOTH);
             JLabel logoLabel = getJLabel(imgLogo, contentPanel);
 
