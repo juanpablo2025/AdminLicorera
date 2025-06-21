@@ -13,6 +13,7 @@ import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.properties.TextAlignment;
 import org.apache.poi.ss.usermodel.*;
 import org.example.manager.adminmanager.ConfigAdminManager;
+import org.example.manager.userDBManager.DatabaseUserManager;
 import org.example.model.Factura;
 import org.example.model.Producto;
 import org.slf4j.Logger;
@@ -25,6 +26,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.sql.*;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,6 +34,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
+
+import static org.example.manager.userDBManager.DatabaseUserManager.*;
 import static org.example.manager.usermanager.ExcelUserManager.*;
 import static org.example.manager.usermanager.PrintUserManager.abrirPDF;
 import static org.example.manager.usermanager.PrintUserManager.imprimirPDF;
@@ -52,7 +56,7 @@ public class FacturacionUserManager {
     }
 
 
-    public static void facturarYSalir() {
+    public static void facturarYSalir() throws SQLException {
 
         List<Factura> facturas = getFacturas();
 
@@ -62,7 +66,9 @@ public class FacturacionUserManager {
             return;
         }
 
-        excelUserManager.facturarYLimpiar();
+        //excelUserManager.facturarYLimpiar();
+        DatabaseUserManager.facturarYLimpiar();
+
         eliminarMesasConIdMayorA15();
         System.exit(ZERO);
 
@@ -226,7 +232,7 @@ public class FacturacionUserManager {
         return pageSize;
     }
 
-    public static void generarResumenDiarioEstilizadoPDF() throws InterruptedException {
+    /*public static void generarResumenDiarioEstilizadoPDF() throws InterruptedException {
         LocalDate fechaActual = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
@@ -461,9 +467,17 @@ public class FacturacionUserManager {
             logger.error("Error al generar el resumen diario: {}", e.getMessage());
             JOptionPane.showMessageDialog(null, "Error al generar el resumen diario: " + e.getMessage(), ERROR_TITLE,JOptionPane.ERROR_MESSAGE);
         }
+    }*/
+
+
+    private static int obtenerTotalProductos(Connection conn) throws SQLException {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT COUNT(*) FROM productos");
+             ResultSet rs = stmt.executeQuery()) {
+            return rs.next() ? rs.getInt(1) : 0;
+        }
     }
 
-public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorPago,double totalFacturado) throws IOException {
+/*public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorPago,double totalFacturado) throws IOException {
         Map<String, Integer> productosVendidos = obtenerProductosVendidos();
 
         LocalDate fechaActual = LocalDate.now();
@@ -659,7 +673,7 @@ public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorP
             logger.error("Error inesperado: {}", e.getMessage());
             JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
-    }
+    }*/
 
 
     public static void limpiarFacturas() {
@@ -683,7 +697,7 @@ public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorP
         }
     }
 
-    public static Map<String, Integer> obtenerProductosVendidos() {
+    /*public static Map<String, Integer> obtenerProductosVendidos() {
         Map<String, Integer> productosVendidos = new HashMap<>();
 
         try (FileInputStream fis = new FileInputStream(FILE_PATH);
@@ -782,6 +796,47 @@ public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorP
             }
         } catch (IOException e) {
             logger.error("Error al limpiar la cantidad vendida: {}", e.getMessage());
+        }
+    }*/
+
+    public static Map<String, Integer> obtenerProductosVendidos() {
+        Map<String, Integer> productosVendidos = new HashMap<>();
+
+        String sql = "SELECT nombreProducto, SUM(cantidadVendida) AS cantidadTotal " +
+                "FROM Ventas GROUP BY nombreProducto";
+
+        try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL);
+             PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                String nombreProducto = rs.getString("nombreProducto");
+                int cantidadVendida = rs.getInt("cantidadTotal");
+
+                // Solo agregar productos que tienen una cantidad mayor a 0
+                if (cantidadVendida > 0) {
+                    productosVendidos.put(nombreProducto, cantidadVendida);
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return productosVendidos;
+    }
+
+    public static void limpiarCantidadVendida() {
+        String sql = "UPDATE Ventas SET cantidadVendida = 0";
+
+        try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL);
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            int rowsUpdated = stmt.executeUpdate();
+            System.out.println("Se han limpiado las cantidades vendidas para " + rowsUpdated + " productos.");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

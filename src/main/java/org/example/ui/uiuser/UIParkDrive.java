@@ -1,6 +1,7 @@
 package org.example.ui.uiuser;
 
 import org.example.model.Mesa;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -12,22 +13,18 @@ import java.sql.SQLException;
 import java.util.List;
 
 import static org.example.manager.userDBManager.DatabaseUserManager.*;
-import static org.example.manager.usermanager.ExcelUserManager.*;
 import static org.example.utils.Constants.*;
 
-public class UIUserMesas {
+public class UIParkDrive {
 
-    private UIUserMesas() {}
-
-
-    public static JPanel crearMesaPanel(Mesa mesa, JFrame mainFrame, JPanel mainPanel) {
-        JPanel mesaPanel = new JPanel(new BorderLayout());
-        mesaPanel.setPreferredSize(new Dimension(ONE_HUNDRED, ONE_HUNDRED));
+    public static JPanel crearEstacionamientoPanel(Mesa mesa, JFrame mainFrame, JPanel mainPanel) {
+        JPanel parkingPanel = new JPanel(new BorderLayout());
+        parkingPanel.setPreferredSize(new Dimension(ONE_HUNDRED, ONE_HUNDRED));
 
         String idMesa = mesa.getId();
-        JLabel titleLabel = new JLabel("Mesa " + idMesa, SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("Espacio " + idMesa, SwingConstants.CENTER);
         titleLabel.setForeground(new Color(28, 28, 28));
-        titleLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 50));
+        titleLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 30));
 
         String tituloMesa = titleLabel.getText();
         TitledBorder titledBorder = BorderFactory.createTitledBorder(
@@ -36,14 +33,14 @@ public class UIUserMesas {
                 TitledBorder.CENTER, TitledBorder.TOP
         );
 
-        titledBorder.setTitleFont(new Font("Segoe UI Variable", Font.BOLD, 18));
-        mesaPanel.setBorder(titledBorder);
-        mesaPanel.setBackground(mesa.isOcupada() ? new Color(255, 111, 97) : new Color(168, 230, 207));
-        JLabel mesaLabel = new JLabel(mesa.isOcupada() ? "OCUPADA" : "LIBRE", SwingConstants.CENTER);
-        mesaLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 30));
+        titledBorder.setTitleFont(new Font("Segoe UI Variable", Font.BOLD, 13));
+        parkingPanel.setBorder(titledBorder);
+        parkingPanel.setBackground(mesa.isOcupada() ? new Color(255, 111, 97) : new Color(168, 230, 207));
+        JLabel mesaLabel = new JLabel(mesa.isOcupada() ? "VBA70C" : "LIBRE" , SwingConstants.CENTER);
+        mesaLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 15));
         mesaLabel.setForeground(Color.DARK_GRAY);
-        mesaPanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        mesaPanel.addMouseListener(new MouseAdapter() {
+        parkingPanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        parkingPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
 
@@ -70,82 +67,83 @@ public class UIUserMesas {
                         tituloMesa,
                         TitledBorder.CENTER, TitledBorder.TOP
                 );
-                mesaPanel.setBackground(mesa.isOcupada() ? new Color(255, 60, 60) : new Color(ZERO, 201, 87));
+                parkingPanel.setBackground(mesa.isOcupada() ? new Color(255, 60, 60) : new Color(ZERO, 201, 87));
 
-                newBorder.setTitleFont(new Font("Segoe UI Variable", Font.BOLD, 20));
-                mesaPanel.setBorder(newBorder);
+                newBorder.setTitleFont(new Font("Segoe UI Variable", Font.BOLD, 14));
+                parkingPanel.setBorder(newBorder);
                 mesaLabel.setForeground(Color.WHITE);
                 newBorder.setTitleColor(Color.white);
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                mesaPanel.setBorder(titledBorder);
-                mesaPanel.setBackground(mesa.isOcupada() ? new Color(255, 111, 97) : new Color(168, 230, 207));
+                parkingPanel.setBorder(titledBorder);
+                parkingPanel.setBackground(mesa.isOcupada() ? new Color(255, 111, 97) : new Color(168, 230, 207));
                 mesaLabel.setForeground(Color.DARK_GRAY);
             }
         });
 
-        mesaPanel.add(mesaLabel, BorderLayout.CENTER);
-        return mesaPanel;
+        parkingPanel.add(mesaLabel, BorderLayout.CENTER);
+        return parkingPanel;
     }
 
-    public static JPanel showPanelMesas(JFrame mainFrame, JPanel contentPanel) {
-        JPanel mesasPanel = new JPanel(new BorderLayout());
-        mesasPanel.setBackground(FONDO_PRINCIPAL);
 
-        mesasPanel.setBorder(BorderFactory.createCompoundBorder(
+    public static JPanel showPanelParkDrive(JFrame mainFrame, JPanel contentPanel) {
+        JPanel parkDrivePanel = new JPanel(new BorderLayout());
+        parkDrivePanel.setBackground(FONDO_PRINCIPAL);
+
+        parkDrivePanel.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(new Color(ONE_HUNDRED, ONE_HUNDRED, ONE_HUNDRED), ZERO, true),
                 new EmptyBorder(TEN, 20, 20, 20)
         ));
 
-        JLabel titleLabel = new JLabel("Mesas", SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel("Parqueadero", SwingConstants.CENTER);
         titleLabel.setForeground(new Color (28, 28, 28));
         titleLabel.setFont(TITTLE_FONT);
 
 
-        JPanel gridMesasPanel = new JPanel(new GridLayout(ZERO, FIVE, FOUR, FOUR));
-        gridMesasPanel.setBackground(FONDO_PRINCIPAL);
-        //List<Mesa> mesas = cargarMesasDesdeExcel();
-        List<Mesa> mesas = cargarMesasDesdeDB();
+        JPanel gridParkDrivePanel = new JPanel(new GridLayout(ZERO, 12, FOUR, FOUR));
+        gridParkDrivePanel.setBackground(FONDO_PRINCIPAL);
+        List<Mesa> mesas = cargarParkingDesdeDB();
 
         for (int i = ZERO; i < mesas.size(); i++) {
             Mesa mesa = mesas.get(i);
             mesa.setID(String.valueOf(i + ONE));
-            JPanel mesaPanel = crearMesaPanel(mesa, mainFrame, contentPanel);
-            gridMesasPanel.add(mesaPanel);
+            JPanel mesaPanel = crearEstacionamientoPanel(mesa, mainFrame, contentPanel);
+            gridParkDrivePanel.add(mesaPanel);
         }
 
-        JButton addMesaButton = getJButton();
+        JButton addparkDriveButton = getJButton();
 
-        addMesaButton.addActionListener(e -> {
+        addparkDriveButton.addActionListener(e -> {
             String nuevoID = String.valueOf(mesas.size() + ONE);
             Mesa nuevaMesa = new Mesa(nuevoID);
             mesas.add(nuevaMesa);
-            JPanel nuevaMesaPanel = crearMesaPanel(nuevaMesa, mainFrame, contentPanel);
-            gridMesasPanel.add(nuevaMesaPanel);
-            gridMesasPanel.revalidate();
-            gridMesasPanel.repaint();
+            JPanel nuevaMesaPanel = crearEstacionamientoPanel(nuevaMesa, mainFrame, contentPanel);
+            gridParkDrivePanel.add(nuevaMesaPanel);
+            gridParkDrivePanel.revalidate();
+            gridParkDrivePanel.repaint();
             //agregarMesaAExcel(nuevaMesa);
             try {
-                agregarMesaABD(nuevaMesa);
+                agregarParkingABD(nuevaMesa);
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
         });
 
         JPanel bottomPanel = new JPanel();
-        bottomPanel.add(addMesaButton);
+        bottomPanel.add(addparkDriveButton);
         bottomPanel.setBackground(FONDO_PRINCIPAL);
-        mesasPanel.add(titleLabel, BorderLayout.NORTH);
-        mesasPanel.add(gridMesasPanel, BorderLayout.CENTER);
-        mesasPanel.add(bottomPanel, BorderLayout.SOUTH);
+        parkDrivePanel.add(titleLabel, BorderLayout.NORTH);
+        parkDrivePanel.add(gridParkDrivePanel, BorderLayout.CENTER);
+        parkDrivePanel.add(bottomPanel, BorderLayout.SOUTH);
 
-        return mesasPanel;
+        return parkDrivePanel;
     }
 
+
     private static JButton getJButton() {
-        JButton addMesaButton = new JButton("Nueva Mesa") {
+        JButton addMesaButton = new JButton("Nuevo espacio") {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g;
@@ -166,4 +164,5 @@ public class UIUserMesas {
         addMesaButton.setOpaque(false);
         return addMesaButton;
     }
+
 }

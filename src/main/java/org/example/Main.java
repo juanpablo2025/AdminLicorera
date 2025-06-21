@@ -1,6 +1,7 @@
 package org.example;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import org.example.manager.userDBManager.DatabaseUserManager;
 import org.example.ui.uiuser.UIUserMain;
 import org.example.utils.Updater;
 import org.slf4j.Logger;
@@ -9,8 +10,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.time.LocalTime;
 import java.util.Objects;
+
+import static org.example.manager.userDBManager.DatabaseUserManager.URL;
+import static org.example.manager.userDBManager.DatabaseUserManager.registrarDia;
 import static org.example.manager.usermanager.ExcelUserManager.*;
 import static org.example.manager.usermanager.MainUserManager.crearDirectorios;
 import static org.example.ui.uiadmin.UIMainAdmin.adminPassword;
@@ -22,19 +29,21 @@ public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
         crearDirectorios();
-
-        File file = new File(FILE_PATH);
+        Connection conn = DriverManager.getConnection(URL);
+        // Verificar si el archivo existe; si no, crear uno nuevo
+       /* File file = new File(FILE_PATH);
         if (!file.exists()) {
-            createExcelFile();
-        }
-        if (hayRegistroDeHoy()) {
+            createExcelFile();  // Llama al método que crea el archivo si no existe
+        }*/
+        if (DatabaseUserManager.hayRegistroDeHoy(conn)) {
             Updater.checkForUpdates();
-            mainUser();
+            mainUser(); // Si hay registro, abrir el panel de usuario
         } else {
             Updater.checkForUpdates();
-            mostrarLogin();
+            mostrarLogin(); // Si no, mostrar el login
+
         }
     }
 
@@ -118,19 +127,19 @@ public class Main {
             frame.dispose();
             String nombreUsuario = userField.getText();
             if (!nombreUsuario.isEmpty()) {
-                registrarDia(nombreUsuario);
+                Connection connection = null;
+                try {
+                    connection = DriverManager.getConnection(DatabaseUserManager.URL);
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                registrarDia(connection, nombreUsuario);
 
                 ImageIcon iconEmpleado = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/Bienvenida.png"));
                 if (iconEmpleado.getImageLoadStatus() != MediaTracker.COMPLETE) {
                     iconEmpleado = null;
                 }
 
-                Font lobsterFont;
-                try (InputStream fontStream = UIUserMain.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf")) {
-                    lobsterFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 30f);
-                } catch (Exception ex) {
-                    lobsterFont = new Font("Serif", Font.BOLD, 30);
-                }
 
                 String saludo;
                 LocalTime horaActual = LocalTime.now();
@@ -144,7 +153,7 @@ public class Main {
 
                 JLabel textLabel = new JLabel(saludo);
                 textLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                textLabel.setFont(lobsterFont);
+                textLabel.setFont(ALERT_FONT);
 
                 JPanel panelEmpleado = new JPanel();
                 panelEmpleado.setLayout(new BoxLayout(panelEmpleado, BoxLayout.Y_AXIS));

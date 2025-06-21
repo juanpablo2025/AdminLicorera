@@ -15,9 +15,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Connection;
 import java.util.Objects;
 import static org.example.Main.mostrarLogin;
-import static org.example.manager.usermanager.ExcelUserManager.hayRegistroDeHoy;
+import static org.example.manager.userDBManager.DatabaseUserManager.hayRegistroDeHoy;
+//import static org.example.manager.usermanager.ExcelUserManager.hayRegistroDeHoy;
 import static org.example.ui.UIHelpers.createButton;
 import static org.example.ui.uiadmin.UIAdminFacturas.getAdminBillsPanel;
 import static org.example.ui.uiadmin.UIAdminProducts.getAdminProductListPanel;
@@ -48,7 +50,8 @@ public class UIMainAdmin {
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    if (hayRegistroDeHoy()) {
+                    Connection conn = null;
+                    if (hayRegistroDeHoy(conn)) {
                         mainUser();
                     } else {
                         mostrarLogin();
@@ -151,7 +154,8 @@ public class UIMainAdmin {
             configButton.setMaximumSize(buttonSize);
 
             JButton moreOptionsButton = createButton("Mesas", resizeIcon("/icons/mesa-redonda.png"), e -> {
-                if (hayRegistroDeHoy()) {
+                Connection conn = null;
+                if (hayRegistroDeHoy(conn)) {
                     mainUser();
                 } else {
                     mostrarLogin();

@@ -1,5 +1,6 @@
 package org.example.manager.usermanager;
 
+import org.example.manager.userDBManager.DatabaseUserManager;
 import org.example.model.Producto;
 
 import java.util.ArrayList;
@@ -13,15 +14,20 @@ public class ProductoUserManager {
     private static final ExcelUserManager excelUserManager = new ExcelUserManager();
     private static final List<Producto> cartProducts = new ArrayList<>();
     private static final List<Integer> cartQuantities = new ArrayList<>();
+    private static DatabaseUserManager databaseUserManager = new DatabaseUserManager();
+
 
     private static final int MINUS_ONE = -ONE;
 
     public static List<Producto> getProducts() {
-        return excelUserManager.getProducts();
+        //return excelUserManager.getProducts();
+        return databaseUserManager.getProducts();
+
     }
 
     public static Producto getProductByName(String name) {
-        return excelUserManager.getProductByName(name);
+        //return excelUserManager.getProductByName(name);
+        return databaseUserManager.getProductByName(name);
     }
 
     public double getTotalCartAmount() {

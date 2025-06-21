@@ -6,8 +6,8 @@ public class Producto {
     private int id;
     private final String name;
     private int quantity ;
-    private final double price;
-    private final String foto;
+    private double price;
+    private String foto;
 
     public Producto(int id,String name, int quantity, double price, String foto) {
         this.id = id;
@@ -15,6 +15,11 @@ public class Producto {
         this.quantity = quantity;
         this.price = price;
         this.foto = foto;
+    }
+
+    public Producto(String nombre, int i) {
+        this.name = nombre;
+        this.quantity = i;
     }
 
     public int getId() {

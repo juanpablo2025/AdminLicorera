@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 import static org.example.manager.usermanager.FacturacionUserManager.*;
 import static org.example.utils.Constants.*;
 
-public class ExcelUserManager {
+public class ExcelUserManager {/*
 
     public static final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
     public static final String DIRECTORY_PATH =System.getProperty(FOLDER_PATH) + "\\Calculadora del Administrador";
@@ -989,5 +989,5 @@ public class ExcelUserManager {
         timer.start();
 
         dialog.setVisible(true);
-    }
+    }*/
 }

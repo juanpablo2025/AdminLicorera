@@ -52,9 +52,9 @@ public class Constants {
     public static final float HEIGHT_DOTS = 2.83465f;
     //ENCABEZADO DE LA FACTURA
     public static final String PDF_FORMAT = ".pdf";
-    public static final String NIT = "NIT: 21468330-1";
-    public static final String DIRECCION = "Dirección: CR 70 # 46 - 80";
-    public static final String TELEFONO = "Teléfono: 411 19 00";
+    public static String NIT;
+    public static String DIRECCION = "Dirección: CR 70 # 46 - 80";
+    public static String TELEFONO = "Teléfono: 411 19 00";
     //BILL DETAILS
     public static final String BILL_ID = "Factura ";
     public static final String TOTAL_BILL = "Total ";
@@ -155,6 +155,7 @@ public class Constants {
     public static String FACTURAR_ICON;
     public static String ADMIN_ICON;
     public static Color BTN_BACK_FONT_COLOR;
+    public static Font ALERT_FONT = new Font("Segoe UI Variable", Font.BOLD, 20);
 
 
 
@@ -188,7 +189,9 @@ public class Constants {
                 FACTURAR_ICON = "/icons/denuedo-icons/Facturar.png";
                 ADMIN_ICON = "/icons/denuedo-icons/obrero.png";
 
-
+                NIT = "NIT: 00000000-0";
+                DIRECCION = "Dirección: CR 00 # 00 - 00";
+                TELEFONO = "Teléfono: 000 00 00";
 
 
                 break;
@@ -226,13 +229,23 @@ public class Constants {
 
 
 
-
+                NIT = "NIT: 21468330-1";
+                DIRECCION = "Dirección: CR 70 # 46 - 80";
+                TELEFONO = "Teléfono: 411 19 00";
 
 
                 try (InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream(LOBSTER_FONT)) {
                     Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 50);
-
                  TITTLE_FONT = (customFont);
+
+                } catch (Exception e) {
+                    e.fillInStackTrace();
+                }
+
+                try (InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream(LOBSTER_FONT)) {
+
+                    Font customAlertFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 20);
+                    ALERT_FONT = (customAlertFont);
                 } catch (Exception e) {
                     e.fillInStackTrace();
                 }

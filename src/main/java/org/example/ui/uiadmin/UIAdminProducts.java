@@ -1,6 +1,7 @@
 package org.example.ui.uiadmin;
 
-import org.example.manager.adminmanager.ExcelAdminManager;
+import org.example.manager.adminDBManager.DatabaseAdminManager;
+//import org.example.manager.adminmanager.ExcelAdminManager;
 import org.example.manager.adminmanager.GastosAdminManager;
 import org.example.model.Producto;
 import org.example.ui.UIHelpers;
@@ -344,7 +345,8 @@ public class UIAdminProducts {
                 int productId = Integer.parseInt(tableModel.getValueAt(modelRow, ZERO).toString());
 
                 tableModel.removeRow(modelRow);
-                ExcelAdminManager.deleteProductById(productId);
+                //ExcelAdminManager.deleteProductById(productId);
+                DatabaseAdminManager.deleteProductById(productId);
 
                 JOptionPane.showMessageDialog(null,
                         "Producto eliminado correctamente.",
@@ -614,7 +616,8 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         Producto productoActualizado = new Producto(id, name, quantity, price,
                 "\\Calculadora del Administrador\\Fotos\\" + name + ".png");
 
-        ExcelAdminManager.updateProduct(productoActualizado);
+        //ExcelAdminManager.updateProduct(productoActualizado);
+        DatabaseAdminManager.updateProduct(productoActualizado);
 
         JOptionPane.showMessageDialog(null, "Producto actualizado exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
         updateProductTable(table);

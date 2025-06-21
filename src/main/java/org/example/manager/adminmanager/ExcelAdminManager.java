@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import static org.example.utils.Constants.*;
 
-public class ExcelAdminManager {
+public class ExcelAdminManager {/*
     public static final String FILE_NAME = "Inventario_Licorera_Cr_La_70.xlsx";
     public static final String DIRECTORY_PATH = System.getProperty("user.home") + "\\Calculadora del Administrador";
     public static final String FILE_PATH = DIRECTORY_PATH + '\\' + FILE_NAME;
@@ -232,5 +232,5 @@ public class ExcelAdminManager {
             logger.error("Error al eliminar la factura: {}", e.getMessage());
             return false;
         }
-    }
+    }*/
 }

@@ -1,6 +1,7 @@
 package org.example.ui.uiuser;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import org.example.manager.userDBManager.DatabaseUserManager;
 import org.example.manager.usermanager.ExcelUserManager;
 import org.example.manager.usermanager.FacturacionUserManager;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.InputStream;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.Objects;
 
 import static org.example.ui.uiadmin.UIMainAdmin.*;
@@ -28,7 +30,17 @@ public class UIUserMain {
 
     private UIUserMain() {}
 
-    private static final String EMPLOYEE_NAME = ExcelUserManager.obtenerUltimoEmpleado().toUpperCase();
+    //private static final String EMPLOYEE_NAME = ExcelUserManager.obtenerUltimoEmpleado().toUpperCase();
+
+    private static String EMPLOYEE_NAME;// ExcelUserManager.obtenerUltimoEmpleado().toUpperCase();
+
+    static {
+        try {
+            EMPLOYEE_NAME = DatabaseUserManager.obtenerUltimoEmpleado();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
     public static void mainUser() {
@@ -60,6 +72,7 @@ public class UIUserMain {
             contentPanel.add(getFacturasPanel(), FACTURAS);
             contentPanel.add(UIUserGastos.createGastosPanel(contentPanel), "gastos");
             contentPanel.add(createFacturarPanel(contentPanel), "facturar");
+            contentPanel.add(UIParkDrive.showPanelParkDrive(frame,contentPanel), "parqueadero");
 
             JPanel logoPanel = new JPanel();
             logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.Y_AXIS));
@@ -72,21 +85,21 @@ public class UIUserMain {
             JLabel employeeLabel = new JLabel(EMPLOYEE_NAME);
             employeeLabel.setForeground(Color.DARK_GRAY);
             employeeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            employeeLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 32));
-            try {
-                InputStream fontStream = UIUserMain.class.getClassLoader().getResourceAsStream("Pacifico-Regular.ttf");
-                Font customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.BOLD, 32);
-                employeeLabel.setFont(customFont);
-            } catch (Exception e) {
-                logger.error("Error al cargar la fuente personalizada: ", e);
-                employeeLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 32));
-            }
+            employeeLabel.setFont(TITTLE_FONT.deriveFont(Font.BOLD, 38f));
+
+            JLabel encargadoLabel = new JLabel("Gestión de ventas");
+            encargadoLabel.setForeground(Color.BLACK);
+            encargadoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            encargadoLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 15));
+
 
             logoPanel.add(Box.createVerticalStrut(ONE));
             logoPanel.add(logoLabel);
             logoPanel.add(Box.createVerticalStrut(ONE));
+            logoPanel.add(encargadoLabel);
+            logoPanel.add(Box.createVerticalStrut(-2));
             logoPanel.add(employeeLabel);
-            logoPanel.add(Box.createVerticalStrut(ONE));
+            logoPanel.add(Box.createVerticalStrut(3));
 
             sidebarPanel.add(logoPanel, BorderLayout.NORTH);
 
@@ -146,6 +159,12 @@ public class UIUserMain {
 
             moreOptionsButtons.setMaximumSize(buttonSize);
 
+            JButton moreParkDriveButtons = createButton("Parqueadero", resizeIcon(FACTURAR_ICON), e -> {
+                CardLayout cl = (CardLayout) contentPanel.getLayout();
+                cl.show(contentPanel, "parqueadero");
+            });
+            moreParkDriveButtons.setMaximumSize(buttonSize);
+
             buttonsPanel.add(Box.createVerticalStrut(FIVE));
             buttonsPanel.add(listaProductosButton);
             buttonsPanel.add(Box.createVerticalStrut(FIVE));
@@ -157,6 +176,9 @@ public class UIUserMain {
             buttonsPanel.add(Box.createVerticalStrut(FIVE));
             buttonsPanel.add(moreOptionsButtons);
             buttonsPanel.add(Box.createVerticalGlue());
+            buttonsPanel.add(moreParkDriveButtons);
+            buttonsPanel.add(Box.createVerticalStrut(FIVE));
+
 
             sidebarPanel.add(buttonsPanel, BorderLayout.CENTER);
             mainPanel.add(sidebarPanel, BorderLayout.WEST);

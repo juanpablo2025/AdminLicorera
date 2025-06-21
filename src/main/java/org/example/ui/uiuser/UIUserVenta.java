@@ -2,6 +2,7 @@ package org.example.ui.uiuser;
 
 import org.apache.poi.ss.usermodel.*;
 import org.example.manager.adminmanager.ConfigAdminManager;
+import org.example.manager.userDBManager.DatabaseUserManager;
 import org.example.manager.usermanager.ExcelUserManager;
 import org.example.manager.usermanager.ProductoUserManager;
 import org.example.model.Producto;
@@ -25,6 +26,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,8 +39,10 @@ import javax.swing.Timer;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-import static org.example.manager.usermanager.ExcelUserManager.actualizarCantidadStockExcel;
-import static org.example.manager.usermanager.ExcelUserManager.cargarProductosMesaDesdeExcel;
+import static org.example.manager.userDBManager.DatabaseUserManager.actualizarCantidadStockExcel;
+import static org.example.manager.userDBManager.DatabaseUserManager.cargarProductosMesaDesdeBD;
+//import static org.example.manager.usermanager.ExcelUserManager.actualizarCantidadStockExcel;
+//import static org.example.manager.usermanager.ExcelUserManager.cargarProductosMesaDesdeExcel;
 import static org.example.manager.usermanager.FacturacionUserManager.generarFacturadeCompra;
 import static org.example.ui.UIHelpers.*;
 import static org.example.ui.uiuser.UIUserMain.mainUser;
@@ -182,7 +189,9 @@ public class UIUserVenta extends Panel {
         JButton confirmarCompraButton = createConfirmPurchaseMesaButton(compraDialog, mesaID, table,frame);
         confirmarCompraButton.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
 
-        List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
+        //List<String[]> productosPrevios = cargarProductosMesaDesdeExcel(mesaID);
+        List<String[]> productosPrevios = cargarProductosMesaDesdeBD(mesaID);
+
         boolean productosEnExcel = !productosPrevios.isEmpty();
         confirmarCompraButton.setEnabled(productosEnExcel || table.getRowCount() > ZERO);
 
@@ -318,9 +327,12 @@ public class UIUserVenta extends Panel {
                     return;
                 }
 
-                ExcelUserManager excelUserManager = new ExcelUserManager();
-                excelUserManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total ,tipoPago);
-                try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
+                //ExcelUserManager excelUserManager = new ExcelUserManager();
+                //excelUserManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total ,tipoPago);
+                DatabaseUserManager.savePurchase(ventaID, listaProductosEnLinea.toString(), total, dateTime, tipoPago);
+
+
+                /*try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
                      Workbook workbook = WorkbookFactory.create(fis)) {
 
                     Sheet mesasSheet = workbook.getSheet(MESAS);
@@ -356,6 +368,35 @@ public class UIUserVenta extends Panel {
                     }
                 } catch (IOException ex) {
                     logger.error("Error al guardar la compra en Excel", ex);
+                }*/
+
+                try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL)) {
+
+                    // Actualizar estado de la mesa, productos y total en la base de datos
+                    String sqlUpdateMesa = "UPDATE Mesas SET estado = ?, productos = ?, total = ? WHERE mesaID = ?";
+
+                    try (PreparedStatement pstmt = connection.prepareStatement(sqlUpdateMesa)) {
+
+                        // Establecer valores para la actualización
+                        pstmt.setString(1, "Libre");  // Cambiar el estado de la mesa a "Libre"
+                        pstmt.setString(2, "");       // Limpiar productos
+                        pstmt.setDouble(3, 0.0);      // Establecer total a 0.0
+                        pstmt.setString(4, mesaID);   // Usar el ID de la mesa para la condición WHERE
+
+                        // Ejecutar la actualización
+                        int rowsUpdated = pstmt.executeUpdate();
+                        if (rowsUpdated > 0) {
+                            System.out.println("Mesa " + mesaID + " actualizada correctamente.");
+                        } else {
+                            System.out.println("No se encontró la mesa con ID " + mesaID);
+                        }
+
+                    } catch (SQLException es) {
+                        es.printStackTrace();
+                    }
+
+                } catch (SQLException es) {
+                    es.printStackTrace();
                 }
 
                 // Cargar la imagen
@@ -368,19 +409,9 @@ public class UIUserVenta extends Panel {
                 iconBill = new ImageIcon(iconBill.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
 
 
-                // Cargar la fuente Lobster
-                Font lobsterFont = new Font("SansSerif", Font.BOLD, 30); // Fallback
-                try (InputStream fontStream = UIUserMain.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf")) {
-                    if (fontStream != null) {
-                        lobsterFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.PLAIN, 30f);
-                    }
-                } catch (Exception es) {
-                    es.printStackTrace();
-                }
-
                 // Crear el JLabel con la fuente personalizada
                 JLabel textLabelBill = new JLabel(PRINT_BILL, SwingConstants.CENTER);
-                textLabelBill.setFont(lobsterFont);
+                textLabelBill.setFont(ALERT_FONT);
 
                 JLabel countdownLabel = new JLabel("Imprimiendo en 7...", SwingConstants.CENTER);
                 countdownLabel.setFont(new Font(LOBSTER_FONT, Font.BOLD, 18));
@@ -447,7 +478,7 @@ public class UIUserVenta extends Panel {
                         icon,
                         null  // Puedes pasar null si no quieres ejecutar nada al cerrar
                 );
-                actualizarCantidadStockExcel(cantidadTotalPorProducto);
+                actualizarCantidadStockExcel(cantidadTotalPorProducto,mesaID);
                 ProductoUserManager.limpiarCarrito();
                 SwingUtilities.invokeLater(() -> {
                     Window window = SwingUtilities.getWindowAncestor(confirmarCompraButton);
@@ -471,17 +502,9 @@ public class UIUserVenta extends Panel {
         NumberFormat formatusd = NumberFormat.getCurrencyInstance(Locale.US);
         double totalDolar = total / trm;
 
-        Font lobsterFont = new Font("SansSerif", Font.BOLD, 28); // fallback
-        try (InputStream fontStream = UIUserMesas.class.getClassLoader().getResourceAsStream(LOBSTER_FONT)) {
-            if (fontStream != null) {
-                lobsterFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.PLAIN, 28f);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         JLabel tituloLabel = new JLabel("¡Venta realizada con éxito!", SwingConstants.CENTER);
-        tituloLabel.setFont(lobsterFont);
+        tituloLabel.setFont(ALERT_FONT);
         tituloLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         String mensaje = String.format(
@@ -581,7 +604,8 @@ public class UIUserVenta extends Panel {
                 int rowCount = tableModel.getRowCount();
 
                 if (rowCount == ZERO) {
-                    limpiarMesaEnExcel(mesaID);
+                    //limpiarMesaEnExcel(mesaID);
+                    limpiarMesaEnBaseDeDatos(mesaID);
                     ProductoUserManager.limpiarCarrito();
                     JOptionPane.showMessageDialog(null, "La mesa " + mesaID + " ha sido limpiada.");
                     SwingUtilities.invokeLater(() -> {
@@ -606,7 +630,7 @@ public class UIUserVenta extends Panel {
 
                 double total = productoUserManager.getTotalCartAmount();
 
-                try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
+               /* try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
                      Workbook workbook = WorkbookFactory.create(fis)) {
 
                     Sheet mesasSheet = workbook.getSheet("mesas");
@@ -664,57 +688,92 @@ public class UIUserVenta extends Panel {
                         if (!mesaEncontrada) {
                             JOptionPane.showMessageDialog(null, "Mesa " + mesaID + " no encontrada en el archivo Excel.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
                             return;
-                        }
+                        }*/
 
-                        guardarCambiosWorkbook(workbook);
+                // Conexión con la base de datos
+                String sqlUpdateMesa = "UPDATE Mesas SET estado = ?, productos = ?, total = ? WHERE mesaID = ?";
 
-                        JOptionPane.showMessageDialog(null, "Compra guardada para la mesa: " + mesaID + ".");
-                        tableModel.setRowCount(ZERO);
-                        ProductoUserManager.limpiarCarrito();
+                try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL);
+                     PreparedStatement pstmt = connection.prepareStatement(sqlUpdateMesa)) {
 
-                        SwingUtilities.invokeLater(() -> {
-                            Window window = SwingUtilities.getWindowAncestor(saveCompraButton);
-                            if (window != null) {
-                                window.dispose();
-                            }
-                            mainUser();
-                        });
+                    // Cambiar el estado de la mesa a "Ocupada"
+                    pstmt.setString(1, "Ocupada");
 
+                    // Almacenar los productos comprados como una cadena de texto
+                    StringBuilder listaProductos = new StringBuilder();
+                    for (Map.Entry<String, Integer> entry : productosComprados.entrySet()) {
+                        String nombreProducto = entry.getKey();
+                        int cantidadComprada = entry.getValue();
+                        Producto producto = productoUserManager.getProductByName(nombreProducto);
+                        double precioUnitario = producto.getPrice();
+                        double precioTotal = precioUnitario * cantidadComprada;
+
+                        listaProductos.append(nombreProducto)
+                                .append(" x")
+                                .append(cantidadComprada)
+                                .append(" $")
+                                .append(precioUnitario)
+                                .append(" = ")
+                                .append(precioTotal)
+                                .append("\n");
+                    }
+                    pstmt.setString(2, listaProductos.toString());  // Productos comprados
+
+                    // Poner el total en la columna de Total
+                    pstmt.setDouble(3, total);
+
+                    // Establecer el ID de la mesa
+                    pstmt.setString(4, mesaID);
+
+                    // Ejecutar la actualización
+                    int rowsUpdated = pstmt.executeUpdate();
+                    if (rowsUpdated > 0) {
+                        System.out.println("Compra guardada correctamente para la mesa: " + mesaID);
                     } else {
-                        JOptionPane.showMessageDialog(null, "Hoja 'mesas' no encontrada en el archivo Excel.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "Mesa " + mesaID + " no encontrada en la base de datos.", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
                     }
 
-                } catch (IOException ex) {
-                    logger.error("Error al guardar la compra en Excel", ex);
-                    JOptionPane.showMessageDialog(null, "Error al guardar la compra.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+                    // Mostrar mensaje de confirmación
+                    JOptionPane.showMessageDialog(null, "Compra guardada para la mesa: " + mesaID + ".");
+
+                    // Limpiar la tabla y el carrito de la mesa
+                    tableModel.setRowCount(0);
+                    productoUserManager.limpiarCarrito();
+
+                    // Cerrar la ventana actual y volver al menú principal
+                    SwingUtilities.invokeLater(() -> {
+                        Window window = SwingUtilities.getWindowAncestor(saveCompraButton);
+                        if (window != null) {
+                            window.dispose();
+                        }
+                        mainUser();
+                    });
+
+                } catch (SQLException es) {
+                    es.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error al guardar la compra en la base de datos.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
 
+
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(null, "Error al guardar la compra.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Error al guardar la compra.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-
         return saveCompraButton;
     }
 
-    private static void guardarCambiosWorkbook(Workbook workbook) throws IOException {
+    /*private static void guardarCambiosWorkbook(Workbook workbook) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(ExcelUserManager.FILE_PATH)) {
             workbook.write(fos);
         }
-    }
+    }*/
 
     public static JSONObject mostrarDialogoFactura(JFrame parentFrame) {
-        Font lobsterFont = new Font("SansSerif", Font.BOLD, 26);
-        try (InputStream fontStream = UIUserVenta.class.getClassLoader().getResourceAsStream(LOBSTER_FONT)) {
-            if (fontStream != null) {
-                lobsterFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(32f);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
 
         JLabel titulo = new JLabel("Facturación Electrónica", SwingConstants.CENTER);
-        titulo.setFont(lobsterFont);
+        titulo.setFont(ALERT_FONT);
 
         JLabel logoLabel = new JLabel();
         try {
@@ -819,7 +878,7 @@ public class UIUserVenta extends Panel {
         return null;
     }
 
-    private static void limpiarMesaEnExcel(String mesaID) {
+    /*private static void limpiarMesaEnExcel(String mesaID) {
         try (FileInputStream fis = new FileInputStream(ExcelUserManager.FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
 
@@ -865,6 +924,33 @@ public class UIUserVenta extends Panel {
         } catch (IOException ex) {
             logger.error("Error al limpiar la mesa en Excel", ex);
             JOptionPane.showMessageDialog(null, "Error al limpiar la mesa.", ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+        }
+    }*/
+
+    // Método auxiliar para limpiar la mesa en la base de datos cuando no hay productos
+    private static void limpiarMesaEnBaseDeDatos(String mesaID) {
+        // Conexión con la base de datos
+        String sqlUpdateMesa = "UPDATE Mesas SET estado = ?, productos = ?, total = ? WHERE mesaID = ?";
+
+        try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL);
+             PreparedStatement pstmt = connection.prepareStatement(sqlUpdateMesa)) {
+
+            // Establecer los valores a actualizar
+            pstmt.setString(1, "Libre");   // Cambiar el estado de la mesa a "Libre"
+            pstmt.setString(2, "");        // Limpiar productos (cadena vacía)
+            pstmt.setDouble(3, 0.0);       // Establecer total a 0
+            pstmt.setString(4, mesaID);    // Usar el ID de la mesa para la condición WHERE
+
+            // Ejecutar la actualización
+            int rowsUpdated = pstmt.executeUpdate();
+            if (rowsUpdated > 0) {
+                System.out.println("Mesa " + mesaID + " actualizada correctamente.");
+            } else {
+                System.out.println("No se encontró la mesa con ID " + mesaID);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -977,23 +1063,10 @@ public class UIUserVenta extends Panel {
             JLabel imageLabel = new JLabel(icon);
             imageLabel.setPreferredSize(new Dimension(300, 300)); // Ajustar el tamaño de la imagen
             imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            // Crear la fuente personalizada
-            Font customFont = null;
-            try {
-                InputStream fontStream = UIUserMain.class.getClassLoader().getResourceAsStream(LOBSTER_FONT); // Reemplaza con la ruta de tu fuente
-                if (fontStream != null) {
-                    customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream).deriveFont(Font.PLAIN, 30); // Tamaño 24
-                } else {
-                    customFont = new Font("Segoe UI Variable", Font.BOLD, 48); // Si la fuente no se carga, usa Arial
-                }
-            } catch (IOException | FontFormatException e) {
-                e.printStackTrace();
-                customFont = new Font("Segoe UI Variable", Font.BOLD, 24); // Si hay un error, usa Arial
-            }
 
             // Crear el JLabel para el título
             JLabel titleLabel = new JLabel("¿Quieres calcular la devuelta?");
-            titleLabel.setFont(customFont);
+            titleLabel.setFont(ALERT_FONT);
             titleLabel.setForeground(Color.BLACK);
             titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
