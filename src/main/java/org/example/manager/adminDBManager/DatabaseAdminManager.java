@@ -1,5 +1,6 @@
 package org.example.manager.adminDBManager;
 
+import org.example.manager.userDBManager.DatabaseUserManager;
 import org.example.model.Factura;
 import org.example.model.Producto;
 
@@ -14,7 +15,8 @@ public class DatabaseAdminManager {
 
     static {
         try {
-            conn = DriverManager.getConnection(URL);
+            conn = DatabaseUserManager.connect();
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

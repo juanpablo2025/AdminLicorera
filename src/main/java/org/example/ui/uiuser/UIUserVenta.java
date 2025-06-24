@@ -27,7 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
+
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.NumberFormat;
@@ -370,7 +370,7 @@ public class UIUserVenta extends Panel {
                     logger.error("Error al guardar la compra en Excel", ex);
                 }*/
 
-                try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL)) {
+                try (Connection connection = DatabaseUserManager.connect()) {
 
                     // Actualizar estado de la mesa, productos y total en la base de datos
                     String sqlUpdateMesa = "UPDATE Mesas SET estado = ?, productos = ?, total = ? WHERE mesaID = ?";
@@ -693,7 +693,7 @@ public class UIUserVenta extends Panel {
                 // Conexión con la base de datos
                 String sqlUpdateMesa = "UPDATE Mesas SET estado = ?, productos = ?, total = ? WHERE mesaID = ?";
 
-                try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL);
+                try (Connection connection = DatabaseUserManager.connect();
                      PreparedStatement pstmt = connection.prepareStatement(sqlUpdateMesa)) {
 
                     // Cambiar el estado de la mesa a "Ocupada"
@@ -932,7 +932,7 @@ public class UIUserVenta extends Panel {
         // Conexión con la base de datos
         String sqlUpdateMesa = "UPDATE Mesas SET estado = ?, productos = ?, total = ? WHERE mesaID = ?";
 
-        try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL);
+        try (Connection connection = DatabaseUserManager.connect();
              PreparedStatement pstmt = connection.prepareStatement(sqlUpdateMesa)) {
 
             // Establecer los valores a actualizar

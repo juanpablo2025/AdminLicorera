@@ -8,17 +8,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.io.InputStream;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
+
 import java.sql.SQLException;
 import java.time.LocalTime;
-import java.util.Objects;
 
-import static org.example.manager.userDBManager.DatabaseUserManager.URL;
-import static org.example.manager.userDBManager.DatabaseUserManager.registrarDia;
-import static org.example.manager.usermanager.ExcelUserManager.*;
+
+import static org.example.manager.userDBManager.DatabaseUserManager.*;
+
 import static org.example.manager.usermanager.MainUserManager.crearDirectorios;
 import static org.example.ui.uiadmin.UIMainAdmin.adminPassword;
 import static org.example.ui.uiuser.UIUserMain.mainUser;
@@ -31,19 +29,19 @@ public class Main {
 
     public static void main(String[] args) throws SQLException {
         crearDirectorios();
-        Connection conn = DriverManager.getConnection(URL);
-        // Verificar si el archivo existe; si no, crear uno nuevo
-       /* File file = new File(FILE_PATH);
-        if (!file.exists()) {
-            createExcelFile();  // Llama al método que crea el archivo si no existe
-        }*/
-        if (DatabaseUserManager.hayRegistroDeHoy(conn)) {
-            Updater.checkForUpdates();
-            mainUser(); // Si hay registro, abrir el panel de usuario
-        } else {
-            Updater.checkForUpdates();
-            mostrarLogin(); // Si no, mostrar el login
+        try (Connection conn = DatabaseUserManager.connect()) {
+            if (DatabaseUserManager.hayRegistroDeHoy(conn)) {
+                Updater.checkForUpdates();
+                mainUser(); // Si hay registro, abrir el panel de usuario
+            } else {
 
+                Updater.checkForUpdates();
+                DatabaseUserManager.crearEstructuraInicial();// Crear la estructura de la base de datos si no existe
+                mostrarLogin(); // Si no, mostrar el login
+            }
+
+        } catch (SQLException e) {
+            System.err.println("❌ Error al conectar con la base de datos MySQL: " + e.getMessage());
         }
     }
 
@@ -129,7 +127,7 @@ public class Main {
             if (!nombreUsuario.isEmpty()) {
                 Connection connection = null;
                 try {
-                    connection = DriverManager.getConnection(DatabaseUserManager.URL);
+                    connection = DatabaseUserManager.connect();
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }

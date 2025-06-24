@@ -14,7 +14,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -101,7 +100,7 @@ public class GastosAdminManager {
         String sqlInsertReabastecimiento = "INSERT INTO reabastecimiento ( producto_nombre, cantidad_reabastecida, precio_compra, fecha_hora) VALUES ( ?, ?, ?, ?)";
 
         // Conexión a la base de datos
-        try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL)) {
+        try (Connection connection =DatabaseUserManager.connect()) {
 
             // Actualizar la cantidad del producto en la tabla de productos
             try (PreparedStatement pstmtUpdate = connection.prepareStatement(sqlUpdateProducto)) {

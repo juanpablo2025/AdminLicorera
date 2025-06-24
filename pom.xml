@@ -34,6 +34,12 @@
             <version>3.43.2.0</version> <!-- o la versión más reciente -->
         </dependency>
 
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.33</version>
+        </dependency>
+
         <!-- Dependencia adicional para manejar la compresión de archivos Excel -->
         <dependency>
             <groupId>org.apache.commons</groupId>

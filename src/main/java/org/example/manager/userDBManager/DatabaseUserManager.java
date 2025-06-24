@@ -28,12 +28,17 @@ import java.util.Map;
 //import static org.example.manager.userManager.ExcelUserManager.FACTURACION_FILENAME;
 
 public class DatabaseUserManager {
-    public static final String DB_NAME = "inventario_licorera.db";
+    //public static final String DB_NAME = "inventario_licorera.db";
     public static final String DIRECTORY_PATH = System.getProperty("user.home") + File.separator + "Calculadora del Administrador";
-    public static final String DB_PATH = DIRECTORY_PATH + File.separator + DB_NAME;
+    //public static final String DB_PATH = DIRECTORY_PATH + File.separator + DB_NAME;
 
-    public static final String URL = "jdbc:sqlite:" + DB_PATH;
+    //public static final String URL = "jdbc:mysql:" + DB_PATH;
 
+
+    public static final String DB_NAME = "licorera";
+    public static final String URL = "jdbc:mysql://localhost:3306/" + DB_NAME + "?useSSL=false&allowPublicKeyRetrieval=true";
+    public static final String USER = "root";
+    public static final String PASSWORD = "12345";
 
     static LocalDateTime fechaHora = LocalDateTime.now();
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH_mm_ss");
@@ -100,6 +105,11 @@ public class DatabaseUserManager {
 
 
 
+        String url = "jdbc:mysql://localhost:3306/licorera?useSSL=false";
+        String user = "root"; // o tu usuario
+        String password = "1234"; // tu contraseña
+
+
 
 
     public static void actualizarCantidadStockBD(Map<String, Integer> cantidadTotalPorProducto, String mesaID) {
@@ -151,101 +161,105 @@ public class DatabaseUserManager {
     }
 
 
-    private void crearEstructuraInicial() {
-        try (Connection conn = DriverManager.getConnection(URL); Statement stmt = conn.createStatement()) {
-            stmt.execute("""
-                        CREATE TABLE IF NOT EXISTS productos (
-                            id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            nombre TEXT,
-                            cantidad INTEGER,
-                            precio REAL,
-                            cantidad_vendida INTEGER DEFAULT 0,
-                            foto TEXT
-                        );
-                    """);
+    public static void crearEstructuraInicial() {
+        try (Connection conn = DatabaseUserManager.connect(); Statement stmt = conn.createStatement()) {
 
             stmt.execute("""
-                        CREATE TABLE IF NOT EXISTS compras (
-                            id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            productos TEXT,
-                            total REAL,
-                            fecha_hora TEXT,
-                            forma_pago TEXT
-                        );
-                    """);
+            CREATE TABLE IF NOT EXISTS productos (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nombre VARCHAR(100),
+                cantidad INT,
+                precio DECIMAL(10,2),
+                cantidad_vendida INT DEFAULT 0,
+                foto VARCHAR(255)
+            );
+        """);
 
             stmt.execute("""
-                        CREATE TABLE IF NOT EXISTS gastos (
-                            id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            nombreProducto INTEGER,
-                            cantidad INTEGER,
-                            precioCompra REAL,
-                            fechaHora TEXT
-                        );
-                    """);
+            CREATE TABLE IF NOT EXISTS compras (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                productos TEXT,
+                total DECIMAL(10,2),
+                fecha_hora DATETIME,
+                forma_pago VARCHAR(50)
+            );
+        """);
 
             stmt.execute("""
-                        CREATE TABLE IF NOT EXISTS reabastecimiento (
-                            id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            producto_nombre TEXT,
-                            cantidad_reabastecida INTEGER,
-                            precio_compra REAL,
-                            fecha_hora TEXT
-                        );
-                    """);
+            CREATE TABLE IF NOT EXISTS gastos (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nombreProducto VARCHAR(100),
+                cantidad INT,
+                precioCompra DECIMAL(10,2),
+                fechaHora DATETIME
+            );
+        """);
 
             stmt.execute("""
-                        CREATE TABLE IF NOT EXISTS mesas (                 
-                            mesaID TEXT PRIMARY KEY,
-                            estado TEXT,
-                            productos TEXT,
-                            total REAL
-                        );
-                    """);
+            CREATE TABLE IF NOT EXISTS reabastecimiento (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                producto_nombre VARCHAR(100),
+                cantidad_reabastecida INT,
+                precio_compra DECIMAL(10,2),
+                fecha_hora DATETIME
+            );
+        """);
 
             stmt.execute("""
-                        CREATE TABLE IF NOT EXISTS parking (                 
-                            parkingID TEXT PRIMARY KEY,
-                            estado TEXT,
-                            productos TEXT,
-                            total REAL
-                        );
-                    """);
+            CREATE TABLE IF NOT EXISTS mesas (
+                mesaID VARCHAR(50) PRIMARY KEY,
+                estado VARCHAR(20),
+                productos TEXT,
+                total DECIMAL(10,2)
+            );
+        """);
 
             stmt.execute("""
-                        CREATE TABLE IF NOT EXISTS empleados (
-                            id INTEGER PRIMARY KEY AUTOINCREMENT,
-                            nombre TEXT,
-                            hora_inicio TEXT,
-                            fecha_inicio TEXT
-                        );
-                    """);
+            CREATE TABLE IF NOT EXISTS parking (
+                parkingID VARCHAR(50) PRIMARY KEY,
+                estado VARCHAR(20),
+                productos TEXT,
+                total DECIMAL(10,2)
+            );
+        """);
 
-            // Insertar 15 mesas si no existen
-            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) as total FROM mesas");
+            stmt.execute("""
+            CREATE TABLE IF NOT EXISTS empleados (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nombre VARCHAR(100),
+                hora_inicio TIME,
+                fecha_inicio DATE
+            );
+        """);
+
+            // Insertar mesas si no existen
+            ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM mesas");
             if (rs.next() && rs.getInt("total") == 0) {
                 for (int i = 1; i <= 15; i++) {
                     String nombre = "Mesa " + i;
-                    stmt.executeUpdate("INSERT INTO mesas(mesaID, estado) VALUES ('" + nombre + "', 'Libre')");
+                    stmt.executeUpdate("INSERT INTO mesas (mesaID, estado) VALUES ('" + nombre + "', 'Libre')");
                 }
             }
 
-
-            // Insertar 15 estacionamiento si no existen
-            ResultSet pk = stmt.executeQuery("SELECT COUNT(*) as total FROM parking");
-            if (pk.next() && rs.getInt("total") == 0) {
+            // Insertar estacionamientos si no existen
+            ResultSet pk = stmt.executeQuery("SELECT COUNT(*) AS total FROM parking");
+            if (pk.next() && pk.getInt("total") == 0) {
                 for (int i = 1; i <= 48; i++) {
                     String nombre = "Estacionamiento " + i;
-                    stmt.executeUpdate("INSERT INTO parking(parkingID, estado) VALUES ('" + nombre + "', 'Libre')");
+                    stmt.executeUpdate("INSERT INTO parking (parkingID, estado) VALUES ('" + nombre + "', 'Libre')");
                 }
             }
+
         } catch (SQLException e) {
-            System.err.println("Error al crear estructura inicial: " + e.getMessage());
+            System.err.println("❌ Error al crear estructura inicial: " + e.getMessage());
         }
     }
 
     public static Connection connect() throws SQLException {
-        return DriverManager.getConnection(URL);
+        String url = "jdbc:mysql://localhost:3306/licorera?useSSL=false&allowPublicKeyRetrieval=true";
+        String user = "root"; // o tu usuario
+        String password = "12345"; // tu contraseña
+        return DriverManager.getConnection(url, user, password);
     }
 
 
@@ -274,7 +288,7 @@ public class DatabaseUserManager {
         try (Connection conn = connect(); PreparedStatement stmt = conn.prepareStatement(insertSQL)) {
             stmt.setString(1, productos);
             stmt.setDouble(2, total);
-            stmt.setString(3, now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
+            stmt.setString(3, String.valueOf(now));
             stmt.setString(4, tipoCompra);
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -580,7 +594,7 @@ public class DatabaseUserManager {
     }
 
     public static void agregarMesaABD( Mesa nuevaMesa) throws SQLException {
-        Connection conn = DriverManager.getConnection(URL);
+        Connection conn = DatabaseUserManager.connect();
 
         String insert = "INSERT INTO mesas(mesaID, estado) VALUES (?, ?)";
         try (PreparedStatement stmt = conn.prepareStatement(insert)) {
@@ -593,7 +607,7 @@ public class DatabaseUserManager {
     }
 
     public static void agregarParkingABD( Mesa nuevaMesa) throws SQLException {
-        Connection conn = DriverManager.getConnection(URL);
+        Connection conn = DatabaseUserManager.connect();
 
         String insert = "INSERT INTO parking(parkingID, estado) VALUES (?, ?)";
         try (PreparedStatement stmt = conn.prepareStatement(insert)) {
@@ -606,7 +620,7 @@ public class DatabaseUserManager {
     }
 
     public static void eliminarMesasConIdMayorA15() throws SQLException {
-        Connection conn = DriverManager.getConnection(URL);
+        Connection conn = DatabaseUserManager.connect();
         String delete = "DELETE FROM mesas WHERE CAST(SUBSTR(mesaID, 6) AS INTEGER) > 15";
         try (PreparedStatement stmt = conn.prepareStatement(delete)) {
             stmt.executeUpdate();
@@ -659,8 +673,11 @@ public class DatabaseUserManager {
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                String fechaStr = rs.getString("fecha_inicio");
-                LocalDate fecha = LocalDate.parse(fechaStr, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                Date fechaSql = rs.getDate("fecha_inicio");
+                if (fechaSql == null) continue;
+
+                LocalDate fecha = fechaSql.toLocalDate();
+
                 if (fecha.isEqual(fechaTurno) ||
                         (LocalTime.now().isBefore(LocalTime.of(6, 0)) && fecha.isEqual(fechaTurno.plusDays(1)))) {
                     return true;
@@ -668,7 +685,7 @@ public class DatabaseUserManager {
             }
 
         } catch (SQLException e) {
-            System.err.println("Error al verificar registro de hoy: " + e.getMessage());
+            System.err.println("❌ Error al verificar registro de hoy: " + e.getMessage());
         }
 
         return false;
@@ -676,23 +693,24 @@ public class DatabaseUserManager {
 
     public static void registrarDia(Connection conn, String nombreUsuario) {
         LocalDateTime now = LocalDateTime.now();
-        String horaInicio = now.format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-        String fechaInicio = now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+
+        LocalDate fecha = now.toLocalDate(); // yyyy-MM-dd
+        LocalTime hora = now.toLocalTime();  // HH:mm:ss
 
         String insert = "INSERT INTO empleados(nombre, hora_inicio, fecha_inicio) VALUES (?, ?, ?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(insert)) {
             stmt.setString(1, nombreUsuario);
-            stmt.setString(2, horaInicio);
-            stmt.setString(3, fechaInicio);
+            stmt.setTime(2, Time.valueOf(hora));      // usa java.sql.Time
+            stmt.setDate(3, Date.valueOf(fecha));     // usa java.sql.Date
             stmt.executeUpdate();
         } catch (SQLException e) {
-            System.err.println("Error al registrar día: " + e.getMessage());
+            System.err.println("❌ Error al registrar día: " + e.getMessage());
         }
     }
 
     public static String obtenerUltimoEmpleado() throws SQLException {
-        Connection conn = DriverManager.getConnection(DatabaseUserManager.URL);
+        Connection conn = connect();
 
 
         String query = "SELECT nombre FROM empleados ORDER BY id DESC LIMIT 1";

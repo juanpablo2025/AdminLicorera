@@ -2,6 +2,7 @@ package org.example.ui.uiadmin;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import org.example.manager.adminmanager.ConfigAdminManager;
+import org.example.manager.userDBManager.DatabaseUserManager;
 import org.example.ui.uiuser.UIUserMain;
 import org.json.JSONArray;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Objects;
 import static org.example.Main.mostrarLogin;
 import static org.example.manager.userDBManager.DatabaseUserManager.hayRegistroDeHoy;
@@ -155,6 +157,11 @@ public class UIMainAdmin {
 
             JButton moreOptionsButton = createButton("Mesas", resizeIcon("/icons/mesa-redonda.png"), e -> {
                 Connection conn = null;
+                try {
+                    conn = DatabaseUserManager.connect();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
                 if (hayRegistroDeHoy(conn)) {
                     mainUser();
                 } else {

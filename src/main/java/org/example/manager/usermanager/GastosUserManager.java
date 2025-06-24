@@ -69,7 +69,7 @@ public class GastosUserManager {
 
         String sqlInsertGasto = "INSERT INTO Gastos (nombreProducto, precioCompra, fechaHora) VALUES (?, ?, ?)";
 
-        try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL);
+        try (Connection connection = DatabaseUserManager.connect();
              Statement stmt = connection.createStatement()) {
 
             // Crear la tabla si no existe

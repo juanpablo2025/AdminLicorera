@@ -805,7 +805,7 @@ public class FacturacionUserManager {
         String sql = "SELECT nombreProducto, SUM(cantidadVendida) AS cantidadTotal " +
                 "FROM Ventas GROUP BY nombreProducto";
 
-        try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL);
+        try (Connection connection = DatabaseUserManager.connect();
              PreparedStatement stmt = connection.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
@@ -829,7 +829,7 @@ public class FacturacionUserManager {
     public static void limpiarCantidadVendida() {
         String sql = "UPDATE Ventas SET cantidadVendida = 0";
 
-        try (Connection connection = DriverManager.getConnection(DatabaseUserManager.URL);
+        try (Connection connection = DatabaseUserManager.connect();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
 
             int rowsUpdated = stmt.executeUpdate();
