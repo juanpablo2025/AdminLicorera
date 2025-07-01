@@ -29,17 +29,16 @@ public class Main {
 
     public static void main(String[] args) throws SQLException {
         crearDirectorios();
-        try (Connection conn = DatabaseUserManager.connect()) {
-            if (DatabaseUserManager.hayRegistroDeHoy(conn)) {
+        crearEstructuraInicial();
+        try (Connection conn = connect()) {
+            if (hayRegistroDeHoy(conn)) {
                 Updater.checkForUpdates();
                 mainUser(); // Si hay registro, abrir el panel de usuario
             } else {
-
                 Updater.checkForUpdates();
-                DatabaseUserManager.crearEstructuraInicial();// Crear la estructura de la base de datos si no existe
+                //DatabaseUserManager.crearEstructuraInicial();// Crear la estructura de la base de datos si no existe
                 mostrarLogin(); // Si no, mostrar el login
             }
-
         } catch (SQLException e) {
             System.err.println("❌ Error al conectar con la base de datos MySQL: " + e.getMessage());
         }

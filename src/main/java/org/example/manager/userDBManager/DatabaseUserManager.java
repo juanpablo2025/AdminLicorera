@@ -33,13 +33,6 @@ public class DatabaseUserManager {
     //public static final String DB_PATH = DIRECTORY_PATH + File.separator + DB_NAME;
 
     //public static final String URL = "jdbc:mysql:" + DB_PATH;
-
-
-    public static final String DB_NAME = "licorera";
-    public static final String URL = "jdbc:mysql://localhost:3306/" + DB_NAME + "?useSSL=false&allowPublicKeyRetrieval=true";
-    public static final String USER = "root";
-    public static final String PASSWORD = "12345";
-
     static LocalDateTime fechaHora = LocalDateTime.now();
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH_mm_ss");
     static String fechaFormateada = fechaHora.format(formatter);
@@ -127,7 +120,7 @@ public class DatabaseUserManager {
         }
     }
 
-    public static void actualizarCantidadStockExcel(Map<String, Integer> productosComprados, String mesaID) {
+   /* public static void actualizarCantidadStockExcel(Map<String, Integer> productosComprados, String mesaID) {
         String update = "UPDATE productos SET cantidad = cantidad - ? WHERE nombre = ?";
         try (Connection conn = connect(); PreparedStatement stmt = conn.prepareStatement(update)) {
             for (Map.Entry<String, Integer> entry : productosComprados.entrySet()) {
@@ -140,7 +133,7 @@ public class DatabaseUserManager {
         } catch (SQLException e) {
             System.err.println("Error al actualizar la cantidad de stock: " + e.getMessage());
         }
-    }
+    }*/
 
     public static List<Producto> obtenerProductosAgotados(Sheet productsSheet) {
         List<Producto> productosAgotados = new ArrayList<>();
@@ -162,6 +155,16 @@ public class DatabaseUserManager {
 
 
     public static void crearEstructuraInicial() {
+        // 1️⃣ Conectarse al servidor (sin especificar base de datos)
+        String baseURL = "jdbc:mysql://localhost:3306/?useSSL=false&allowPublicKeyRetrieval=true";
+        try (Connection conn = DriverManager.getConnection(baseURL, "root", "12345");
+             Statement stmt = conn.createStatement()) {
+
+            // Crear la base de datos si no existe
+            stmt.execute("CREATE DATABASE IF NOT EXISTS licorera");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         try (Connection conn = DatabaseUserManager.connect(); Statement stmt = conn.createStatement()) {
 
             stmt.execute("""
@@ -391,7 +394,7 @@ public class DatabaseUserManager {
                 conn.setAutoCommit(false);
                 //conn.prepareStatement("DELETE FROM compras").executeUpdate();
                 //conn.prepareStatement("DELETE FROM gastos").executeUpdate();
-                conn.prepareStatement("DELETE FROM empleados").executeUpdate();
+                //conn.prepareStatement("DELETE FROM empleados").executeUpdate();
                 //conn.prepareStatement("DELETE FROM reabastecimiento").executeUpdate();
                 conn.commit();
 

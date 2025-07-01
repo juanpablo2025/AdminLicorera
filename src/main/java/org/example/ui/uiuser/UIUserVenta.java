@@ -39,10 +39,9 @@ import javax.swing.Timer;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-import static org.example.manager.userDBManager.DatabaseUserManager.actualizarCantidadStockExcel;
-import static org.example.manager.userDBManager.DatabaseUserManager.cargarProductosMesaDesdeBD;
 //import static org.example.manager.usermanager.ExcelUserManager.actualizarCantidadStockExcel;
 //import static org.example.manager.usermanager.ExcelUserManager.cargarProductosMesaDesdeExcel;
+import static org.example.manager.userDBManager.DatabaseUserManager.*;
 import static org.example.manager.usermanager.FacturacionUserManager.generarFacturadeCompra;
 import static org.example.ui.UIHelpers.*;
 import static org.example.ui.uiuser.UIUserMain.mainUser;
@@ -478,7 +477,7 @@ public class UIUserVenta extends Panel {
                         icon,
                         null  // Puedes pasar null si no quieres ejecutar nada al cerrar
                 );
-                actualizarCantidadStockExcel(cantidadTotalPorProducto,mesaID);
+                actualizarCantidadStockBD(cantidadTotalPorProducto,mesaID);
                 ProductoUserManager.limpiarCarrito();
                 SwingUtilities.invokeLater(() -> {
                     Window window = SwingUtilities.getWindowAncestor(confirmarCompraButton);

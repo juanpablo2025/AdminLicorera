@@ -8,15 +8,13 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.example.manager.userDBManager.DatabaseUserManager.URL;
+
 
 public class DatabaseAdminManager {
     static Connection conn;
-
     static {
         try {
             conn = DatabaseUserManager.connect();
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
