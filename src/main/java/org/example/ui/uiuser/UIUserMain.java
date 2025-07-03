@@ -7,7 +7,11 @@ import org.example.manager.usermanager.FacturacionUserManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
 import javax.swing.*;
+import javax.swing.border.AbstractBorder;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -16,8 +20,11 @@ import java.awt.event.MouseEvent;
 import java.io.InputStream;
 import java.net.URL;
 import java.sql.SQLException;
+
 import java.util.Objects;
 
+import static java.awt.Color.gray;
+import static java.awt.Color.lightGray;
 import static org.example.ui.uiadmin.UIMainAdmin.*;
 import static org.example.ui.uiuser.UIUserFacturas.getFacturasPanel;
 import static org.example.ui.UIHelpers.createButton;
@@ -79,7 +86,7 @@ public class UIUserMain {
             logoPanel.setBackground(FONDO_PRINCIPAL);
 
             ImageIcon logoIcon = LOGO_EMPRESA;
-            Image imgLogo = logoIcon.getImage().getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+            Image imgLogo = logoIcon.getImage().getScaledInstance(180, 150, Image.SCALE_SMOOTH);
             JLabel logoLabel = getJLabel(imgLogo, contentPanel);
 
             JLabel employeeLabel = new JLabel(EMPLOYEE_NAME);
@@ -107,14 +114,16 @@ public class UIUserMain {
             buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
             buttonsPanel.setBackground(FONDO_PRINCIPAL);
 
+
+
             sidebarPanel.addComponentListener(new ComponentAdapter() {
                 @Override
                 public void componentResized(ComponentEvent e) {
                     int panelWidth = sidebarPanel.getWidth();
                     int panelHeight = sidebarPanel.getHeight();
 
-                    int buttonWidth = (int) (panelWidth * 1.0);
-                    int buttonHeight = (int) (panelHeight * 0.13);
+                    int buttonWidth = (int) (panelWidth * 0.9);
+                    int buttonHeight = (int) (panelHeight * 0.14);
 
                     Dimension buttonSize = new Dimension(buttonWidth, buttonHeight);
                     for (Component comp : buttonsPanel.getComponents()) {
@@ -129,29 +138,48 @@ public class UIUserMain {
                     buttonsPanel.repaint();
                 }
             });
+            JScrollPane scrollPane = new JScrollPane(buttonsPanel);
+            sidebarPanel.add(new JSeparator(SwingConstants.HORIZONTAL));
+            scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(4, 5)); // Oculta
+            scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+            scrollPane.setBorder(null); // padding izquierdo
+            scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+            scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+            sidebarPanel.add(scrollPane);
+            List<JButton> menuButtons = new ArrayList<>();
 
-            Dimension buttonSize = new Dimension(10, 10);
 
-            JButton listaProductosButton = createButton("Inventario", resizeIcon(PRODUCT_LIST_ICON), e -> {
+            Dimension buttonSize = new Dimension(15, 8);
+
+            JButton listaProductosButton = createButton("Inventario", resizeIcon(PRODUCT_LIST_ICON), null);
+            listaProductosButton.addActionListener(e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "productos");
+                highlightSelectedButton(listaProductosButton, menuButtons);
             });
+            listaProductosButton.setMaximumSize(buttonSize);
 
-            JButton gastosButton = createButton("Gastos", resizeIcon(GASTOS_ICON), e -> {
+            JButton gastosButton = createButton("Gastos", resizeIcon(GASTOS_ICON), null);
+            gastosButton.addActionListener(e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "gastos");
+                highlightSelectedButton(gastosButton, menuButtons);
             });
             gastosButton.setMaximumSize(buttonSize);
 
-            JButton salirButton = createButton("Finalizar Día", resizeIcon(FACTURAR_ICON), e -> {
+            JButton salirButton = createButton("Finalizar Día", resizeIcon(FACTURAR_ICON),null);
+            salirButton.addActionListener(e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "facturar");
+                highlightSelectedButton(salirButton, menuButtons);
             });
             salirButton.setMaximumSize(buttonSize);
 
-            JButton moreOptionsButton =  createButton(FACTURAS, resizeIcon(FACTURAS_ICON), e -> {
+            JButton moreOptionsButton =  createButton(FACTURAS, resizeIcon(FACTURAS_ICON), null);
+            moreOptionsButton.addActionListener(e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, FACTURAS);
+                highlightSelectedButton(moreOptionsButton, menuButtons);
             });
             moreOptionsButton.setMaximumSize(buttonSize);
 
@@ -162,35 +190,74 @@ public class UIUserMain {
             JButton moreParkDriveButtons = createButton("Parqueadero", resizeIcon(FACTURAR_ICON), e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "parqueadero");
+
             });
             moreParkDriveButtons.setMaximumSize(buttonSize);
 
-            buttonsPanel.add(Box.createVerticalStrut(FIVE));
+            buttonsPanel.add(Box.createVerticalStrut(5));
             buttonsPanel.add(listaProductosButton);
-            buttonsPanel.add(Box.createVerticalStrut(FIVE));
+            buttonsPanel.add(Box.createVerticalStrut(5));
             buttonsPanel.add(gastosButton);
-            buttonsPanel.add(Box.createVerticalStrut(FIVE));
+            buttonsPanel.add(Box.createVerticalStrut(5));
             buttonsPanel.add(moreOptionsButton);
-            buttonsPanel.add(Box.createVerticalStrut(FIVE));
+            buttonsPanel.add(Box.createVerticalStrut(5));
             buttonsPanel.add(salirButton);
-            buttonsPanel.add(Box.createVerticalStrut(FIVE));
+            buttonsPanel.add(Box.createVerticalStrut(5));
             buttonsPanel.add(moreOptionsButtons);
             buttonsPanel.add(Box.createVerticalGlue());
             buttonsPanel.add(moreParkDriveButtons);
-            buttonsPanel.add(Box.createVerticalStrut(FIVE));
 
-
-            sidebarPanel.add(buttonsPanel, BorderLayout.CENTER);
+            buttonsPanel.add(Box.createVerticalStrut(4));
+            menuButtons.addAll(Arrays.asList(
+                    listaProductosButton, gastosButton, moreOptionsButton,
+                    salirButton, moreOptionsButtons, moreParkDriveButtons
+            ));
             mainPanel.add(sidebarPanel, BorderLayout.WEST);
             mainPanel.add(contentPanel, BorderLayout.CENTER);
 
             frame.add(mainPanel);
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
+
+
         } catch (Exception ex) {
             logger.error("Error al iniciar la interfaz de usuario: {}", ex.getMessage());
             JOptionPane.showMessageDialog(null, "Error al iniciar la interfaz de usuario: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
+
+    }
+
+
+    static void highlightSelectedButton(JButton selected, List<JButton> all) {
+        for (JButton btn : all) {
+            btn.setBackground(FONDO_PRINCIPAL);
+            btn.setForeground(Color.BLACK);
+            btn.setBorder(null);
+        }
+
+        selected.setBorder(new AbstractBorder() {
+            @Override
+            public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(Color.LIGHT_GRAY);
+                g2.setStroke(new BasicStroke(1));
+                g2.drawRoundRect(x + 1, y + 1, width - 3, height - 3, 50, 50); // radio = 50
+            }
+
+            @Override
+            public Insets getBorderInsets(Component c) {
+                return new Insets(3, 3, 3, 3);
+            }
+
+            @Override
+            public Insets getBorderInsets(Component c, Insets insets) {
+                insets.set(3, 3, 3, 3);
+                return insets;
+            }
+        });
+        selected.setBackground(lightGray);
+
     }
 
     private static JLabel getJLabel(Image imgLogo, JPanel contentPanel) {

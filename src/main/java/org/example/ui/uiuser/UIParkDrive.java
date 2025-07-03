@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 import static org.example.manager.userDBManager.DatabaseUserManager.*;
@@ -36,7 +37,7 @@ public class UIParkDrive {
         titledBorder.setTitleFont(new Font("Segoe UI Variable", Font.BOLD, 13));
         parkingPanel.setBorder(titledBorder);
         parkingPanel.setBackground(mesa.isOcupada() ? new Color(255, 111, 97) : new Color(168, 230, 207));
-        JLabel mesaLabel = new JLabel(mesa.isOcupada() ? "VBA70C" : "LIBRE" , SwingConstants.CENTER);
+        JLabel mesaLabel = new JLabel(mesa.isOcupada() ? "OCUPADA" : "LIBRE" , SwingConstants.CENTER);
         mesaLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 15));
         mesaLabel.setForeground(Color.DARK_GRAY);
         parkingPanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -98,9 +99,24 @@ public class UIParkDrive {
         ));
 
         JLabel titleLabel = new JLabel("Parqueadero", SwingConstants.CENTER);
-        titleLabel.setForeground(new Color (28, 28, 28));
+        titleLabel.setForeground(new Color(28, 28, 28));
         titleLabel.setFont(TITTLE_FONT);
 
+        // Input panel para placa y estado
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        inputPanel.setBackground(FONDO_PRINCIPAL);
+
+        JTextField placaField = new JTextField(8);
+        JComboBox<String> estadoCombo = new JComboBox<>(new String[]{"Disponible", "Ocupado"});
+
+        JButton registrarBtn = new JButton("Registrar");
+
+        inputPanel.add(new JLabel("Placa:"));
+        inputPanel.add(placaField);
+        inputPanel.add(new JLabel("Estado:"));
+        inputPanel.add(estadoCombo);
+        inputPanel.add(registrarBtn);
 
         JPanel gridParkDrivePanel = new JPanel(new GridLayout(ZERO, 12, FOUR, FOUR));
         gridParkDrivePanel.setBackground(FONDO_PRINCIPAL);
@@ -113,6 +129,29 @@ public class UIParkDrive {
             gridParkDrivePanel.add(mesaPanel);
         }
 
+        registrarBtn.addActionListener(e -> {
+            String placa = placaField.getText().trim();
+            String estado = (String) estadoCombo.getSelectedItem();
+            Date ahora = new Date();
+
+            if (!placa.isEmpty()) {
+                Mesa mesaDisponible = mesas.stream()
+                        .filter(m -> "Disponible".equalsIgnoreCase("Disponible"))
+                        .findFirst()
+                        .orElse(null);
+
+                if (mesaDisponible != null) {
+                   /* mesaDisponible.setPlaca(placa);
+                    mesaDisponible.setEstado(estado);
+                    mesaDisponible.setHoraEntrada(ahora);
+                    mesaDisponible.setHoraSalida(ahora); // Puedes dejar nulo si es solo al salir
+                    // actualizarMesaEnBD(mesaDisponible);*/
+                    gridParkDrivePanel.revalidate();
+                    gridParkDrivePanel.repaint();
+                }
+            }
+        });
+
         JButton addparkDriveButton = getJButton();
 
         addparkDriveButton.addActionListener(e -> {
@@ -123,7 +162,6 @@ public class UIParkDrive {
             gridParkDrivePanel.add(nuevaMesaPanel);
             gridParkDrivePanel.revalidate();
             gridParkDrivePanel.repaint();
-            //agregarMesaAExcel(nuevaMesa);
             try {
                 agregarParkingABD(nuevaMesa);
             } catch (SQLException ex) {
@@ -134,7 +172,9 @@ public class UIParkDrive {
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(addparkDriveButton);
         bottomPanel.setBackground(FONDO_PRINCIPAL);
+
         parkDrivePanel.add(titleLabel, BorderLayout.NORTH);
+        parkDrivePanel.add(inputPanel, BorderLayout.BEFORE_FIRST_LINE);
         parkDrivePanel.add(gridParkDrivePanel, BorderLayout.CENTER);
         parkDrivePanel.add(bottomPanel, BorderLayout.SOUTH);
 

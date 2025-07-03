@@ -57,10 +57,10 @@ public class UIHelpers {
 
         JLabel iconLabel = new JLabel(icon);
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        iconLabel.setBorder(BorderFactory.createEmptyBorder(0, ZERO, ONE, ZERO));
+        iconLabel.setBorder(BorderFactory.createEmptyBorder(1, ZERO, ONE, ZERO));
 
         JSeparator separator = new JSeparator();
-        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, FOUR));
+        separator.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
         separator.setForeground(SEPARATOR_COLOR);
 
         JLabel textLabel = new JLabel(text);
@@ -75,16 +75,16 @@ public class UIHelpers {
         button.setLayout(new BorderLayout());
         button.add(panel, BorderLayout.CENTER);
 
-        button.addMouseListener(new MouseAdapter() {
+        /*button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent evt) {
                 button.setBackground(BTN_MOUSE_ENTERED);
             }
             @Override
             public void mouseExited(MouseEvent evt) {
-                button.setBackground(BTN_MOUSE_EXITED);
+               button.setBackground(BTN_MOUSE_EXITED);
             }
-        });
+        });*/
 
         return button;
     }
@@ -160,7 +160,7 @@ public class UIHelpers {
     }
     private static final int PRODUCTS_PER_PAGE = 10;
     private static int currentPage = 0;
-    public static JPanel createInputPanel(JTable table) {
+    /*public static JPanel createInputPanel(JTable table) {
         JPanel inputPanel = new JPanel();
         inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
         inputPanel.setBorder(BorderFactory.createEmptyBorder(TWO, TWO, TWO, TWO));
@@ -276,7 +276,7 @@ public class UIHelpers {
 
         updateProductPanel(productList, productPanel, "", searchField, table, cantidadSpinner, scrollPane, pageLabel);
         return inputPanel;
-    }
+    }*/
 
     private static JTextField getSearchField() {
         JTextField searchField = new JTextField() {
@@ -422,7 +422,7 @@ public class UIHelpers {
         return totalPanel;
     }
 
-    private static void updateProductPanel(
+    /*private static void updateProductPanel(
             List<Producto> productList,
             JPanel productPanel,
             String query,
@@ -576,5 +576,254 @@ public class UIHelpers {
         productPanel.repaint();
         scrollPane.getVerticalScrollBar().setValue(0);
     }
+*/
+    private static void updateProducthorizontalPanel(
+            List<Producto> productList,
+            JPanel productPanel,
+            String query,
+            JTextField searchField,
+            JTable table,
+            JSpinner cantidadSpinner,
+            JScrollPane scrollPane,
+            JLabel pageLabel
+    ) {
+        productPanel.removeAll();
 
+        List<Producto> filtered = productList.stream()
+                .filter(p -> p.getName().toLowerCase().contains(query))
+                .collect(Collectors.toList());
+
+        int totalPages = (int) Math.ceil((double) filtered.size() / PRODUCTS_PER_PAGE);
+        if (currentPage >= totalPages) currentPage = totalPages - 1;
+        if (currentPage < 0) currentPage = 0;
+
+        int start = currentPage * PRODUCTS_PER_PAGE;
+        int end = Math.min(start + PRODUCTS_PER_PAGE, filtered.size());
+
+        pageLabel.setText("Página " + (currentPage + 1) + " de " + Math.max(totalPages, 1));
+
+        filtered.subList(start, end).forEach(product -> {
+            JPanel card = new JPanel();
+            card.setLayout(new BoxLayout(card, BoxLayout.X_AXIS));
+            card.setBackground(new Color(58, 58, 58));
+            card.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+            card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
+            card.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+            JLabel imageLabel = new JLabel();
+            imageLabel.setPreferredSize(new Dimension(60, 60));
+            imageLabel.setMaximumSize(new Dimension(60, 60));
+            imageLabel.setMinimumSize(new Dimension(60, 60));
+            imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            imageLabel.setVerticalAlignment(SwingConstants.CENTER);
+            card.add(imageLabel);
+
+            card.add(Box.createRigidArea(new Dimension(10, 0)));
+
+            String formattedName = Arrays.stream(product.getName().replace("_", " ").toLowerCase().split(" "))
+                    .map(word -> word.isEmpty() ? "" : Character.toUpperCase(word.charAt(0)) + word.substring(1))
+                    .collect(Collectors.joining(" "));
+
+            JLabel nameLabel = new JLabel(formattedName);
+            nameLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
+            nameLabel.setForeground(Color.WHITE);
+            nameLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
+            nameLabel.setMaximumSize(new Dimension(200, 30));
+            nameLabel.setPreferredSize(new Dimension(200, 30));
+            card.add(nameLabel);
+
+            card.add(Box.createHorizontalGlue());
+
+            JPanel rightPanel = new JPanel();
+            rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+            rightPanel.setOpaque(false);
+            rightPanel.setAlignmentY(Component.CENTER_ALIGNMENT);
+            rightPanel.setMaximumSize(new Dimension(100, 50));
+
+            JLabel priceLabel = new JLabel("$" + formatearMoneda(product.getPrice()));
+            JLabel quantityLabel = new JLabel("x" + product.getQuantity());
+            priceLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 14));
+            quantityLabel.setFont(new Font("Segoe UI Variable", Font.PLAIN, 14));
+            priceLabel.setForeground(Color.WHITE);
+            quantityLabel.setForeground(Color.WHITE);
+            priceLabel.setAlignmentX(Component.RIGHT_ALIGNMENT);
+            quantityLabel.setAlignmentX(Component.RIGHT_ALIGNMENT);
+
+            rightPanel.add(priceLabel);
+            rightPanel.add(quantityLabel);
+            card.add(rightPanel);
+
+            new SwingWorker<ImageIcon, Void>() {
+                protected ImageIcon doInBackground() {
+                    try {
+                        String imagePath = System.getProperty(FOLDER_PATH) + product.getFoto();
+                        File imageFile = new File(imagePath);
+                        BufferedImage img;
+                        if (!imageFile.exists() || !imageFile.isFile()) {
+                            InputStream is = UIHelpers.class.getResourceAsStream(NO_FOTO);
+                            if (is != null) {
+                                img = ImageIO.read(is);
+                            } else {
+                                return null;
+                            }
+                        } else {
+                            img = ImageIO.read(imageFile);
+                        }
+                        if (img != null) {
+                            Image scaledImg = img.getScaledInstance(60, 60, Image.SCALE_SMOOTH);
+                            return makeRoundedImage(scaledImg);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }
+
+                protected void done() {
+                    try {
+                        ImageIcon icon = get();
+                        if (icon != null) {
+                            imageLabel.setIcon(icon);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }.execute();
+
+            card.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        int cantidad = (Integer) cantidadSpinner.getValue();
+                        addProductsToTable(table, product, cantidad);
+                        cantidadSpinner.setValue(ONE);
+                    }
+                }
+                public void mouseEntered(MouseEvent e) { card.setBackground(CARD_BACKGROUND_SELECT); }
+                public void mouseExited(MouseEvent e) { card.setBackground(new Color(58, 58, 58)); }
+                public void mousePressed(MouseEvent e) { card.setBackground(CARD_BACKGROUND_PRESSED); }
+                public void mouseReleased(MouseEvent e) { card.setBackground(CARD_BACKGROUND_RELEASE); }
+            });
+
+            productPanel.add(Box.createVerticalStrut(2));
+            productPanel.add(card);
+        });
+
+        productPanel.revalidate();
+        productPanel.repaint();
+        scrollPane.getVerticalScrollBar().setValue(0);
+    }
+
+    public static JPanel createInputHorizontalPanel(JTable table) {
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(TWO, TWO, TWO, TWO));
+        inputPanel.setBackground(PRODUCT_PANEL_COLOR);
+
+        Font labelFont = new Font("Segoe UI Variable", Font.BOLD, EIGHTEEN);
+
+        JPanel searchPanel = new JPanel();
+        searchPanel.setLayout(new BoxLayout(searchPanel, BoxLayout.X_AXIS));
+        searchPanel.setBackground(PRODUCT_PANEL_COLOR);
+        searchPanel.setMaximumSize(new Dimension(400, 50));
+
+        JTextField searchField = getSearchField();
+        searchPanel.add(searchField);
+        inputPanel.add(searchPanel);
+
+        JPanel quantityPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        quantityPanel.setBackground(PRODUCT_PANEL_COLOR);
+        quantityPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+
+        JLabel quantityLabel = new JLabel("Cantidad x");
+        quantityLabel.setForeground(CANTIDAD_COLOR_FONT);
+        quantityLabel.setFont(labelFont);
+
+        SpinnerNumberModel model = new SpinnerNumberModel(ONE, ONE, 999, ONE);
+        JSpinner cantidadSpinner = new JSpinner(model);
+        JComponent editor = cantidadSpinner.getEditor();
+        JFormattedTextField spinnerTextField = ((JSpinner.DefaultEditor) editor).getTextField();
+        spinnerTextField.setColumns(THREE);
+        spinnerTextField.setFont(new Font("Segoe UI Variable", Font.PLAIN, TWENTY));
+        spinnerTextField.setPreferredSize(new Dimension(80, 40));
+        spinnerTextField.getDocument().addDocumentListener(new DocumentListener() {
+            void update() {
+                SwingUtilities.invokeLater(() -> {
+                    int caret = spinnerTextField.getCaretPosition();
+                    try {
+                        spinnerTextField.commitEdit();
+                    } catch (ParseException e) {
+                        throw new IllegalArgumentException("Formato inválido en el campo spinner", e);
+                    }
+                    spinnerTextField.setCaretPosition(Math.min(caret, spinnerTextField.getText().length()));
+                });
+            }
+            @Override public void insertUpdate(DocumentEvent e) { update(); }
+            @Override public void removeUpdate(DocumentEvent e) { update(); }
+            @Override public void changedUpdate(DocumentEvent e) { update(); }
+        });
+        quantityPanel.add(quantityLabel);
+        quantityPanel.add(cantidadSpinner);
+        inputPanel.add(quantityPanel);
+
+        JPanel productPanel = new JPanel();
+        productPanel.setLayout(new BoxLayout(productPanel, BoxLayout.Y_AXIS));
+        productPanel.setBackground(PRODUCT_PANEL_COLOR);
+
+        JScrollPane scrollPane = new JScrollPane(productPanel);
+        scrollPane.setPreferredSize(new Dimension(400, 600));
+        scrollPane.getVerticalScrollBar().setUnitIncrement(THIRTY);
+        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(FIFTEEN, 0));
+        scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
+            @Override protected void configureScrollBarColors() {
+                this.thumbColor = new Color(28, 28, 28);
+                this.trackColor = new Color(200, 200, 200);
+            }
+            @Override protected JButton createDecreaseButton(int orientation) { return createInvisibleButton(); }
+            @Override protected JButton createIncreaseButton(int orientation) { return createInvisibleButton(); }
+            private JButton createInvisibleButton() {
+                JButton button = new JButton();
+                button.setPreferredSize(new Dimension(0, 0));
+                return button;
+            }
+        });
+        inputPanel.add(scrollPane);
+
+        List<Producto> productList = ProductoUserManager.getProducts();
+
+        JLabel pageLabel = new JLabel("Página 1");
+        pageLabel.setForeground(CANTIDAD_COLOR_FONT);
+
+        JButton prevButton = new JButton("<");
+        JButton nextButton = new JButton(">");
+
+        prevButton.addActionListener(e -> {
+            currentPage = Math.max(0, currentPage - 1);
+            updateProducthorizontalPanel(productList, productPanel, searchField.getText().toLowerCase(), searchField, table, cantidadSpinner, scrollPane, pageLabel);
+        });
+        nextButton.addActionListener(e -> {
+            int maxPages = (int) Math.ceil((double) productList.size() / PRODUCTS_PER_PAGE);
+            currentPage = Math.min(maxPages - 1, currentPage + 1);
+            updateProducthorizontalPanel(productList, productPanel, searchField.getText().toLowerCase(), searchField, table, cantidadSpinner, scrollPane, pageLabel);
+        });
+
+        JPanel paginationPanel = new JPanel(new FlowLayout());
+        paginationPanel.setBackground(PRODUCT_PANEL_COLOR);
+        paginationPanel.add(prevButton);
+        paginationPanel.add(pageLabel);
+        paginationPanel.add(nextButton);
+        inputPanel.add(paginationPanel);
+
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { currentPage = 0; update(); }
+            public void removeUpdate(DocumentEvent e) { currentPage = 0; update(); }
+            public void changedUpdate(DocumentEvent e) { currentPage = 0; update(); }
+            private void update() {
+                updateProducthorizontalPanel(productList, productPanel, searchField.getText().toLowerCase(), searchField, table, cantidadSpinner, scrollPane, pageLabel);
+            }
+        });
+
+        updateProducthorizontalPanel(productList, productPanel, "", searchField, table, cantidadSpinner, scrollPane, pageLabel);
+        return inputPanel;
+    }
 }

@@ -73,7 +73,7 @@ public class UIUserVenta extends Panel {
         setupTableListener(tableModel, totalField);
 
         JScrollPane tableScrollPane = new JScrollPane(table);
-        JPanel inputPanel = UIHelpers.createInputPanel(table);
+        JPanel inputPanel = UIHelpers.createInputHorizontalPanel(table);
 
         add(titleLabel, BorderLayout.NORTH);
         add(tableScrollPane, BorderLayout.CENTER);
