@@ -18,7 +18,7 @@ public class FormatterHelpers {
 
     public static class ConfigurationGlobal {
 
-        public static final double TRM = obtenerTRM();
+       // public static final double TRM = obtenerTRM();
 
         private ConfigurationGlobal() {}
 

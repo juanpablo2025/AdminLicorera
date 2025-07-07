@@ -47,7 +47,7 @@ import static org.example.ui.UIHelpers.*;
 import static org.example.ui.uiuser.UIUserMain.mainUser;
 import static org.example.utils.Constants.*;
 
-import static org.example.utils.FormatterHelpers.ConfigurationGlobal.TRM;
+//import static org.example.utils.FormatterHelpers.ConfigurationGlobal.TRM;
 
 public class UIUserVenta extends Panel {
 
@@ -57,7 +57,6 @@ public class UIUserVenta extends Panel {
 
     public UIUserVenta(List<String[]> productos, String mesaID, JPanel mainPanel, JFrame frame) {
         AtomicReference<Double> sumaTotal = new AtomicReference<>(0.0);
-
         setLayout(new BorderLayout());
         setPreferredSize(new Dimension(1366, 720));
 
@@ -66,6 +65,7 @@ public class UIUserVenta extends Panel {
         DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
 
         loadProductsToTable(productos, tableModel, sumaTotal);
+
         JTextField totalField = createTotalField(sumaTotal.get());
         JPanel totalPanel = createTotalPanel();
         totalPanel.add(totalField, BorderLayout.CENTER);
@@ -75,16 +75,22 @@ public class UIUserVenta extends Panel {
         JScrollPane tableScrollPane = new JScrollPane(table);
         JPanel inputPanel = UIHelpers.createInputHorizontalPanel(table);
 
-        add(titleLabel, BorderLayout.NORTH);
-        add(tableScrollPane, BorderLayout.CENTER);
-        add(inputPanel, BorderLayout.EAST);
-
         JPanel buttonPanel = createButtonPanel(table, (JDialog) compraDialog, mesaID, mainPanel, frame);
 
+        // ⬇️ SouthPanel con total + botones
         JPanel southPanel = new JPanel(new BorderLayout());
         southPanel.add(totalPanel, BorderLayout.NORTH);
         southPanel.add(buttonPanel, BorderLayout.SOUTH);
-        add(southPanel, BorderLayout.SOUTH);
+
+        // ⬇️ Agrupamos tabla + botones en el centro
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(tableScrollPane, BorderLayout.CENTER);
+        centerPanel.add(southPanel, BorderLayout.SOUTH);
+
+        // ⬇️ Ahora construimos el layout principal
+        add(titleLabel, BorderLayout.NORTH);
+        add(centerPanel, BorderLayout.CENTER);     // tabla y botones
+        add(inputPanel, BorderLayout.EAST);        // inputPanel solo al lado derecho
     }
 
     private JLabel createTitleLabel(String mesaID) {
@@ -139,8 +145,8 @@ public class UIUserVenta extends Panel {
         totalField.setFont(new Font("Segoe UI Variable", Font.BOLD, 26));
         totalField.setForeground(Color.RED);
         totalField.setEditable(false);
-        totalField.setHorizontalAlignment(SwingConstants.CENTER);
-        totalField.setBorder(BorderFactory.createEmptyBorder(TEN, TEN, TEN, TEN));
+        totalField.setHorizontalAlignment(SwingConstants.RIGHT);
+        totalField.setBorder(BorderFactory.createEmptyBorder(TEN, TEN, TEN, 50));
         totalField.setVisible(total > ZERO);
         totalField.setBackground(FONDO_PRINCIPAL);
 
@@ -398,15 +404,14 @@ public class UIUserVenta extends Panel {
                     es.printStackTrace();
                 }
 
-                // Cargar la imagen
+               /* // Cargar la imagen
                 ImageIcon iconBill = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/ImprimirFactura.png")); // Reemplaza con la ruta de tu imagen
 
                 if (iconBill.getImageLoadStatus() != MediaTracker.COMPLETE) {
                     // Manejar error si la imagen no carga
                     iconBill = null; // o podrías usar una imagen de marcador de posición
                 }
-                iconBill = new ImageIcon(iconBill.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
-
+                iconBill = new ImageIcon(iconBill.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));*/
 
                 // Crear el JLabel con la fuente personalizada
                 JLabel textLabelBill = new JLabel(PRINT_BILL, SwingConstants.CENTER);
@@ -419,8 +424,8 @@ public class UIUserVenta extends Panel {
                 JPanel panelBill = new JPanel();
                 panelBill.setLayout(new BoxLayout(panelBill, BoxLayout.Y_AXIS));
                 panelBill.add(textLabelBill);
-                panelBill.add(Box.createVerticalStrut(10));
-                panelBill.add(new JLabel(iconBill));
+                /*panelBill.add(Box.createVerticalStrut(10));
+                panelBill.add(new JLabel(iconBill));*/
                 panelBill.add(Box.createVerticalStrut(10));
                 panelBill.add(countdownLabel);
 
@@ -462,19 +467,20 @@ public class UIUserVenta extends Panel {
                 }
 
 
-                // Cargar la imagen
+                /*// Cargar la imagen
                 ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/VentaRealizada.png")); // Ruta de la imagen
                 if (icon.getImageLoadStatus() != MediaTracker.COMPLETE) {
                     // Manejar error.
                     icon = null;
                 }
                 icon = new ImageIcon(icon.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
-
+                */
                 mostrarDialogoCompraExitosa(
                         compraDialog,
                         total,
-                        TRM,
-                        icon,
+                        //TRM,
+                        //icon,
+                        null,
                         null  // Puedes pasar null si no quieres ejecutar nada al cerrar
                 );
                 actualizarCantidadStockBD(cantidadTotalPorProducto,mesaID);
@@ -497,9 +503,9 @@ public class UIUserVenta extends Panel {
 
         return confirmarCompraButton;
     }
-    public static void mostrarDialogoCompraExitosa(Window parent, double total, double trm, Icon icon, Runnable onClose) {
+    public static void mostrarDialogoCompraExitosa(Window parent, double total, /*double trm,*/ Icon icon, Runnable onClose) {
         NumberFormat formatusd = NumberFormat.getCurrencyInstance(Locale.US);
-        double totalDolar = total / trm;
+        //double totalDolar = total / trm;
 
 
         JLabel tituloLabel = new JLabel("¡Venta realizada con éxito!", SwingConstants.CENTER);
@@ -509,10 +515,10 @@ public class UIUserVenta extends Panel {
         String mensaje = String.format(
                 "<html><div style='font-size:14pt; text-align:center;'>"
                         + "<span style='font-size:30pt; color:#2ecc71;'><b>$%s Pesos</b></span><br>"
-                        + "<span style='font-size:16pt; color:#000080;'><b>%s USD</b></span>"
+                        //+ "<span style='font-size:16pt; color:#000080;'><b>%s USD</b></span>"
                         + "</div></html>",
-                NumberFormat.getInstance(new Locale("es", "CO")).format(total),
-                formatusd.format(totalDolar)
+                NumberFormat.getInstance(new Locale("es", "CO")).format(total)
+                //,formatusd.format(totalDolar)
         );
         JLabel mensajeLabel = new JLabel(mensaje, SwingConstants.CENTER);
         mensajeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -955,18 +961,19 @@ public class UIUserVenta extends Panel {
 
     private static String paySelection(JDialog compraDialog, double total,JFrame frame) {
         ImageIcon iconoBancolombia = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/bancolombia.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
-        ImageIcon iconoNequi = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/nequi.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
+        //ImageIcon iconoNequi = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/nequi.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
         ImageIcon iconoEfectivo = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/dinero.png")).getImage().getScaledInstance(60, 60, Image.SCALE_SMOOTH));
-        ImageIcon iconoDaviplata = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/Daviplata.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
+        //ImageIcon iconoDaviplata = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/Daviplata.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
         ImageIcon iconoDatafono = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/datafono.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
-        ImageIcon iconoPaypal = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/Paypal.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
+        //ImageIcon iconoPaypal = new ImageIcon(new ImageIcon(UIUserMain.class.getResource("/icons/Paypal.png")).getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH));
 
         JDialog dialogoPago = new JDialog(compraDialog, "Seleccione el método de pago", true);
-        dialogoPago.setSize(910, 400);
+        //dialogoPago.setSize(910, 400);
+        dialogoPago.setSize(710, 250);
         dialogoPago.setLayout(new BorderLayout(20, 20));
         dialogoPago.setResizable(false);
-        double totalDollar = total/TRM;
-        JLabel totalLabel = getJLabel(total, totalDollar);
+       // double totalDollar = total/TRM;
+        JLabel totalLabel = getJLabel(total/*, totalDollar*/);
 
         String tilte = "Seleccione el método de pago";
         JLabel titleLabelMetodo = new JLabel(tilte);
@@ -974,17 +981,17 @@ public class UIUserVenta extends Panel {
         dialogoPago.add( titleLabelMetodo, BorderLayout.CENTER);
 
         JPanel panelPago = new JPanel();
-        panelPago.setLayout(new GridLayout(TWO, THREE, 5, 5));
+        panelPago.setLayout(new GridLayout(/*TWO*/1, THREE, 5, 5));
         panelPago.setBorder(BorderFactory.createEmptyBorder(TEN, 20, 20, 20));
         panelPago.setBackground(Color.WHITE);
-        JButton botonDaviplata = new JButton("Daviplata - Transferencia", iconoDaviplata);
+        /*JButton botonDaviplata = new JButton("Daviplata - Transferencia", iconoDaviplata);
         JButton botonNequi = new JButton("Nequi - Transferencia", iconoNequi);
-        JButton botonPaypal = new JButton("Paypal", iconoPaypal);
+        JButton botonPaypal = new JButton("Paypal", iconoPaypal);*/
         JButton botonBancolombia = new JButton("Bancolombia - Transferencia", iconoBancolombia);
         JButton botonDatafono = new JButton("Datafono", iconoDatafono);
         JButton botonEfectivo = new JButton(EFECTIVO, iconoEfectivo);
 
-        JButton[] botones = { botonDaviplata,  botonBancolombia, botonEfectivo, botonPaypal, botonNequi, botonDatafono};
+        JButton[] botones = { /*botonDaviplata,*/  botonBancolombia, botonEfectivo, /*botonPaypal, botonNequi,*/ botonDatafono};
         for (JButton btn : botones) {
             btn.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
             btn.setBackground(new Color(245, 245, 245));
@@ -1000,12 +1007,12 @@ public class UIUserVenta extends Panel {
         final String[] tipoPagoSeleccionado = {null};
         final double finalTotal = total;
 
-        configurarBotonConQR(dialogoPago, botonBancolombia, finalTotal, totalDollar, () -> {
+        configurarBotonConQR(dialogoPago, botonBancolombia, finalTotal/*, totalDollar*/, () -> {
             tipoPagoSeleccionado[ZERO] = "Bancolombia - Transferencia";
             dialogoPago.dispose();
         });
 
-        configurarBotonConQR(dialogoPago, botonNequi, finalTotal, totalDollar, () -> {
+       /* configurarBotonConQR(dialogoPago, botonNequi, finalTotal, totalDollar, () -> {
             tipoPagoSeleccionado[ZERO] = "Nequi - Transferencia";
             dialogoPago.dispose();
         });
@@ -1018,7 +1025,7 @@ public class UIUserVenta extends Panel {
         configurarBotonConQR(dialogoPago, botonPaypal, finalTotal, totalDollar, () -> {
                 tipoPagoSeleccionado[ZERO] = "Paypal - Transferencia";
                 dialogoPago.dispose();
-        });
+        });*/
 
         botonEfectivo.addActionListener(event -> {
 
@@ -1056,12 +1063,12 @@ public class UIUserVenta extends Panel {
             content.setBackground(Color.WHITE);
 
             // Cargar la imagen
-            ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/CalcularDevuelta.png"));
+            //ImageIcon icon = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/CalcularDevuelta.png"));
             // Crear un JLabel para mostrar la imagen
-            icon = new ImageIcon(icon.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
-            JLabel imageLabel = new JLabel(icon);
-            imageLabel.setPreferredSize(new Dimension(300, 300)); // Ajustar el tamaño de la imagen
-            imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            //icon = new ImageIcon(icon.getImage().getScaledInstance(300, 300, Image.SCALE_SMOOTH));
+            //JLabel imageLabel = new JLabel(icon);
+            //imageLabel.setPreferredSize(new Dimension(300, 300)); // Ajustar el tamaño de la imagen
+            //imageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             // Crear el JLabel para el título
             JLabel titleLabel = new JLabel("¿Quieres calcular la devuelta?");
@@ -1080,8 +1087,8 @@ public class UIUserVenta extends Panel {
             content.add(Box.createVerticalStrut(15));
             // Añadir componentes en orden
             content.add(titleLabel);
-            content.add(Box.createVerticalStrut(10)); // Espacio entre el título y la imagen
-            content.add(imageLabel); // Imagen centrada
+            //content.add(Box.createVerticalStrut(10)); // Espacio entre el título y la imagen
+            //content.add(imageLabel); // Imagen centrada
             content.add(Box.createVerticalStrut(15));
             content.add(inputField);
             content.add(Box.createVerticalStrut(10));
@@ -1209,10 +1216,10 @@ public class UIUserVenta extends Panel {
             montoLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, 22));
             montoLabel.setForeground(new Color(ZERO, 153, ZERO));
             montoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            JLabel montoLabel2 = new JLabel(FormatterHelpers.formatearMoneda(totalDollar) + " USD");
+           /* JLabel montoLabel2 = new JLabel(FormatterHelpers.formatearMoneda(totalDollar) + " USD");
             montoLabel2.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
             montoLabel2.setForeground(new Color(ZERO, ZERO, 128));
-            montoLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);
+            montoLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);*/
 
 
             JLabel instruccion = new JLabel("<html><div style='text-align:center; color:red;'>"
@@ -1247,8 +1254,8 @@ public class UIUserVenta extends Panel {
             content.setBackground(Color.WHITE);
 
             content.add(montoLabel);
-            content.add(Box.createVerticalStrut(15));
-            content.add(montoLabel2);
+            /*content.add(Box.createVerticalStrut(15));
+            content.add(montoLabel2);*/
             content.add(Box.createVerticalStrut(15));
             content.add(qrLabel);
             content.add(Box.createVerticalStrut(20));
@@ -1271,7 +1278,7 @@ public class UIUserVenta extends Panel {
             return null;
         }
 
-        if (ConfigAdminManager.isElectronicBillingEnabled()) {
+        /*if (ConfigAdminManager.isElectronicBillingEnabled()) {
 
             JSONObject clienteSiigo = UIUserVenta.mostrarDialogoFactura(frame);
 
@@ -1298,31 +1305,31 @@ public class UIUserVenta extends Panel {
                                         .put("taxes", new JSONArray().put(new JSONObject().put("id", 1)))
                         ));
 
-                try {
+                 try {
                     new SiigoInvoice().crearFactura(facturaJson);
                 } catch (IOException e) {
                     JOptionPane.showMessageDialog(frame, "❌ Error al enviar factura: " + e.getMessage());
                 }
             }
-        }
+        }*/
 
         return tipoPagoSeleccionado[ZERO];
     }
 
-    private static JLabel getJLabel(double total, Double totalDolar) {
+    private static JLabel getJLabel(double total/*, Double totalDolar*/) {
         String textoTotal = String.format(
                 "<html><div style='text-align:center; font-size:28px; color:#2ecc71;'>" +
                         "<b>Total: $%,.0f Pesos</b><br>" +
-                        "<span style='font-size:20pt; color:#000080;'><b>%.2f USD</b></span>" +
+                        //"<span style='font-size:20pt; color:#000080;'><b>%.2f USD</b></span>" +
                         "</div></html>",
-                total, totalDolar
+                total//, totalDolar
         );
         JLabel totalLabel = new JLabel(textoTotal, SwingConstants.CENTER);
         totalLabel.setBorder(BorderFactory.createEmptyBorder(TWELVE, TEN, ZERO, TEN));
         return totalLabel;
     }
 
-    private static void configurarBotonConQR(JDialog parentDialog, JButton boton, double total, double totalDolar, Runnable onSuccess) {
+    private static void configurarBotonConQR(JDialog parentDialog, JButton boton, double total/*, double totalDolar*/, Runnable onSuccess) {
         boton.addActionListener(event -> {
             ImageIcon qrIcon = new ImageIcon(new ImageIcon(UIUserMain.class.getResource(QR))
                     .getImage().getScaledInstance(300, 400, Image.SCALE_SMOOTH));
@@ -1334,10 +1341,10 @@ public class UIUserVenta extends Panel {
             montoLabel.setForeground(new Color(ZERO, 153, ZERO));
             montoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-            JLabel montoLabel2 = new JLabel(FormatterHelpers.formatearMoneda(totalDolar) + " USD");
+            /*JLabel montoLabel2 = new JLabel(FormatterHelpers.formatearMoneda(totalDolar) + " USD");
             montoLabel2.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
             montoLabel2.setForeground(new Color(ZERO, ZERO, 128));
-            montoLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);
+            montoLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);*/
 
             JLabel instruccion = new JLabel("<html><div style='text-align:center; color:red;'>"
                     + "Verifica en el teléfono del cliente<br>Sí la transacción fue exitosa antes de continuar."
@@ -1368,8 +1375,8 @@ public class UIUserVenta extends Panel {
             content.setBackground(Color.WHITE);
 
             content.add(montoLabel);
-            content.add(Box.createVerticalStrut(15));
-            content.add(montoLabel2);
+            /*content.add(Box.createVerticalStrut(15));
+            content.add(montoLabel2);*/
             content.add(Box.createVerticalStrut(15));
             content.add(qrLabel);
             content.add(Box.createVerticalStrut(20));

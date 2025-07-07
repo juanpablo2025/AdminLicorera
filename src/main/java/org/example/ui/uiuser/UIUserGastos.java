@@ -39,7 +39,7 @@ public class UIUserGastos {
         gbc.insets = new Insets(15, 15, 15, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-       JPanel imagePanel = new JPanel(new BorderLayout());
+       /*JPanel imagePanel = new JPanel(new BorderLayout());
         imagePanel.setBackground(FONDO_PRINCIPAL);
         imagePanel.setPreferredSize(new Dimension(230, 230));
 
@@ -62,7 +62,7 @@ public class UIUserGastos {
         gbc.gridx = ZERO;
         gbc.gridy = ZERO;
         gbc.gridheight = THREE;
-        mainContentPanel.add(imagePanel, gbc);
+        mainContentPanel.add(imagePanel, gbc);*/
 
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));

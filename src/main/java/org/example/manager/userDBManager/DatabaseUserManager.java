@@ -20,6 +20,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.example.manager.usermanager.FacturacionUserManager.guardarTotalFacturadoEnArchivo;
+import static org.example.manager.usermanager.FacturacionUserManager.limpiarCantidadVendida;
+import static org.example.utils.Constants.ERROR_TITLE;
+
 //import static org.example.manager.userManager.FacturacionUserManager.generarResumenDiarioEstilizadoPDF;
 //import static org.example.manager.userManager.FacturacionUserManager.guardarTotalFacturadoEnArchivo;
 
@@ -49,7 +53,7 @@ public class DatabaseUserManager {
 
     public static ArrayList<Mesa> cargarMesasDesdeDB() {
         ArrayList<Mesa> mesas = new ArrayList<>();
-        String query = "SELECT mesaID, estado FROM mesas";
+        String query = "SELECT mesaID, estado FROM mesas ORDER BY CAST(SUBSTRING(mesaID, 6) AS UNSIGNED)";
 
         try (Connection conn = connect();
              PreparedStatement stmt = conn.prepareStatement(query);
@@ -106,17 +110,42 @@ public class DatabaseUserManager {
 
 
     public static void actualizarCantidadStockBD(Map<String, Integer> cantidadTotalPorProducto, String mesaID) {
-        String update = "UPDATE productos SET cantidad = cantidad - ? WHERE nombre = ?";
-        try (Connection conn = connect(); PreparedStatement stmt = conn.prepareStatement(update)) {
-            for (Map.Entry<String, Integer> entry : cantidadTotalPorProducto.entrySet()) {
-                String nombreProducto = entry.getKey();
-                int cantidadRestar = entry.getValue();
-                stmt.setInt(1, cantidadRestar);
-                stmt.setString(2, nombreProducto);
-                stmt.executeUpdate();
+        String update =
+        "UPDATE productos SET cantidad = cantidad - ?,cantidad_vendida = IFNULL(cantidad_vendida, 0) + ? WHERE nombre = ?";
+
+        String select = "SELECT COUNT(*) FROM productos WHERE nombre = ?";
+
+        try (Connection conn = connect()) {
+            try (PreparedStatement updateStmt = conn.prepareStatement(update);
+                 PreparedStatement selectStmt = conn.prepareStatement(select)) {
+
+                for (Map.Entry<String, Integer> entry : cantidadTotalPorProducto.entrySet()) {
+                    String nombreProducto = entry.getKey();
+                    int cantidad = entry.getValue();
+
+                    // Verificar existencia del producto
+                    selectStmt.setString(1, nombreProducto);
+                    try (ResultSet rs = selectStmt.executeQuery()) {
+                        if (rs.next() && rs.getInt(1) == 0) {
+                            JOptionPane.showMessageDialog(null,
+                                    "Producto '" + nombreProducto + "' no encontrado en stock.",
+                                    ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
+                            continue;
+                        }
+                    }
+
+                    // Actualizar stock y ventas
+                    updateStmt.setInt(1, cantidad);
+                    updateStmt.setInt(2, cantidad);
+                    updateStmt.setString(3, nombreProducto);
+                    updateStmt.executeUpdate();
+                }
+
             }
         } catch (SQLException e) {
-            System.err.println("Error al actualizar la cantidad de stock: " + e.getMessage());
+            JOptionPane.showMessageDialog(null,
+                    "Error al actualizar la cantidad de stock: " + e.getMessage(),
+                    ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -167,73 +196,27 @@ public class DatabaseUserManager {
         }
         try (Connection conn = DatabaseUserManager.connect(); Statement stmt = conn.createStatement()) {
 
-            stmt.execute("""
-            CREATE TABLE IF NOT EXISTS productos (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nombre VARCHAR(100),
-                cantidad INT,
-                precio DECIMAL(10,2),
-                cantidad_vendida INT DEFAULT 0,
-                foto VARCHAR(255)
-            );
-        """);
+            stmt.execute(
+            "CREATE TABLE IF NOT EXISTS productos ( id INT AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(100), cantidad INT, precio DECIMAL(10,2), cantidad_vendida INT DEFAULT 0, foto VARCHAR(255));");
 
-            stmt.execute("""
-            CREATE TABLE IF NOT EXISTS compras (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                productos TEXT,
-                total DECIMAL(10,2),
-                fecha_hora DATETIME,
-                forma_pago VARCHAR(50)
-            );
-        """);
+            stmt.execute(
+            "CREATE TABLE IF NOT EXISTS compras (id INT AUTO_INCREMENT PRIMARY KEY, productos TEXT, total DECIMAL(10,2), fecha_hora DATETIME, forma_pago VARCHAR(50));");
 
-            stmt.execute("""
-            CREATE TABLE IF NOT EXISTS gastos (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nombreProducto VARCHAR(100),
-                cantidad INT,
-                precioCompra DECIMAL(10,2),
-                fechaHora DATETIME
-            );
-        """);
+            stmt.execute(
 
-            stmt.execute("""
-            CREATE TABLE IF NOT EXISTS reabastecimiento (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                producto_nombre VARCHAR(100),
-                cantidad_reabastecida INT,
-                precio_compra DECIMAL(10,2),
-                fecha_hora DATETIME
-            );
-        """);
+            "CREATE TABLE IF NOT EXISTS gastos ( id INT AUTO_INCREMENT PRIMARY KEY, nombreProducto VARCHAR(100), cantidad INT, precioCompra DECIMAL(10,2), fechaHora DATETIME);");
 
-            stmt.execute("""
-            CREATE TABLE IF NOT EXISTS mesas (
-                mesaID VARCHAR(50) PRIMARY KEY,
-                estado VARCHAR(20),
-                productos TEXT,
-                total DECIMAL(10,2)
-            );
-        """);
+            stmt.execute(
+            "CREATE TABLE IF NOT EXISTS reabastecimiento ( id INT AUTO_INCREMENT PRIMARY KEY, producto_nombre VARCHAR(100), cantidad_reabastecida INT, precio_compra DECIMAL(10,2), fecha_hora DATETIME);");
 
-            stmt.execute("""
-            CREATE TABLE IF NOT EXISTS parking (
-                parkingID VARCHAR(50) PRIMARY KEY,
-                estado VARCHAR(20),
-                productos TEXT,
-                total DECIMAL(10,2)
-            );
-        """);
+            stmt.execute(
+            "CREATE TABLE IF NOT EXISTS mesas ( mesaID VARCHAR(50) PRIMARY KEY, estado VARCHAR(20), productos TEXT, total DECIMAL(10,2));");
 
-            stmt.execute("""
-            CREATE TABLE IF NOT EXISTS empleados (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nombre VARCHAR(100),
-                hora_inicio TIME,
-                fecha_inicio DATE
-            );
-        """);
+            stmt.execute(
+            "CREATE TABLE IF NOT EXISTS parking ( parkingID VARCHAR(50) PRIMARY KEY, estado VARCHAR(20), productos TEXT, total DECIMAL(10,2));");
+
+            stmt.execute(
+            "CREATE TABLE IF NOT EXISTS empleados ( id INT AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(100), hora_inicio TIME, fecha_inicio DATE); ");
 
             // Insertar mesas si no existen
             ResultSet rs = stmt.executeQuery("SELECT COUNT(*) AS total FROM mesas");
@@ -387,14 +370,16 @@ public class DatabaseUserManager {
                 }
 
                 // 5️⃣ Guardar resumen diario
-               // guardarResumen(productosVendidos, totalCompra, totalGastos, totalReabastecimiento, totalPorFormaPago);
+                //guardarResumen(productosVendidos, totalCompra, totalGastos, totalReabastecimiento, totalPorFormaPago);
                 //generarResumenDiarioEstilizadoPDF();
-                //guardarTotalFacturadoEnArchivo(totalPorFormaPago, totalCompra);
+
+                guardarTotalFacturadoEnArchivo(totalPorFormaPago, totalCompra);
+                limpiarCantidadVendida();
                 // 6️⃣ Limpiar tablas
                 conn.setAutoCommit(false);
-                //conn.prepareStatement("DELETE FROM compras").executeUpdate();
+                conn.prepareStatement("DELETE FROM compras").executeUpdate();
                 //conn.prepareStatement("DELETE FROM gastos").executeUpdate();
-                //conn.prepareStatement("DELETE FROM empleados").executeUpdate();
+                conn.prepareStatement("DELETE FROM empleados").executeUpdate();
                 //conn.prepareStatement("DELETE FROM reabastecimiento").executeUpdate();
                 conn.commit();
 
@@ -409,9 +394,9 @@ public class DatabaseUserManager {
             } catch (SQLException e) {
                 e.printStackTrace();
                 JOptionPane.showMessageDialog(null, "Error al facturar y limpiar: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }/* catch (IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException(e);
-            }*/
+            }
     }
     public static void limpiarFacturas(Connection conn) {
         String rutaFacturas = System.getProperty("user.home") + "\\Calculadora del Administrador\\Facturas";
@@ -622,13 +607,17 @@ public class DatabaseUserManager {
         }
     }
 
-    public static void eliminarMesasConIdMayorA15() throws SQLException {
-        Connection conn = DatabaseUserManager.connect();
-        String delete = "DELETE FROM mesas WHERE CAST(SUBSTR(mesaID, 6) AS INTEGER) > 15";
-        try (PreparedStatement stmt = conn.prepareStatement(delete)) {
-            stmt.executeUpdate();
+    public static void eliminarMesasConIdMayorA15() {
+        String query = "DELETE FROM mesas WHERE CAST(SUBSTR(mesaID, 6) AS UNSIGNED) > 15";
+
+        try (Connection conn = DatabaseUserManager.connect();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            int filasEliminadas = stmt.executeUpdate();
+            System.out.println("Mesas eliminadas: " + filasEliminadas);
+
         } catch (SQLException e) {
-            System.err.println("Error al eliminar mesas con ID mayor a 15: " + e.getMessage());
+            System.err.println("Error eliminando mesas con ID > 15: " + e.getMessage());
         }
     }
 

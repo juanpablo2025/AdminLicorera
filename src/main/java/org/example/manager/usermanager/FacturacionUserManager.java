@@ -20,12 +20,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.io.*;
-import java.net.URI;
+/*import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.StandardCharsets;*/
 import java.sql.*;
 import java.text.NumberFormat;
 import java.time.LocalDate;
@@ -81,11 +81,20 @@ public class FacturacionUserManager {
 
     public static void generarFacturadeCompra(String ventaID, List<String> productos, double totalCompra, LocalDateTime fechaHora, String tipoPago) {
         try {
-            InputStream fontStream = FacturacionUserManager.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
+            /*InputStream fontStream = FacturacionUserManager.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
 
             assert fontStream != null;
-            byte[] fontBytes = fontStream.readAllBytes();
-            PdfFont lobsterFont = PdfFontFactory.createFont(fontBytes, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
+            //byte[] fontBytes = fontStream.readAllBytes();
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            int nRead;
+            byte[] data = new byte[16384];
+
+            while ((nRead = fontStream.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+            buffer.flush();
+            byte[] fontBytes = buffer.toByteArray();
+            PdfFont lobsterFont = PdfFontFactory.createFont(fontBytes, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);*/
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             String fechaFormateada = fechaHora.format(formatter);
             String paperSize = ConfigAdminManager.getPaperSize();
@@ -98,17 +107,19 @@ public class FacturacionUserManager {
             try (Document document = new Document(pdfDoc, pageSize)) {
 
                 PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+                PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
+
 
                 float margenIzquierdo = TEN * HEIGHT_DOTS;
                 document.setMargins(FIVE, FIVE, FIVE, margenIzquierdo);
                 document.add(new Paragraph(EMPRESA_NAME)
-                        .setFont(lobsterFont)
+                        .setFont(fontBold)
                         .setFontSize(13)
                         .setTextAlignment(TextAlignment.CENTER)
                         .setMarginBottom(-2));
 
-                document.add(new Paragraph("La 70")
-                        .setFont(lobsterFont)
+                document.add(new Paragraph("pos")
+                        .setFont(fontNormal)
                         .setFontSize(10)
                         .setTextAlignment(TextAlignment.CENTER)
                         .setMarginTop(-5)
@@ -219,10 +230,10 @@ public class FacturacionUserManager {
     private static PageSize getPageSize(List<String> productos, String paperSize) {
         float anchoMm = paperSize.equals("48mm") ? 48 : (paperSize.equals("A4") ? 210 : 80);
         float anchoPuntos = anchoMm * WIDE_DOTS;
-        float altoBaseMm = 60;
+        float altoBaseMm = 80;
         float altoPorProductoMm = 10;
         float extraSpaceMm = 25;
-        float altoMinimoMm = 60;
+        float altoMinimoMm = 80;
 
 
         float altoTotalMm = Math.max(altoBaseMm + (productos.size() * altoPorProductoMm) + extraSpaceMm, altoMinimoMm);
@@ -456,7 +467,7 @@ public class FacturacionUserManager {
                 logger.error("Error al leer la hoja de gastos: {}", e.getMessage());
                 JOptionPane.showMessageDialog(null, "Error al leer la hoja de gastos: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             }
-            String[] numeros = { "+573226094632","+573112599560"};
+            String[] numeros = {"",""};
             String mensaje = "*[Licorera CR]*\n¡Hola! se ha generado el realizo del día de hoy por un total de: $ "
                     + formatearMoneda(totalVentas) + " pesos.\nPuedes consultar los detalles en los resúmenes adjuntos en Google Drive: https://drive.google.com/drive/folders/1-mklq_6xIUVZz8osGDrBtvYXEu-RNGYH";
             if (!gastosNA.isEmpty()) {
@@ -477,7 +488,7 @@ public class FacturacionUserManager {
         }
     }
 
-/*public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorPago,double totalFacturado) throws IOException {
+    public static void guardarTotalFacturadoEnArchivo( Map<String,Double>totalesPorPago,double totalFacturado) throws IOException {
         Map<String, Integer> productosVendidos = obtenerProductosVendidos();
 
         LocalDate fechaActual = LocalDate.now();
@@ -496,7 +507,7 @@ public class FacturacionUserManager {
         DateTimeFormatter horaFormatter = DateTimeFormatter.ofPattern("HH-mm-ss");
         String nombreArchivo = carpetaPath + "\\REALIZO_" + fechaActual.format(formatter) + EMPTY + horaActual.format(horaFormatter) + ".pdf";
 
-        try (FileInputStream fis = new FileInputStream(FILE_PATH);
+        /*try (FileInputStream fis = new FileInputStream(FILE_PATH);
              Workbook workbook = WorkbookFactory.create(fis)) {
             Sheet gastosSheet = workbook.getSheet("Gastos");
             for (int i = 1; i <= gastosSheet.getLastRowNum(); i++) {
@@ -505,7 +516,7 @@ public class FacturacionUserManager {
                      new DataFormatter().formatCellValue(row.getCell(3));
                 }
             }
-            double totalGastos = restarTotalesGastos(gastosSheet);
+            double totalGastos = restarTotalesGastos(gastosSheet);*/
             float anchoMm = 48;
             float altoBaseMm = 80;
             float altoPorProductoMm = 8;
@@ -513,7 +524,7 @@ public class FacturacionUserManager {
             float altoMinimoMm = 80;
             float altoTotalMm = Math.max(altoBaseMm + (productosVendidos.size() * altoPorProductoMm) +  altoFooterMm, altoMinimoMm);
             float anchoPuntos = anchoMm * 2.83465f;
-            float altoPuntos = altoTotalMm * 2.83465f;
+            float altoPuntos = altoTotalMm * 3.83465f;
 
             PageSize pageSize = new PageSize(anchoPuntos, altoPuntos);
             PdfWriter writer = new PdfWriter(nombreArchivo);
@@ -522,17 +533,14 @@ public class FacturacionUserManager {
 
                 PdfFont fontBold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
                 PdfFont fontNormal = PdfFontFactory.createFont(StandardFonts.HELVETICA);
-                InputStream fontStream = FacturacionUserManager.class.getClassLoader().getResourceAsStream("Lobster-Regular.ttf");
-                assert fontStream != null;
-                byte[] fontBytes = fontStream.readAllBytes();
-                PdfFont lobsterFont = PdfFontFactory.createFont(fontBytes, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.PREFER_EMBEDDED);
+
 
                 float margenIzquierdo = 10 * HEIGHT_DOTS;
                 document.setMargins(FIVE, FIVE, FIVE, margenIzquierdo);
 
 
                 document.add(new Paragraph("Realizo del Día")
-                        .setFont(lobsterFont)
+                        .setFont(fontBold)
                         .setFontSize(15)
                         .setTextAlignment(TextAlignment.CENTER)
                         .setMarginBottom(0));
@@ -586,7 +594,7 @@ public class FacturacionUserManager {
                         .setFontSize(10)
                         .setMarginBottom(5));
 
-                if (totalGastos > 0) {
+                /*if (totalGastos > 0) {
                     document.add(new Paragraph("Gastos $ " + formatearMoneda(totalGastos))
                             .setFont(fontBold)
                             .setFontSize(10)
@@ -617,7 +625,7 @@ public class FacturacionUserManager {
                                     .setTextAlignment(TextAlignment.LEFT));
                         }
                     }
-                }
+                }*/
                 document.add(new Paragraph("Vendidos")
                         .setFont(fontBold)
                         .setFontSize(10)
@@ -639,20 +647,20 @@ public class FacturacionUserManager {
                             .setFontSize(8)
                             .setMarginBottom(5));
                 }
-                document.add(new Paragraph(new String(new char[15]).replace('\0', '_'))
+                /*document.add(new Paragraph(new String(new char[15]).replace('\0', '_'))
                         .setFont(fontNormal)
                         .setFontSize(10)
                         .setMarginTop(2)
-                        .setMarginBottom(2));
+                        .setMarginBottom(2));*/
 
                 document.add(new Paragraph(EMPRESA_NAME)
-                        .setFont(lobsterFont)
+                        .setFont(fontBold)
                         .setFontSize(13)
                         .setTextAlignment(TextAlignment.CENTER)
                         .setMarginBottom(-2));
 
-                document.add(new Paragraph("La 70")
-                        .setFont(lobsterFont)
+                document.add(new Paragraph("pos")
+                        .setFont(fontNormal)
                         .setFontSize(10)
                         .setTextAlignment(TextAlignment.CENTER)
                         .setMarginTop(-5)
@@ -666,21 +674,19 @@ public class FacturacionUserManager {
                 abrirPDF(nombreArchivo);
             }
 
-        } catch (IOException e) {
+        } /*catch (IOException e) {
             logger.error("Error al generar el archivo Realizo: {}", e.getMessage());
             JOptionPane.showMessageDialog(null, "Error al generar el archivo Realizo: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
             logger.error("Error inesperado: {}", e.getMessage());
             JOptionPane.showMessageDialog(null, "Error inesperado: " + e.getMessage(), ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
         }
-    }*/
-
-
+    }
+*/
     public static void limpiarFacturas() {
         String rutaFacturas = System.getProperty(FOLDER_PATH) +"\\Calculadora del Administrador\\Facturas";
         borrarContenidoCarpeta(rutaFacturas);
     }
-
 
     private static void borrarContenidoCarpeta(String carpetaPath) {
         File carpeta = new File(carpetaPath);
@@ -802,32 +808,31 @@ public class FacturacionUserManager {
     public static Map<String, Integer> obtenerProductosVendidos() {
         Map<String, Integer> productosVendidos = new HashMap<>();
 
-        String sql = "SELECT nombreProducto, SUM(cantidadVendida) AS cantidadTotal " +
-                "FROM Ventas GROUP BY nombreProducto";
+        String sql = "SELECT nombre, SUM(cantidad_vendida) AS total_vendida " +
+                "FROM productos GROUP BY nombre";
 
         try (Connection connection = DatabaseUserManager.connect();
              PreparedStatement stmt = connection.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                String nombreProducto = rs.getString("nombreProducto");
-                int cantidadVendida = rs.getInt("cantidadTotal");
+                String nombre = rs.getString("nombre");
+                int cantidadVendida = rs.getInt("total_vendida");
 
-                // Solo agregar productos que tienen una cantidad mayor a 0
                 if (cantidadVendida > 0) {
-                    productosVendidos.put(nombreProducto, cantidadVendida);
+                    productosVendidos.put(nombre, cantidadVendida);
                 }
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("❌ Error al obtener productos vendidos: " + e.getMessage());
         }
 
         return productosVendidos;
     }
 
     public static void limpiarCantidadVendida() {
-        String sql = "UPDATE Ventas SET cantidadVendida = 0";
+        String sql = "UPDATE productos SET cantidad_vendida = 0";
 
         try (Connection connection = DatabaseUserManager.connect();
              PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -840,7 +845,7 @@ public class FacturacionUserManager {
         }
     }
 
-    public static void enviarMensaje(String[] numeros, String mensaje) throws IOException, InterruptedException {
+    /*public static void enviarMensaje(String[] numeros, String mensaje) throws IOException, InterruptedException {
         HttpClient client = HttpClient.newHttpClient();
 
         if (!ConfigAdminManager.isMessageSendingEnabled()) {
@@ -861,7 +866,7 @@ public class FacturacionUserManager {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (logger.isErrorEnabled()) {logger.error("Enviado a {} → Respuesta: {}", numero, response.body());}
         }
-    }
+    }*/
 
 
 }

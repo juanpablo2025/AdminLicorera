@@ -12,7 +12,7 @@ import java.util.Base64;
 
 public class SiigoInvoice {
 
-    private static final String AUTH_URL = "https://api.siigo.com/auth";
+   /* private static final String AUTH_URL = "https://api.siigo.com/auth";
     private static final String INVOICE_URL = "https://api.siigo.com/v1/invoices";
 
     private String accessToken;
@@ -71,6 +71,6 @@ public class SiigoInvoice {
             String error = new String(conn.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
             System.err.println("❌ Error al crear factura: " + error);
         }
-    }
+    }*/
 }
 

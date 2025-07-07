@@ -18,7 +18,7 @@ import static org.example.utils.Constants.*;
 
 public class UIParkDrive {
 
-    public static JPanel crearEstacionamientoPanel(Mesa mesa, JFrame mainFrame, JPanel mainPanel) {
+    /*public static JPanel crearEstacionamientoPanel(Mesa mesa, JFrame mainFrame, JPanel mainPanel) {
         JPanel parkingPanel = new JPanel(new BorderLayout());
         parkingPanel.setPreferredSize(new Dimension(ONE_HUNDRED, ONE_HUNDRED));
 
@@ -146,7 +146,7 @@ public class UIParkDrive {
                     mesaDisponible.setHoraEntrada(ahora);
                     mesaDisponible.setHoraSalida(ahora); // Puedes dejar nulo si es solo al salir
                     // actualizarMesaEnBD(mesaDisponible);*/
-                    gridParkDrivePanel.revalidate();
+                   /* gridParkDrivePanel.revalidate();
                     gridParkDrivePanel.repaint();
                 }
             }
@@ -203,6 +203,6 @@ public class UIParkDrive {
         addMesaButton.setBorderPainted(false);
         addMesaButton.setOpaque(false);
         return addMesaButton;
-    }
+    }*/
 
 }

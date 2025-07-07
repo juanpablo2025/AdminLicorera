@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static org.example.utils.Constants.*;
-import static org.example.utils.FormatterHelpers.ConfigurationGlobal.TRM;
+//import static org.example.utils.FormatterHelpers.ConfigurationGlobal.TRM;
 import static org.example.utils.FormatterHelpers.formatearMoneda;
 
 public class UIUserProductList {
@@ -36,7 +36,8 @@ public class UIUserProductList {
         String[] columnNames = {
                 "Nombre",
                 "Cantidad",
-                "<html><b>Pesos/USD</b><span style='font-size:14px; color:#28a748;'>(" + formatearMoneda(TRM) + " TRM)</span></html>"
+                //"<html><b>Pesos/USD</b><span style='font-size:14px; color:#28a748;'>(" + formatearMoneda(TRM) + " TRM)</span></html>"
+                "Precio"
         };
 
         Object[][] data = new Object[products.size()][THREE];
@@ -45,11 +46,11 @@ public class UIUserProductList {
             data[i][ZERO] = formatProductName(p.getName());
             data[i][ONE] = p.getQuantity();
 
-            double precioUSD = TRM != 0.0 ? p.getPrice() / TRM : 0.0;
+            //double precioUSD = TRM != 0.0 ? p.getPrice() / TRM : 0.0;
             data[i][TWO] = String.format(
-                    "<html><b>%s</b> <span style='font-size:14px; color:#000080;'>(%s)</span></html>",
-                    "$ " + formatearMoneda(p.getPrice()),
-                    FORMAT_USD.format(precioUSD)
+                    /*"<html><b>%s</b> <span style='font-size:14px; color:#000080;'>(%s)</span></html>",
+                    "$ " + */formatearMoneda(p.getPrice())/*,
+                    FORMAT_USD.format(precioUSD)*/
             );
         }
 
@@ -86,8 +87,11 @@ public class UIUserProductList {
                     ((JLabel) cell).setHorizontalAlignment(SwingConstants.LEFT);
                 }
 
-                if (column == TWO && value instanceof String s && s.contains("<html>")) {
-                    ((JLabel) cell).setText(s);
+                if (column == TWO && value instanceof String) {
+                    String s = (String) value;
+                    if (s.contains("<html>")) {
+                        ((JLabel) cell).setText(s);
+                    }
                 }
                 return cell;
             }

@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -117,7 +117,7 @@ public class UIHelpers {
         List<String> productList = ProductoUserManager.getProducts().stream()
                 .map(Producto::getName)
                 .sorted(String::compareToIgnoreCase)
-                .toList();
+                .collect(Collectors.toList());
 
         DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
         model.addElement(COMBO_BOX_TEXT);
@@ -302,13 +302,32 @@ public class UIHelpers {
         return searchField;
     }
 
-    private static ImageIcon makeRoundedImage(Image img) {
+    /*private static ImageIcon makeRoundedImage(Image img) {
         BufferedImage roundedImage = new BufferedImage(170, 140, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = roundedImage.createGraphics();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         g2.setClip(new RoundRectangle2D.Float(ZERO, ZERO, 170, 140, 20, 20));
         g2.drawImage(img, ZERO, ZERO, 170, 140, null);
+        g2.dispose();
+
+        return new ImageIcon(roundedImage);
+    }*/
+
+
+
+    private static ImageIcon makeRoundedImage(BufferedImage img) {
+        int width = img.getWidth();
+        int height = img.getHeight();
+
+        BufferedImage roundedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = roundedImage.createGraphics();
+
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g2.setClip(new RoundRectangle2D.Float(0, 0, width, height, 20, 20)); // 16 = borde redondo
+
+        g2.drawImage(img, 0, 0, null);
         g2.dispose();
 
         return new ImageIcon(roundedImage);
@@ -371,7 +390,8 @@ public class UIHelpers {
 
         @Override
         protected void setValue(Object value) {
-            if (value instanceof Number n) {
+            if (value instanceof Number) {
+                Number n = (Number) value;
                 value = formatearMoneda(n.doubleValue());
             }
             super.setValue(value);
@@ -605,15 +625,15 @@ public class UIHelpers {
         filtered.subList(start, end).forEach(product -> {
             JPanel card = new JPanel();
             card.setLayout(new BoxLayout(card, BoxLayout.X_AXIS));
-            card.setBackground(new Color(58, 58, 58));
+            card.setBackground(new Color(80, 80, 80));
             card.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
             card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
             card.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
             JLabel imageLabel = new JLabel();
-            imageLabel.setPreferredSize(new Dimension(60, 60));
-            imageLabel.setMaximumSize(new Dimension(60, 60));
-            imageLabel.setMinimumSize(new Dimension(60, 60));
+            imageLabel.setPreferredSize(new Dimension(80, 80));
+            imageLabel.setMaximumSize(new Dimension(80, 80));
+            imageLabel.setMinimumSize(new Dimension(80, 80));
             imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
             imageLabel.setVerticalAlignment(SwingConstants.CENTER);
             card.add(imageLabel);
@@ -658,25 +678,37 @@ public class UIHelpers {
                     try {
                         String imagePath = System.getProperty(FOLDER_PATH) + product.getFoto();
                         File imageFile = new File(imagePath);
-                        BufferedImage img;
+                        BufferedImage original;
+
                         if (!imageFile.exists() || !imageFile.isFile()) {
-                            InputStream is = UIHelpers.class.getResourceAsStream(NO_FOTO);
-                            if (is != null) {
-                                img = ImageIO.read(is);
-                            } else {
-                                return null;
+                            try (InputStream is = UIHelpers.class.getResourceAsStream(NO_FOTO)) {
+                                if (is == null) return null;
+                                original = ImageIO.read(is);
                             }
                         } else {
-                            img = ImageIO.read(imageFile);
+                            original = ImageIO.read(imageFile);
                         }
-                        if (img != null) {
-                            Image scaledImg = img.getScaledInstance(60, 60, Image.SCALE_SMOOTH);
-                            return makeRoundedImage(scaledImg);
-                        }
+
+                        if (original == null) return null;
+
+                        int width = 90;
+                        int height = 90;
+                        BufferedImage resized = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+                        Graphics2D g2 = resized.createGraphics();
+                        g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                        g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                        g2.drawImage(original, 0, 0, width, height, null);
+                        g2.dispose();
+
+                       // return makeRoundedImage(resized);
+                        return new ImageIcon(resized);
+
                     } catch (IOException e) {
                         e.printStackTrace();
+                        return null;
                     }
-                    return null;
                 }
 
                 protected void done() {
@@ -700,7 +732,7 @@ public class UIHelpers {
                     }
                 }
                 public void mouseEntered(MouseEvent e) { card.setBackground(CARD_BACKGROUND_SELECT); }
-                public void mouseExited(MouseEvent e) { card.setBackground(new Color(58, 58, 58)); }
+                public void mouseExited(MouseEvent e) { card.setBackground(new Color(80, 80, 80)); }
                 public void mousePressed(MouseEvent e) { card.setBackground(CARD_BACKGROUND_PRESSED); }
                 public void mouseReleased(MouseEvent e) { card.setBackground(CARD_BACKGROUND_RELEASE); }
             });
@@ -762,6 +794,27 @@ public class UIHelpers {
             @Override public void removeUpdate(DocumentEvent e) { update(); }
             @Override public void changedUpdate(DocumentEvent e) { update(); }
         });
+
+        JLabel separator = new JLabel();
+        separator.setPreferredSize(new Dimension(0, 10));
+        separator.setOpaque(true);
+        List<Producto> productList = ProductoUserManager.getProducts();
+
+        Set<String> categorias = productList.stream()
+                .map(Producto::getCategoria)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
+
+        List<String> categoriaOpciones = new ArrayList<>();
+        categoriaOpciones.add("Todos los productos");
+        categoriaOpciones.addAll(categorias);
+
+        JComboBox<String> categoriaComboBox = new JComboBox<>(categoriaOpciones.toArray(new String[0]));
+        categoriaComboBox.setMaximumSize(new Dimension(400, 40));
+        categoriaComboBox.setFont(new Font("Segoe UI Variable", Font.PLAIN, 16));
+        inputPanel.add( separator );
+        //inputPanel.add(categoriaComboBox);
+
         quantityPanel.add(quantityLabel);
         quantityPanel.add(cantidadSpinner);
         inputPanel.add(quantityPanel);
@@ -789,23 +842,31 @@ public class UIHelpers {
         });
         inputPanel.add(scrollPane);
 
-        List<Producto> productList = ProductoUserManager.getProducts();
-
         JLabel pageLabel = new JLabel("Página 1");
         pageLabel.setForeground(CANTIDAD_COLOR_FONT);
 
         JButton prevButton = new JButton("<");
         JButton nextButton = new JButton(">");
 
+        ActionListener paginationUpdater = e -> {
+            String categoriaSeleccionada = (String) categoriaComboBox.getSelectedItem();
+            List<Producto> productosFiltrados = productList.stream()
+                    .filter(p -> "Todos los productos".equalsIgnoreCase(categoriaSeleccionada) || p.getCategoria().equalsIgnoreCase(categoriaSeleccionada))
+                    .collect(Collectors.toList());
+            updateProducthorizontalPanel(productosFiltrados, productPanel, searchField.getText().toLowerCase(), searchField, table, cantidadSpinner, scrollPane, pageLabel);
+        };
+
         prevButton.addActionListener(e -> {
             currentPage = Math.max(0, currentPage - 1);
-            updateProducthorizontalPanel(productList, productPanel, searchField.getText().toLowerCase(), searchField, table, cantidadSpinner, scrollPane, pageLabel);
+            paginationUpdater.actionPerformed(e);
         });
         nextButton.addActionListener(e -> {
             int maxPages = (int) Math.ceil((double) productList.size() / PRODUCTS_PER_PAGE);
             currentPage = Math.min(maxPages - 1, currentPage + 1);
-            updateProducthorizontalPanel(productList, productPanel, searchField.getText().toLowerCase(), searchField, table, cantidadSpinner, scrollPane, pageLabel);
+            paginationUpdater.actionPerformed(e);
         });
+
+        categoriaComboBox.addActionListener(paginationUpdater);
 
         JPanel paginationPanel = new JPanel(new FlowLayout());
         paginationPanel.setBackground(PRODUCT_PANEL_COLOR);
@@ -815,15 +876,12 @@ public class UIHelpers {
         inputPanel.add(paginationPanel);
 
         searchField.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { currentPage = 0; update(); }
-            public void removeUpdate(DocumentEvent e) { currentPage = 0; update(); }
-            public void changedUpdate(DocumentEvent e) { currentPage = 0; update(); }
-            private void update() {
-                updateProducthorizontalPanel(productList, productPanel, searchField.getText().toLowerCase(), searchField, table, cantidadSpinner, scrollPane, pageLabel);
-            }
+            public void insertUpdate(DocumentEvent e) { currentPage = 0; paginationUpdater.actionPerformed(null); }
+            public void removeUpdate(DocumentEvent e) { currentPage = 0; paginationUpdater.actionPerformed(null); }
+            public void changedUpdate(DocumentEvent e) { currentPage = 0; paginationUpdater.actionPerformed(null); }
         });
 
-        updateProducthorizontalPanel(productList, productPanel, "", searchField, table, cantidadSpinner, scrollPane, pageLabel);
+        paginationUpdater.actionPerformed(null);
         return inputPanel;
     }
 }

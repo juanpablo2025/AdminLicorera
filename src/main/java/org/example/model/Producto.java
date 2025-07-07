@@ -8,6 +8,7 @@ public class Producto {
     private int quantity ;
     private double price;
     private String foto;
+    private String categoria;
 
     public Producto(int id,String name, int quantity, double price, String foto) {
         this.id = id;
@@ -37,6 +38,11 @@ public class Producto {
     public double getPrice() {
         return price;
     }
+
+    public String getCategoria() {
+        return categoria;
+    }
+
 
 
     public void setCantidad(int cantidad) {

@@ -148,18 +148,24 @@ public class UIAdminProducts {
                 if (!isSelected) {
                     try {
                         Object cantidadObj = table.getValueAt(row, TWO);
-                        int cantidad = (cantidadObj instanceof Integer integer)
-                                ? integer
-                                : Integer.parseInt(cantidadObj.toString());
+                        int cantidad;
+                        if (cantidadObj instanceof Integer) {
+                            cantidad = (Integer) cantidadObj;
+                        } else {
+                            cantidad = Integer.parseInt(cantidadObj.toString());
+                        }
 
-                        if (cantidad <= -ONE) {fondo = new Color(255, 150, 150);
-                        } else if (cantidad == ZERO) {fondo = new Color(255, 200, 100);}
+                        if (cantidad <= -ONE) {
+                            fondo = new Color(255, 150, 150);
+                        } else if (cantidad == ZERO) {
+                            fondo = new Color(255, 200, 100);
+                        }
                     } catch (Exception e) {
                         fondo = Color.WHITE;
                     }
                     cell.setBackground(fondo);
                     cell.setForeground(texto);
-                } else {
+                }else {
                     cell.setBackground(table.getSelectionBackground());
                     cell.setForeground(table.getSelectionForeground());
                 }
@@ -824,13 +830,15 @@ private static void saveProducts(DefaultTableModel tableModel, JTable table) {
         centerPanel.add(quantitySpinner, gbc);
 
         JComponent editor = quantitySpinner.getEditor();
-        if (editor instanceof JSpinner.DefaultEditor defaultEditor) {
+        if (editor instanceof JSpinner.DefaultEditor) {
+            JSpinner.DefaultEditor defaultEditor = (JSpinner.DefaultEditor) editor;
             defaultEditor.getTextField().setFont(new Font("Segoe UI Variable", Font.PLAIN, 16));
         }
 
         SwingUtilities.invokeLater(() -> {
             for (Component comp : quantitySpinner.getComponents()) {
-                if (comp instanceof JButton button) {
+                if (comp instanceof JButton) {
+                    JButton button = (JButton) comp;
                     button.setPreferredSize(new Dimension(60, 60));
                     button.setFont(new Font("Segoe UI Variable", Font.BOLD, 16));
                 }

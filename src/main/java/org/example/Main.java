@@ -32,10 +32,10 @@ public class Main {
         crearEstructuraInicial();
         try (Connection conn = connect()) {
             if (hayRegistroDeHoy(conn)) {
-                Updater.checkForUpdates();
+                //Updater.checkForUpdates();
                 mainUser(); // Si hay registro, abrir el panel de usuario
             } else {
-                Updater.checkForUpdates();
+                //Updater.checkForUpdates();
                 //DatabaseUserManager.crearEstructuraInicial();// Crear la estructura de la base de datos si no existe
                 mostrarLogin(); // Si no, mostrar el login
             }
@@ -59,22 +59,22 @@ public class Main {
             frame.setIconImage(scaledImage);
         }
 
-        frame.setSize(400, 650);
+        frame.setSize(300, 400);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setLayout(new GridBagLayout());
         frame.setResizable(false);
 
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(250, 240, 230));
+        panel.setBackground(FONDO_PRINCIPAL);
         panel.setBorder(BorderFactory.createEmptyBorder(THIRTY, THIRTY, THIRTY, THIRTY));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(FIFTEEN, FIFTEEN, FIFTEEN, FIFTEEN);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel logoLabel = new JLabel();
+        /*JLabel logoLabel = new JLabel();
         ImageIcon logo = LOGO_EMPRESA;        Image img = logo.getImage().getScaledInstance(300, 280, Image.SCALE_SMOOTH);
-        logoLabel.setIcon(new ImageIcon(img));
+        logoLabel.setIcon(new ImageIcon(img));*/
 
         JLabel userLabel = new JLabel("Encargado de caja");
         userLabel.setFont(new Font("Segoe UI Variable", Font.BOLD, TWENTY));
@@ -82,27 +82,27 @@ public class Main {
 
         JTextField userField = new JTextField(TWENTY);
         userField.setFont(new Font("Segoe UI Variable", Font.PLAIN, EIGHTEEN));
-        userField.setBorder(BorderFactory.createLineBorder(Color.RED, TWO));
+        userField.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, TWO));
 
         JButton loginButton = new JButton("Iniciar Día");
         loginButton.setFont(new Font("Segoe UI Variable", Font.BOLD, TWENTY));
-        loginButton.setBackground(Color.RED);
-        loginButton.setForeground(Color.WHITE);
+        loginButton.setBackground(Color.WHITE);
+        loginButton.setForeground(Color.BLACK);
         loginButton.setFocusPainted(false);
         loginButton.setBorder(BorderFactory.createEmptyBorder(TEN, TEN, TEN, TEN));
 
         JButton adminButton = new JButton("Administrador");
         adminButton.setFont(new Font("Segoe UI Variable", Font.BOLD, TWENTY));
-        adminButton.setBackground(Color.BLACK);
+        adminButton.setBackground(new Color(0, 120, 212));
         adminButton.setForeground(Color.WHITE);
         adminButton.setFocusPainted(false);
         adminButton.setBorder(BorderFactory.createEmptyBorder(TEN, TEN, TEN, TEN));
 
 
-        gbc.gridx = ZERO;
+        /*gbc.gridx = ZERO;
         gbc.gridy = ZERO;
         gbc.gridwidth = TWO;
-        panel.add(logoLabel, gbc);
+        panel.add(logoLabel, gbc);*/
 
         gbc.gridy = ONE;
         panel.add(userLabel, gbc);
@@ -132,7 +132,7 @@ public class Main {
                 }
                 registrarDia(connection, nombreUsuario);
 
-                ImageIcon iconEmpleado = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/Bienvenida.png"));
+               /* ImageIcon iconEmpleado = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/Bienvenida.png"));
                 if (iconEmpleado.getImageLoadStatus() != MediaTracker.COMPLETE) {
                     iconEmpleado = null;
                 }
@@ -156,7 +156,7 @@ public class Main {
                 panelEmpleado.setLayout(new BoxLayout(panelEmpleado, BoxLayout.Y_AXIS));
                 panelEmpleado.add(textLabel);
                 panelEmpleado.add(Box.createVerticalStrut(10));
-                panelEmpleado.add(new JLabel(iconEmpleado));
+                //panelEmpleado.add(new JLabel(iconEmpleado));
 
                 JOptionPane pane = new JOptionPane(panelEmpleado,
                         JOptionPane.PLAIN_MESSAGE,
@@ -175,8 +175,8 @@ public class Main {
                     mainUser();
                 });
                 timer.setRepeats(false);
-                timer.start();
-
+                timer.start();*/
+                mainUser();
             } else {
                 JOptionPane.showMessageDialog(frame, "Por favor ingresa un nombre de usuario.");
             }

@@ -13,6 +13,7 @@ import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -158,22 +159,38 @@ public class UIUserFacturas {
         reprintButton.addActionListener(e -> {
             int selectedRow = facturasTable.getSelectedRow();
             if (selectedRow != -1) {
-                String facturaId = facturasTable.getValueAt(selectedRow, ZERO).toString();
-                String productosStr = facturasTable.getValueAt(selectedRow, ONE).toString();
-                double totalCompra = Double.parseDouble(facturasTable.getValueAt(selectedRow, TWO).toString());
-                String fechaHoraStr = facturasTable.getValueAt(selectedRow, THREE).toString();
+                int opcion = JOptionPane.showConfirmDialog(facturasPanel,
+                        "¿Estás seguro de que deseas imprimir esta factura?",
+                        "Confirmar impresión", JOptionPane.YES_NO_OPTION);
+                if (opcion != JOptionPane.YES_OPTION) return;
 
-                List<String> productos = Arrays.asList(productosStr.split("\\n"));
+                try {
+                    String facturaId = facturasTable.getValueAt(selectedRow, 0).toString();
+                    String productosStr = facturasTable.getValueAt(selectedRow, 1).toString();
+                    double totalCompra = Double.parseDouble(facturasTable.getValueAt(selectedRow, 2).toString());
+                    String fechaHoraStr = facturasTable.getValueAt(selectedRow, 3).toString();
 
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-                LocalDateTime fechaHora = LocalDateTime.parse(fechaHoraStr, formatter);
+                    List<String> productos = Arrays.asList(productosStr.split("\\n"));
 
-                if (productos.isEmpty()) {
-                    JOptionPane.showMessageDialog(facturasPanel, "No hay productos en esta factura.", "Advertencia", JOptionPane.WARNING_MESSAGE);
-                    return;
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    LocalDateTime fechaHora = LocalDateTime.parse(fechaHoraStr, formatter);
+
+                    if (productos.isEmpty()) {
+                        JOptionPane.showMessageDialog(facturasPanel, "No hay productos en esta factura.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+
+                    generarFacturadeCompra(facturaId, productos, totalCompra, fechaHora, " ");
+
+                } catch (DateTimeParseException ex) {
+                    JOptionPane.showMessageDialog(facturasPanel,
+                            "Error al procesar la fecha: " + ex.getParsedString(),
+                            "Error de formato de fecha", JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(facturasPanel,
+                            "Error al imprimir la factura: " + ex.getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
                 }
-
-                generarFacturadeCompra(facturaId, productos, totalCompra, fechaHora, " ");
 
             } else {
                 JOptionPane.showMessageDialog(facturasPanel, "Por favor selecciona una factura.", "Advertencia", JOptionPane.WARNING_MESSAGE);

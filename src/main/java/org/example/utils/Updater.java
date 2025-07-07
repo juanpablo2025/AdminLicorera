@@ -15,12 +15,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import static org.example.manager.usermanager.FacturacionUserManager.enviarMensaje;
+//import static org.example.manager.usermanager.FacturacionUserManager.enviarMensaje;
 import static org.example.utils.Constants.*;
 
 public class Updater {
 
-    private Updater() {}
+    /*private Updater() {}
     private static final Logger logger =  LoggerFactory.getLogger(Updater.class);
 
     private static final String CURRENT_VERSION = "v1.1.8";
@@ -145,6 +145,6 @@ public class Updater {
         if (progressFrame != null) {
             SwingUtilities.invokeLater(() -> progressFrame.dispose());
         }
-    }
+    }*/
 }
 

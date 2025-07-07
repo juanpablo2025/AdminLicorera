@@ -7,6 +7,7 @@ import org.example.manager.usermanager.FacturacionUserManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Arrays;
@@ -25,6 +26,8 @@ import java.util.Objects;
 
 import static java.awt.Color.gray;
 import static java.awt.Color.lightGray;
+import static org.example.Main.mostrarLogin;
+import static org.example.manager.userDBManager.DatabaseUserManager.hayRegistroDeHoy;
 import static org.example.ui.uiadmin.UIMainAdmin.*;
 import static org.example.ui.uiuser.UIUserFacturas.getFacturasPanel;
 import static org.example.ui.UIHelpers.createButton;
@@ -75,11 +78,12 @@ public class UIUserMain {
 
             JPanel contentPanel = new JPanel(new CardLayout());
             contentPanel.add(showPanelMesas(frame,contentPanel), MESAS);
+            contentPanel.add(showPanelMesas(frame, contentPanel), "venta");
             contentPanel.add(UIUserProductList.getProductListPanel(), "productos");
             contentPanel.add(getFacturasPanel(), FACTURAS);
             contentPanel.add(UIUserGastos.createGastosPanel(contentPanel), "gastos");
             contentPanel.add(createFacturarPanel(contentPanel), "facturar");
-            contentPanel.add(UIParkDrive.showPanelParkDrive(frame,contentPanel), "parqueadero");
+            //contentPanel.add(UIParkDrive.showPanelParkDrive(frame,contentPanel), "parqueadero");
 
             JPanel logoPanel = new JPanel();
             logoPanel.setLayout(new BoxLayout(logoPanel, BoxLayout.Y_AXIS));
@@ -113,8 +117,6 @@ public class UIUserMain {
             JPanel buttonsPanel = new JPanel();
             buttonsPanel.setLayout(new BoxLayout(buttonsPanel, BoxLayout.Y_AXIS));
             buttonsPanel.setBackground(FONDO_PRINCIPAL);
-
-
 
             sidebarPanel.addComponentListener(new ComponentAdapter() {
                 @Override
@@ -150,6 +152,20 @@ public class UIUserMain {
 
 
             Dimension buttonSize = new Dimension(15, 8);
+
+            /*JButton mesasButton = createButton("Mesas", resizeIcon(PRODUCT_LIST_ICON), null);
+            mesasButton.addActionListener(e -> {
+                CardLayout cl = (CardLayout) contentPanel.getLayout();
+                cl.show(contentPanel, "mesas");
+                highlightSelectedButton(mesasButton, menuButtons);
+            });*/
+
+            /*JButton ventaButton = createButton("Venta", resizeIcon(PRODUCT_LIST_ICON), null);
+            mesasButton.addActionListener(e -> {
+                CardLayout cl = (CardLayout) contentPanel.getLayout();
+                cl.show(contentPanel, "venta");
+                highlightSelectedButton(ventaButton, menuButtons);
+            });*/
 
             JButton listaProductosButton = createButton("Inventario", resizeIcon(PRODUCT_LIST_ICON), null);
             listaProductosButton.addActionListener(e -> {
@@ -187,13 +203,18 @@ public class UIUserMain {
 
             moreOptionsButtons.setMaximumSize(buttonSize);
 
-            JButton moreParkDriveButtons = createButton("Parqueadero", resizeIcon(FACTURAR_ICON), e -> {
+            /*JButton moreParkDriveButtons =  createButton("Parqueadero", resizeIcon(FACTURAS_ICON), null);
+            moreParkDriveButtons.addActionListener(e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "parqueadero");
-
+                highlightSelectedButton(moreParkDriveButtons, menuButtons);
             });
-            moreParkDriveButtons.setMaximumSize(buttonSize);
+            moreParkDriveButtons.setMaximumSize(buttonSize);*/
 
+            /*buttonsPanel.add(Box.createVerticalStrut(5));
+            buttonsPanel.add(mesasButton);*/
+            /*buttonsPanel.add(Box.createVerticalStrut(5));
+            buttonsPanel.add(ventaButton);*/
             buttonsPanel.add(Box.createVerticalStrut(5));
             buttonsPanel.add(listaProductosButton);
             buttonsPanel.add(Box.createVerticalStrut(5));
@@ -204,13 +225,13 @@ public class UIUserMain {
             buttonsPanel.add(salirButton);
             buttonsPanel.add(Box.createVerticalStrut(5));
             buttonsPanel.add(moreOptionsButtons);
-            buttonsPanel.add(Box.createVerticalGlue());
-            buttonsPanel.add(moreParkDriveButtons);
+            /*buttonsPanel.add(Box.createVerticalGlue());
+            buttonsPanel.add(moreParkDriveButtons);*/
 
             buttonsPanel.add(Box.createVerticalStrut(4));
             menuButtons.addAll(Arrays.asList(
                     listaProductosButton, gastosButton, moreOptionsButton,
-                    salirButton, moreOptionsButtons, moreParkDriveButtons
+                    salirButton, moreOptionsButtons/*, moreParkDriveButtons*/
             ));
             mainPanel.add(sidebarPanel, BorderLayout.WEST);
             mainPanel.add(contentPanel, BorderLayout.CENTER);
@@ -316,7 +337,7 @@ public class UIUserMain {
         gbc.insets = new Insets(15, 15, 15, 15);
         gbc.fill = GridBagConstraints.CENTER;
 
-        // Logo
+        /*// Logo
         JPanel imagePanel = new JPanel(new BorderLayout());
         imagePanel.setBackground(FONDO_PRINCIPAL);
         imagePanel.setPreferredSize(new Dimension(230, 230));
@@ -338,7 +359,7 @@ public class UIUserMain {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridheight = 2;
-        mainContentPanel.add(imagePanel, gbc);
+        mainContentPanel.add(imagePanel, gbc);*/
 
         // Info Label
         JLabel infoLabel = new JLabel(
