@@ -159,9 +159,8 @@ public class FacturacionUserManager {
                         .setTextAlignment(TextAlignment.CENTER));
 
                 document.add(new Paragraph(tipoPago)
-                        .setFont(fontNormal)
+                        .setFont(fontBold)
                         .setFontSize(8)
-                        .setBold()
                         .setMarginBottom(5)
                         .setTextAlignment(TextAlignment.CENTER));
 
@@ -190,10 +189,9 @@ public class FacturacionUserManager {
                 String formattedPrice = formatCOP.format(totalCompra);
 
                 document.add(new Paragraph(TOTAL_BILL + PESO_SIGN + formattedPrice + PESOS)
-                        .setFont(fontNormal)
+                        .setFont(fontBold)
                         .setFontSize(9)
-                        .setMarginBottom(2)
-                        .setBold());
+                        .setMarginBottom(2));
 
                 document.add(new Paragraph(new String(new char[22]).replace(SLASH_ZERO, "_"))
                         .setFont(fontNormal)
@@ -201,9 +199,8 @@ public class FacturacionUserManager {
                         .setMarginBottom(FIVE));
 
                 document.add(new Paragraph(THANKS_BILL)
-                        .setFont(fontNormal)
+                        .setFont(fontBold)
                         .setFontSize(EIGHT)
-                        .setBold()
                         .setTextAlignment(TextAlignment.CENTER));
                 document.add(new Paragraph("IVA incluido.")
                         .setFont(fontNormal)
@@ -574,7 +571,7 @@ public class FacturacionUserManager {
                         String totalFormateado = formatCOP.format(total);
 
                         Paragraph pagoParrafo = new Paragraph()
-                                .add(new Text(metodoPago + ": ").setFont(fontNormal).setBold())
+                                .add(new Text(metodoPago + ": ").setFont(fontBold))
                                 .add(new Text("$ " + totalFormateado).setFont(fontNormal))
                                 .setFontSize(8)
                                 .setMarginBottom(2);
