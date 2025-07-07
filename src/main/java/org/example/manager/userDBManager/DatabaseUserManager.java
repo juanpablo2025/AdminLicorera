@@ -36,7 +36,7 @@ public class DatabaseUserManager {
     public static final String DIRECTORY_PATH = System.getProperty("user.home") + File.separator + "Calculadora del Administrador";
     //public static final String DB_PATH = DIRECTORY_PATH + File.separator + DB_NAME;
 
-    //public static final String URL = "jdbc:mysql:" + DB_PATH;
+    //public static final String URL = "jdbc:sqlite:" + DB_PATH;
     static LocalDateTime fechaHora = LocalDateTime.now();
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy-HH_mm_ss");
     static String fechaFormateada = fechaHora.format(formatter);
@@ -50,7 +50,19 @@ public class DatabaseUserManager {
         }
         crearEstructuraInicial();
     }
+    // Configuración base
+    public static final boolean USE_SQLITE = true; // Cambiar a false para usar MySQL
 
+    // SQLite - Base de datos portátil
+    public static final String DB_NAME = "inventario_licorera.db";
+    //public static final String DIRECTORY_PATH = System.getProperty("user.home") + File.separator + "Calculadora del Administrador";
+    public static final String SQLITE_DB_PATH = DIRECTORY_PATH + File.separator + DB_NAME;
+    public static final String SQLITE_URL = "jdbc:sqlite:" + SQLITE_DB_PATH;
+
+    // MySQL - Base de datos remota o local
+    public static final String MYSQL_URL = "jdbc:mysql://localhost:3306/licorera?useSSL=false&allowPublicKeyRetrieval=true";
+    public static final String MYSQL_USER = "root";
+    public static final String MYSQL_PASSWORD = "12345";
     public static ArrayList<Mesa> cargarMesasDesdeDB() {
         ArrayList<Mesa> mesas = new ArrayList<>();
         String query = "SELECT mesaID, estado FROM mesas ORDER BY CAST(SUBSTRING(mesaID, 6) AS UNSIGNED)";
@@ -99,14 +111,6 @@ public class DatabaseUserManager {
 
         return mesas;
     }
-
-
-
-        String url = "jdbc:mysql://localhost:3306/licorera?useSSL=false";
-        String user = "root"; // o tu usuario
-        String password = "1234"; // tu contraseña
-
-
 
 
     public static void actualizarCantidadStockBD(Map<String, Integer> cantidadTotalPorProducto, String mesaID) {
@@ -184,15 +188,17 @@ public class DatabaseUserManager {
 
 
     public static void crearEstructuraInicial() {
-        // 1️⃣ Conectarse al servidor (sin especificar base de datos)
-        String baseURL = "jdbc:mysql://localhost:3306/?useSSL=false&allowPublicKeyRetrieval=true";
-        try (Connection conn = DriverManager.getConnection(baseURL, "root", "12345");
-             Statement stmt = conn.createStatement()) {
+        if (!DatabaseUserManager.USE_SQLITE) {
+            // Crear base de datos en MySQL si no existe
+            String baseURL = "jdbc:mysql://localhost:3306/?useSSL=false&allowPublicKeyRetrieval=true";
+            try (Connection conn = DriverManager.getConnection(baseURL, DatabaseUserManager.MYSQL_USER, DatabaseUserManager.MYSQL_PASSWORD);
+                 Statement stmt = conn.createStatement()) {
 
-            // Crear la base de datos si no existe
-            stmt.execute("CREATE DATABASE IF NOT EXISTS licorera");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+                stmt.execute("CREATE DATABASE IF NOT EXISTS licorera");
+
+            } catch (SQLException e) {
+                throw new RuntimeException("❌ Error creando base MySQL: " + e.getMessage(), e);
+            }
         }
         try (Connection conn = DatabaseUserManager.connect(); Statement stmt = conn.createStatement()) {
 
@@ -241,11 +247,15 @@ public class DatabaseUserManager {
         }
     }
 
+    // Método de conexión unificado
     public static Connection connect() throws SQLException {
-        String url = "jdbc:mysql://localhost:3306/licorera?useSSL=false&allowPublicKeyRetrieval=true";
-        String user = "root"; // o tu usuario
-        String password = "12345"; // tu contraseña
-        return DriverManager.getConnection(url, user, password);
+        if (USE_SQLITE) {
+            File dir = new File(DIRECTORY_PATH);
+            if (!dir.exists()) dir.mkdirs(); // crear carpeta si no existe
+            return DriverManager.getConnection(SQLITE_URL);
+        } else {
+            return DriverManager.getConnection(MYSQL_URL, MYSQL_USER, MYSQL_PASSWORD);
+        }
     }
 
 
