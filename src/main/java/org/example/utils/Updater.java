@@ -5,13 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.*;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
@@ -20,10 +19,10 @@ import static org.example.utils.Constants.*;
 
 public class Updater {
 
-    /*private Updater() {}
+    private Updater() {}
     private static final Logger logger =  LoggerFactory.getLogger(Updater.class);
 
-    private static final String CURRENT_VERSION = "v1.1.8";
+    private static final String CURRENT_VERSION = "v1.1.9";
     private static final String TEMP_EXE_NAME = "update_temp.exe";
     private static final String APP_EXE_NAME = "Licorera CR.exe";
     private static final String GITHUB_API_URL = "https://api.github.com/repos/juanpablo2025/AdminLicorera/releases/latest";
@@ -72,8 +71,16 @@ public class Updater {
         HttpURLConnection conn = (HttpURLConnection) new URL(GITHUB_API_URL).openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Accept", "application/vnd.github.v3+json");
-        String json = new String(conn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        return new JSONObject(json);
+
+        StringBuilder response = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                response.append(line);
+            }
+        }
+
+        return new JSONObject(response.toString());
     }
 
     private static boolean isNewVersion(String remote) {
@@ -111,7 +118,9 @@ public class Updater {
                 "powershell -WindowStyle Hidden -Command \"Start-Process -FilePath 'Licorera CR.exe'\"",
                 "exit"
         ));
-        Files.writeString(Paths.get("update_launcher.bat"), script);
+
+        Path file = Paths.get("update_launcher.bat");
+        Files.write(file, script.getBytes(StandardCharsets.UTF_8));
     }
 
     private static void launchUpdateScript() throws IOException {
@@ -145,6 +154,6 @@ public class Updater {
         if (progressFrame != null) {
             SwingUtilities.invokeLater(() -> progressFrame.dispose());
         }
-    }*/
+    }
 }
 
