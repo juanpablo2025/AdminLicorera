@@ -171,7 +171,7 @@ public class UIUserMain {
             listaProductosButton.addActionListener(e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "productos");
-                highlightSelectedButton(listaProductosButton, menuButtons);
+                //highlightSelectedButton(listaProductosButton, menuButtons);
             });
             listaProductosButton.setMaximumSize(buttonSize);
 
@@ -179,7 +179,7 @@ public class UIUserMain {
             gastosButton.addActionListener(e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "gastos");
-                highlightSelectedButton(gastosButton, menuButtons);
+                //highlightSelectedButton(gastosButton, menuButtons);
             });
             gastosButton.setMaximumSize(buttonSize);
 
@@ -187,7 +187,7 @@ public class UIUserMain {
             salirButton.addActionListener(e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, "facturar");
-                highlightSelectedButton(salirButton, menuButtons);
+                //highlightSelectedButton(salirButton, menuButtons);
             });
             salirButton.setMaximumSize(buttonSize);
 
@@ -195,7 +195,7 @@ public class UIUserMain {
             moreOptionsButton.addActionListener(e -> {
                 CardLayout cl = (CardLayout) contentPanel.getLayout();
                 cl.show(contentPanel, FACTURAS);
-                highlightSelectedButton(moreOptionsButton, menuButtons);
+                //highlightSelectedButton(moreOptionsButton, menuButtons);
             });
             moreOptionsButton.setMaximumSize(buttonSize);
 

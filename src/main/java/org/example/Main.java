@@ -132,50 +132,7 @@ public class Main {
                 }
                 registrarDia(connection, nombreUsuario);
 
-               /* ImageIcon iconEmpleado = new ImageIcon(UIUserMain.class.getResource("/icons/assistant/Bienvenida.png"));
-                if (iconEmpleado.getImageLoadStatus() != MediaTracker.COMPLETE) {
-                    iconEmpleado = null;
-                }
 
-
-                String saludo;
-                LocalTime horaActual = LocalTime.now();
-                if (horaActual.isBefore(LocalTime.of(12, 0))) {
-                    saludo = "¡Buenos días, " + nombreUsuario + "!";
-                } else if (horaActual.isBefore(LocalTime.of(18, 0))) {
-                    saludo = "¡Buenas tardes, " + nombreUsuario + "!";
-                } else {
-                    saludo = "¡Buenas noches, " + nombreUsuario + "!";
-                }
-
-                JLabel textLabel = new JLabel(saludo);
-                textLabel.setHorizontalAlignment(SwingConstants.CENTER);
-                textLabel.setFont(ALERT_FONT);
-
-                JPanel panelEmpleado = new JPanel();
-                panelEmpleado.setLayout(new BoxLayout(panelEmpleado, BoxLayout.Y_AXIS));
-                panelEmpleado.add(textLabel);
-                panelEmpleado.add(Box.createVerticalStrut(10));
-                //panelEmpleado.add(new JLabel(iconEmpleado));
-
-                JOptionPane pane = new JOptionPane(panelEmpleado,
-                        JOptionPane.PLAIN_MESSAGE,
-                        JOptionPane.DEFAULT_OPTION,
-                        null,
-                        new Object[]{},
-                        null);
-
-                JDialog dialog = pane.createDialog(frame, "¡Ventana de Bienvenida!");
-                dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-                SwingUtilities.invokeLater(() -> dialog.setVisible(true));
-
-                Timer timer = new Timer(2000, evt -> {
-                    dialog.dispose();
-                    mainUser();
-                });
-                timer.setRepeats(false);
-                timer.start();*/
                 mainUser();
             } else {
                 JOptionPane.showMessageDialog(frame, "Por favor ingresa un nombre de usuario.");

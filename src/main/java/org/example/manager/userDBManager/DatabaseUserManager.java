@@ -259,6 +259,9 @@ public class DatabaseUserManager {
     }
 
 
+
+
+
     public Producto getProductByName(String selectedProduct) {
         String query = "SELECT id, nombre, cantidad, precio, foto FROM productos WHERE nombre = ?";
         try (Connection conn = connect(); PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -281,10 +284,20 @@ public class DatabaseUserManager {
 
     public static void savePurchase(String compraID, String productos, double total, LocalDateTime now, String tipoCompra) {
         String insertSQL = "INSERT INTO compras(productos, total, fecha_hora, forma_pago) VALUES (?, ?, ?, ?)";
+
         try (Connection conn = connect(); PreparedStatement stmt = conn.prepareStatement(insertSQL)) {
             stmt.setString(1, productos);
             stmt.setDouble(2, total);
-            stmt.setString(3, String.valueOf(now));
+
+            if (USE_SQLITE) {
+                // Formato compatible con DATETIME de SQLite
+                String formatted = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                stmt.setString(3, formatted);
+            } else {
+                // MySQL / Postgres: usar Timestamp directamente
+                stmt.setTimestamp(3, Timestamp.valueOf(now));
+            }
+
             stmt.setString(4, tipoCompra);
             stmt.executeUpdate();
         } catch (SQLException e) {

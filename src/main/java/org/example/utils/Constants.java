@@ -10,8 +10,8 @@ import java.util.Objects;
 
 public class Constants {
 
-    public static final String EMPRESA_NAME = "Denuedo";
-    // static final String EMPRESA_NAME = "Licorera CR";
+    //public static final String EMPRESA_NAME = "Denuedo";
+    public static final String EMPRESA_NAME = "Licorera CR";
     ////public static final String "Segoe UI Variable" = "Arial";
     public static final String LOBSTER_FONT = "Lobster-Regular.ttf";
     public static final String COMBO_BOX_TEXT = "Busca un producto";

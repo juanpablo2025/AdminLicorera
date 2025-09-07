@@ -75,7 +75,7 @@ public class UIHelpers {
         button.setLayout(new BorderLayout());
         button.add(panel, BorderLayout.CENTER);
 
-        /*button.addMouseListener(new MouseAdapter() {
+        button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent evt) {
                 button.setBackground(BTN_MOUSE_ENTERED);
@@ -84,7 +84,7 @@ public class UIHelpers {
             public void mouseExited(MouseEvent evt) {
                button.setBackground(BTN_MOUSE_EXITED);
             }
-        });*/
+        });
 
         return button;
     }
