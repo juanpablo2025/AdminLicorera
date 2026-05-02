@@ -38,10 +38,10 @@ public class Main {
             createExcelFile();  // Llama al método que crea el archivo si no existe
         }*/
         if (DatabaseUserManager.hayRegistroDeHoy(conn)) {
-            Updater.checkForUpdates();
+            //Updater.checkForUpdates();
             mainUser(); // Si hay registro, abrir el panel de usuario
         } else {
-            Updater.checkForUpdates();
+            //Updater.checkForUpdates();
             mostrarLogin(); // Si no, mostrar el login
 
         }

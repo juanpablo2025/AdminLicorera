@@ -17,7 +17,10 @@ public class MainUserManager {
         crearDirectorioSiNoExiste(facturacionPath);
     }
 
-    private static void crearDirectorioSiNoExiste(String path) {
-        new File(path);
+    public static void crearDirectorioSiNoExiste(String path) {
+        File dir = new File(path);
+        if (!dir.exists()) {
+            dir.mkdirs(); // 🔥 AQUÍ está la clave
+        }
     }
 }

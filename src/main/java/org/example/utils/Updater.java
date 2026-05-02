@@ -19,7 +19,7 @@ import static org.example.manager.usermanager.FacturacionUserManager.enviarMensa
 import static org.example.utils.Constants.*;
 
 public class Updater {
-
+/*
     private Updater() {}
     private static final Logger logger =  LoggerFactory.getLogger(Updater.class);
 
@@ -145,6 +145,6 @@ public class Updater {
         if (progressFrame != null) {
             SwingUtilities.invokeLater(() -> progressFrame.dispose());
         }
-    }
+    }*/
 }
 
